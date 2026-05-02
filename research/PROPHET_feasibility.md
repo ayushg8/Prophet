@@ -47,7 +47,7 @@ That is a complete, demonstrable, policy-safe story. It does not require novel e
 
 **Orchestration layer:** Python calling the Anthropic Messages API with tool use. No LangChain, no CrewAI — those frameworks add debugging surface in a 24-hour window. Claude handles the plan-execute-evaluate loop natively through tool dispatch.
 
-**UI layer:** React + TypeScript + Vite (same stack as VANTAGE). Four panels: CVE triage queue, live agent reasoning stream, exploit result badge, patch diff + Sigma rule viewer. FastAPI backend streams events via SSE.
+**UI layer:** React + TypeScript + Vite. Four panels: CVE triage queue, live agent reasoning stream, exploit result badge, patch diff + Sigma rule viewer. FastAPI backend streams events via SSE. Each finished run also emits a Maven-shaped JSON fusion object so the same data can be consumed by a Palantir Maven surface (real or mocked) for the sponsor demo.
 
 **Data layer:** All feeds are public JSON/REST, no auth except NVD (free API key, activates via email in minutes). Snapshot all feeds to local JSON at build start to insulate the demo from rate limits and outages.
 
@@ -163,7 +163,7 @@ Log4Shell wins because: the Vulhub environment is stable and well-documented; th
 ### Hours 7–10: UI Shell
 
 - Scaffold React + Vite + TypeScript.
-- Four-panel layout (same design language as VANTAGE — dense, restrained, no decorative animations):
+- Four-panel layout (dense, restrained, no decorative animations — defence-tech console, not a marketing site):
   - Left: CVE triage queue, ranked, with EPSS score and triage signals per row. Clicking a row selects it.
   - Center: Agent reasoning stream. Tool call events appear as typed cards; text deltas stream in as prose. Phase badges (Intel / Plan / Execute / Defend) show current state.
   - Bottom-left: Exploit result panel. Shows Nuclei output, a "VULNERABLE" or "BLOCKED" badge, and a before/after status.
@@ -177,7 +177,7 @@ Log4Shell wins because: the Vulhub environment is stable and well-documented; th
 - Add the Human Review Gate between Phase 2 and Phase 3: a modal with "Exploit Plan" summary and a single "Approve Execution" button. The agent loop pauses on a `threading.Event` until the button is clicked. This is the most important UX moment — it demonstrates human-in-the-loop and gives the presenter a beat.
 - Add phase progress bar (4 steps, each lights up on completion).
 - Test the full 90-second demo arc: open console → see queue → approve exploit → watch stream → see BLOCKED badge → show Sigma rule.
-- Apply the VANTAGE design rules: serious and dense beats flashy; motion clarifies state changes only; every important claim shows its provenance.
+- Design rules: serious and dense beats flashy; motion clarifies state changes only; every important claim shows its provenance.
 
 ### Hours 13–16: Hardening and Fallback
 
