@@ -6,12 +6,16 @@
 
 Quick replay of what I read off the whiteboard, panel by panel, so you can correct me before we build on it:
 
-- **Panel 1 — "Zero day exploits."** Three software inputs (A, B, C) flowing into a "System" that gets X'd by zero-day defects. Annotation **"predict defects"** is the thesis. Named bits: **Mythos**, **Anthropic**, **Claude plugin layer**, **Maven** (likely Palantir Maven, given the OODA-loop framing).
+- **Panel 1 — "Zero day exploits."** Three software inputs (A, B, C) flowing into a "System" that gets X'd by zero-day defects. Annotation **"predict defects"** is the thesis. Named bits: **Anthropic**, **Claude plugin layer**, and **Maven** — the integration target. Maven here is **Palantir Maven Smart System** (the OODA-loop fusion product); Prophet's predictions and defence artifacts are designed to land on the Maven surface as fusion-ready intel and remediation actions.
 - **Panel 2 — "CISA."** Two grounding datasets: **CVE** (historical corpus) and **KEV** (Known Exploited Vulnerabilities — written "KVE" in the sketch but unambiguous from context).
 - **Panel 3 — "Build."** A 4-stage pipeline (I→II→III→IV) glued to two work-tracks: prompt scaffolding + presentation. Flow: hypothesis/reduction → simulation → defence simulation → block → scale.
 - **Panel 4 — "Technical / Greek plan."** Same four phases, restated more concretely: **(I)** gather strategic intel; **(II)** generate new zero-day exploit; **(III)** simulate exploit + lock down virtual system; **(IV)** detect, block, enable, scale. KEV features feed in at the front.
 
-One thing the policy/risk research surfaced that's worth flagging: **"Mythos" is almost certainly Anthropic's *Claude Mythos Preview* model**, which sits behind Project Glasswing — a restricted frontier model for autonomous zero-day discovery (announced April 2026, ~11 named partners, $100M credit pool). Access is gated and not available via standard API. We should **not** claim to use it. We use the public Claude API under the Cyber Verification Program. If the partner intended Glasswing access, that's a months-long partnership process and a separate conversation.
+## Why Maven, not Glasswing
+
+Palantir is an official sponsor of the NatSec hackathon, so Prophet positions itself as a Palantir Maven-integrated play — predictions, exploit-class labels, generated patches, and validation results emit as Maven-ready fusion objects, callable from a Maven OODA loop. That gives the demo a concrete integration story for the room and a credible path into the gov/defence-tech buyer (FedRAMP-authorised, IL-compliant, mapped onto CISA BOD mandates) — a market the commercial pentest tools (XBOW, NodeZero, Pentera, Hadrian) are not certified for.
+
+We do **not** position relative to Anthropic's **Project Glasswing** (the restricted Claude Mythos Preview program for autonomous zero-day discovery — announced April 2026, ~11 named partners, $100M credit pool). Access is gated, and a hackathon team has no plausible path to it on this timeline. Where the partner sketch wrote "Mythos," read it as a ceiling reference only: Glasswing is the high-water mark we cite to anchor the capability class, not a model we claim to use. Prophet runs on the **public Claude API under the Cyber Verification Program (CVP)** — that's the model and the authorization. Maven is the integration. Glasswing stays out of the pitch.
 
 ## What it is, in one paragraph
 
@@ -80,7 +84,7 @@ Project Prophet is a Claude-orchestrated agent loop that uses CISA's CVE corpus 
 | Defence-gen | Patch surface | unified diff + Sigma + Snort + WAF rule | machine-emit, human-readable |
 | Validation | Re-attack runner | sandboxed pytest harness | pass = patch blocks exploit class |
 | Orchestration | Agent loop | parallel CLI workers (tmux pattern) | borrow Bilawal's pattern |
-| UI | Dashboard | React/TS — reuse `vantage-console/` if integrating | predict→defend timeline view |
+| UI | Dashboard | React/TS + Vite | predict→defend timeline view; renders the same fusion objects Prophet emits to Maven |
 
 ## The wedge (why this is real)
 
@@ -100,11 +104,9 @@ The window before incumbents close it: **12–18 months**, plausibly less. Qualy
 
 ## Hackathon-shaped MVP (24h target)
 
-Mirroring the format of `UI_LAUNCH_PLAN.md` so it's easy to slot alongside VANTAGE:
-
 | Hour | Build |
 |---|---|
-| 0–1 | Scaffold repo (or branch off VANTAGE); apply for Anthropic CVP; spin Docker sandbox skeleton |
+| 0–1 | Scaffold repo; apply for Anthropic CVP; spin Docker sandbox skeleton |
 | 1–3 | Ingest KEV JSON, NVD CVE 2.0; pick 3 historical KEV entries as the demo set |
 | 3–5 | Predictor agent: feature pipeline + Claude prompt; verify it would have ranked the demo classes high pre-disclosure |
 | 5–8 | Exploit-gen (sandbox-only) for one demo class, against a vulhub container; logs scrubbed |
@@ -124,10 +126,9 @@ Mirroring the format of `UI_LAUNCH_PLAN.md` so it's easy to slot alongside VANTA
 
 ## Open questions for the partner
 
-1. **Adjacent to VANTAGE, replacing it, or a feature inside it?** Strong candidate: Prophet becomes VANTAGE's **Unmasker mode** — same UI shell, same human-in-the-loop approval gate, different agent stack and data domain (vulnerability intel instead of geopolitical OSINT).
-2. **What does "Greek plan" mean in panel 4?** Project codename, attack-plan reference, or something else?
-3. **"Mythos" — confirm intent.** Public Claude API + CVP, or were they targeting Project Glasswing access?
-4. **Demo target for the partner-judging round.** Which 3 KEV entries should we replay? I'd suggest a mix: one web-app (e.g., ShareFile zero-day), one network protocol (e.g., Citrix Bleed), one library (e.g., libwebp / log4j) — to show the loop generalizes.
+1. **What does "Greek plan" mean in panel 4?** Project codename, attack-plan reference, or something else?
+2. **Demo target for the partner-judging round.** Which 3 KEV entries should we replay? I'd suggest a mix: one web-app (e.g., ShareFile zero-day), one network protocol (e.g., Citrix Bleed), one library (e.g., libwebp / log4j) — to show the loop generalizes.
+3. **Maven integration depth for the demo.** Aim: emit a Maven-shaped JSON fusion object per run and show it being consumed (real Maven if a sponsor demo slot is available, otherwise a faithful mock with the same schema). Confirm which.
 
 ## Top-level recommendation
 

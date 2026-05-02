@@ -188,7 +188,7 @@ Do not say: "Here is the exploit code Claude wrote." Do not show exploit code in
 - If the team does not get CVP approval before the hackathon, drop to Option B or D — without CVP, Phase II is technically non-compliant with the live AUP even in sandbox context.
 - If the hackathon is hosted on shared cloud infrastructure (AWS/GCP multi-tenant), the containment story breaks. This needs to run on local hardware with network isolation you control.
 - If a judge asks to see the exploit output and you show it, you have created a public record of Claude generating attack code. Decide your "no" answer before the demo starts and brief every team member.
-- If "Mythos" in the sketch means the team was planning to get early access to Claude Mythos Preview, that requires Project Glasswing partnership — a months-long process. Plan on using the standard Claude API (Sonnet or Opus class, whichever your CVP covers).
+- "Mythos" in the sketch is read as a ceiling reference to Claude Mythos Preview / Project Glasswing, not an integration target. Decision (2026-05-02): Prophet does **not** position relative to Glasswing and does **not** claim Mythos access. The integration target is **Palantir Maven** (Palantir is an official hackathon sponsor). Plan on the standard Claude API under CVP authorization (Sonnet 4.6 or Opus 4.7, whichever your CVP covers).
 
 ---
 

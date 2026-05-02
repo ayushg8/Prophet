@@ -4,6 +4,8 @@
 
 **Recommendation:** The wedge is real but narrow. No shipping product today closes all three legs of the Prophet loop — KEV-grounded prediction, sandboxed exploit generation, and defence co-generation — in a single autonomous agent cycle. The closest competitors either stop at exploit validation (without prediction) or stop at detection (without exploit generation). The differentiation window is 12–18 months at most before TrendAI/Anthropic and Qualys Agent Val close it from opposite sides.
 
+**Committed positioning:** **Palantir Maven-integrated defence-tech fusion play**, not commercial pentest. Palantir is an official sponsor of the hackathon and Maven is the OODA-loop surface that consumes Prophet's outputs (prediction → exploit class → patch → validation). This sidesteps the crowded "find and validate" market entirely — the listed commercial competitors are not FedRAMP-authorised or IL-compliant, so Maven framing puts Prophet in a different buyer category (CISA BOD-aligned, gov/defence-tech) where the prediction angle is a direct mandate match. See section (c) Angle 4 below.
+
 ---
 
 ## (a) TL;DR — Is the Wedge Real?
@@ -40,6 +42,9 @@ The commercial market is bifurcated: attack tools (XBOW, NodeZero, Pentera, Hadr
 **Angle 3: Claude as the orchestration surface enables a defensible positioning claim.**
 NodeZero explicitly bans GenAI from exploit execution. XBOW does not publicly name its model stack. Pentera describes "AI-driven payload generation" without model specifics. Prophet, by building on Claude via the plugin/MCP layer, can credibly claim: (a) Anthropic's AUP and the Cyber Verification Program provide a defensible dual-use framework (TrendAI participates in exactly this program as of April 2026); (b) Claude's reasoning capability is demonstrably state-of-the-art for code analysis and generation; (c) the MCP surface makes it composable with existing security tooling. This is a positioning and trust argument, not just a capability argument — important for selling to enterprise security buyers who cannot use products that generate weaponisable exploits against production systems. Sources: [TrendAI + Anthropic Cyber Verification](https://newsroom.trendmicro.com/2026-04-30-TrendAI-TM-and-Anthropic-Advance-AI-Powered-Vulnerability-Detection-and-Risk-Mitigation-with-Claude-Opus-4-7), [NodeZero MCP](https://docs.horizon3.ai/portal/features/mcp/).
 
+**Angle 4: Palantir Maven as the integration target — different market, different competitive set.**
+The commercial pentest tools (XBOW, NodeZero, Pentera, Hadrian, RidgeBot) sell into commercial enterprises. None are FedRAMP High or IL-5/6 authorised, and none plug into Maven Smart System, which is the OODA-loop surface that combatant commands and intelligence customers actually use. Prophet's outputs — prediction object, exploit-class label, patch diff, sandbox validation — are designed to land on Maven as fusion-ready intel and remediation actions. That changes the comparable set entirely: Prophet is no longer competing with NodeZero for an enterprise security budget, it's competing with whatever predictive-vuln capability the existing Maven ecosystem doesn't have yet (which is none — Qualys Agent Val and TrendAI AESIR are commercial-side products, not Maven-integrated). Palantir is the official hackathon sponsor, so the integration story is also a judging-room story. Source: [Palantir Maven Smart System](https://www.palantir.com/offerings/maven/).
+
 ---
 
 ## (d) The Strongest 3 Reasons This Is Already Too Crowded
@@ -59,7 +64,7 @@ Qualys Agent Val (March 2026) chains KEV-aligned exploit validation to autonomou
 
 - **If Prophet's demo is a genuine replay of historical KEV entries showing pre-disclosure prediction:** the wedge becomes hard evidence, not a claim. The hackathon deliverable should be exactly this — pick 3 KEV entries from 2023–2024, withhold post-disclosure data, and show the Prophet loop would have flagged the software category and generated the exploit class and a compensating control before KEV publication. That is a falsifiable, differentiating demo that none of the above tools can replicate.
 
-- **If the target buyer is a government/defence-tech customer (the "Palantir Maven" framing in the sketch):** the crowding argument weakens because the commercial tools above are not FedRAMP-authorised or IL-compliant, and the prediction angle maps directly onto CISA BOD mandates. The Maven/Palantir positioning is a legitimate wedge in a different market.
+- **The committed Palantir Maven framing (see Angle 4 above)** is what makes the crowding argument tractable: the commercial tools listed are not FedRAMP-authorised or IL-compliant, and the prediction angle maps directly onto CISA BOD mandates. The Maven/Palantir positioning is the wedge into a different market — one the listed competitors cannot serve.
 
 - **If Prophet stays at the description/IOC layer and never generates real executable code:** the dual-use and AUP risk collapses, but so does the differentiation — at that point it is a threat-intelligence dashboard, not an agent loop, and Tenable/Rapid7/GreyNoise already do that with more data.
 

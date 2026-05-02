@@ -7,10 +7,10 @@
 - Three software inputs labelled **A, B, C** all flow into a single **System** marked with X's (suggests vulnerabilities being injected/found).
 - Annotation: **"predict defects"** (the ambition: anticipate vulns rather than react).
 - Named tooling on the page:
-  - **Mythos** (likely a tool/framework — could be Mythos OS or a fuzzer; low-confidence read).
   - **Anthropic** (model/platform).
-  - **Claude plugin layer** — the integration surface.
-  - **Maven** — possibly Palantir Maven (the OODA-loop fusion product Bilawal called out), or Apache Maven (build tool); context favours the former given `predict ATP` annotation.
+  - **Claude plugin layer** — the orchestration surface.
+  - **Maven** — **Palantir Maven Smart System**, the OODA-loop fusion product. Locked in as Prophet's integration target (Palantir is an official hackathon sponsor; positioning to their stack is the wedge into the gov/defence-tech buyer).
+  - **Mythos** — read as a ceiling reference to Anthropic's Project Glasswing / Claude Mythos Preview. We do **not** claim to use it; access is gated. Prophet runs on the public Claude API under the CVP. See `PROPHET_policy_risk.md`.
 - Project measures listed: **predict, deter, simulate**.
 
 ## Panel 2 — "CISA"
@@ -44,17 +44,16 @@
 
 ## Pulled-together thesis (my reading, not the partner's words)
 
-Project Prophet = an **AI agent loop that uses CISA CVE+KEV data to predict where the next zero-day will land, generates a candidate exploit in a sandbox, then auto-generates and validates the corresponding defence**. The Claude plugin layer is the orchestration surface. "Maven" reference suggests positioning as a defence-tech fusion play (predictive vuln OODA loop) rather than a pure pentest tool.
+Project Prophet = an **AI agent loop that uses CISA CVE+KEV data to predict where the next zero-day will land, generates a candidate exploit in a sandbox, then auto-generates and validates the corresponding defence**. The Claude plugin layer is the orchestration surface. Positioning is a **Palantir Maven-integrated defence-tech fusion play** — predictive vuln OODA loop, not a pure pentest tool. Outputs (prediction, exploit class, patch, validation result) are shaped to land on Maven as fusion objects.
 
 The novel claim is **prediction + defence co-generation**, not just AI-assisted pentesting. Closest commercial analogues: XBOW (autonomous pentesting), Horizon3.ai (NodeZero), Pentera, ProjectDiscovery's Nuclei + AI work, and academic LLM-exploit-generation papers.
 
 ## Open questions for the partner
 
-1. Is this VANTAGE-replacing, VANTAGE-adjacent (a separate track), or a feature *inside* VANTAGE's Unmasker/Forecaster?
-2. What's the demo target — predict a real KEV ahead of disclosure, or replay a historical KEV to show the loop end-to-end?
-3. Is "Mythos" a specific tool we're supposed to integrate, or shorthand for something else?
-4. Are we sandboxing real exploit code (needs an isolated VM/container infra) or staying entirely at the *description/IOCs* layer?
-5. What does "Greek plan" mean in panel 4? (Possibly a project codename, possibly "attack plan.")
+1. What's the demo target — predict a real KEV ahead of disclosure, or replay a historical KEV to show the loop end-to-end?
+2. Are we sandboxing real exploit code (needs an isolated VM/container infra) or staying entirely at the *description/IOCs* layer?
+3. What does "Greek plan" mean in panel 4? (Possibly a project codename, possibly "attack plan.")
+4. Maven integration depth for the demo — real Palantir Maven sponsor slot, or a Maven-shaped mock surface that consumes the same JSON fusion objects?
 
 ## Risk flags (we should think about these before agents run)
 
