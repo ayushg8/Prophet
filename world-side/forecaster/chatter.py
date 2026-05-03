@@ -1,0 +1,404 @@
+"""Sanitized chatter ingestion for the World Side forecaster.
+
+Raw scraper output never belongs on the main dev box. This module accepts only
+analyst-safe JSONL records that already crossed the sanitizer boundary.
+"""
+
+from __future__ import annotations
+
+from dataclasses import dataclass
+from datetime import date, datetime
+import json
+from pathlib import Path
+import re
+from typing import Any, Iterable
+
+
+ALLOWED_SOURCE_TYPES = {
+    "telegram_public_channel",
+    "public_forum",
+    "public_social",
+    "onion_public_metadata",
+    "official_government",
+    "threat_intel_feed",
+    "vendor_advisory",
+    "manual_analyst_note",
+}
+
+ALLOWED_COLLECTION_TIERS = {
+    "official_signal",
+    "public_chatter",
+    "technical_chatter",
+    "darkweb_metadata",
+    "analyst_context",
+}
+
+ALLOWED_CONFIDENCE = {"high", "medium", "low"}
+
+ALLOWED_RECORD_KEYS = {
+    "record_id",
+    "observed_at",
+    "source_type",
+    "collection_tier",
+    "actor_hint",
+    "region_hint",
+    "target_sector",
+    "vector_class",
+    "motive_hint",
+    "confidence",
+    "summary",
+    "source_ref",
+    "tags",
+}
+
+ALLOWED_SOURCE_REF_KEYS = {
+    "id",
+    "label",
+    "url",
+    "date",
+    "supports",
+}
+
+BANNED_RAW_KEYS = {
+    "raw",
+    "raw_text",
+    "raw_html",
+    "html",
+    "message",
+    "message_text",
+    "body",
+    "content",
+    "dump",
+    "leak",
+    "credential",
+    "credentials",
+    "username",
+    "password",
+    "token",
+    "session",
+    "session_file",
+    "onion",
+    "onion_url",
+    "invite_link",
+    "phone",
+    "email",
+}
+
+BANNED_VALUE_PATTERNS = [
+    (re.compile(r"\.onion\b", re.IGNORECASE), "onion address"),
+    (re.compile(r"-----BEGIN [A-Z ]*PRIVATE KEY-----"), "private key"),
+    (re.compile(r"\bpassword\s*[:=]", re.IGNORECASE), "password material"),
+    (re.compile(r"\b(?:\d{1,3}\.){3}\d{1,3}\b"), "raw IP address"),
+    (re.compile(r"\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b", re.IGNORECASE), "email address"),
+    (re.compile(r"\b(?:t\.me|telegram\.me|discord\.gg|joinchat)\b", re.IGNORECASE), "private or invite link"),
+    (re.compile(r"(?<![A-Za-z0-9_])@[A-Za-z0-9_]{3,}"), "social handle"),
+]
+
+
+class ChatterValidationError(ValueError):
+    """Raised when sanitized chatter still contains unsafe or invalid data."""
+
+
+@dataclass(frozen=True)
+class SanitizedChatterRecord:
+    record_id: str
+    observed_at: str
+    source_type: str
+    collection_tier: str
+    actor_hint: str
+    region_hint: str
+    target_sector: str
+    vector_class: str
+    motive_hint: str
+    confidence: str
+    summary: str
+    source_ref: dict[str, str]
+    mapping: dict[str, Any]
+
+    @classmethod
+    def from_mapping(
+        cls,
+        value: dict[str, Any],
+        *,
+        source_name: str = "sanitized chatter",
+    ) -> "SanitizedChatterRecord":
+        if not isinstance(value, dict):
+            raise ChatterValidationError(f"{source_name}: record must be an object")
+        _assert_allowed_keys(value, ALLOWED_RECORD_KEYS, source_name)
+        _assert_no_raw_material(value, source_name)
+
+        record_id = _required_str(value, "record_id", source_name)
+        observed_at = _required_str(value, "observed_at", source_name)
+        _parse_datetime(observed_at, f"{source_name} {record_id}.observed_at")
+
+        source_type = _required_str(value, "source_type", source_name)
+        if source_type not in ALLOWED_SOURCE_TYPES:
+            raise ChatterValidationError(
+                f"{source_name} {record_id}: unsupported source_type {source_type}"
+            )
+        collection_tier = _required_str(value, "collection_tier", source_name)
+        if collection_tier not in ALLOWED_COLLECTION_TIERS:
+            raise ChatterValidationError(
+                f"{source_name} {record_id}: unsupported collection_tier {collection_tier}"
+            )
+        confidence = _required_str(value, "confidence", source_name)
+        if confidence not in ALLOWED_CONFIDENCE:
+            raise ChatterValidationError(
+                f"{source_name} {record_id}: confidence must be high|medium|low"
+            )
+
+        summary = _required_str(value, "summary", source_name)
+        if len(summary) > 500:
+            raise ChatterValidationError(
+                f"{source_name} {record_id}: summary must stay under 500 chars"
+            )
+
+        source_ref = _source_ref(value.get("source_ref"), record_id, observed_at, summary)
+        return cls(
+            record_id=record_id,
+            observed_at=observed_at,
+            source_type=source_type,
+            collection_tier=collection_tier,
+            actor_hint=_optional_str(value, "actor_hint"),
+            region_hint=_optional_str(value, "region_hint"),
+            target_sector=_optional_str(value, "target_sector"),
+            vector_class=_optional_str(value, "vector_class"),
+            motive_hint=_optional_str(value, "motive_hint"),
+            confidence=confidence,
+            summary=summary,
+            source_ref=source_ref,
+            mapping=value,
+        )
+
+    @property
+    def observed_date(self) -> date:
+        return _parse_datetime(self.observed_at, f"{self.record_id}.observed_at").date()
+
+    @property
+    def tags(self) -> set[str]:
+        return tags_from_chatter(self)
+
+
+def load_sanitized_chatter(path: str | Path) -> list[SanitizedChatterRecord]:
+    """Load newline-delimited sanitized chatter records.
+
+    Blank lines and ``#`` comments are ignored so fixture files can be readable.
+    """
+
+    chatter_path = Path(path)
+    if not chatter_path.exists():
+        raise FileNotFoundError(f"sanitized chatter file not found: {chatter_path}")
+
+    records: list[SanitizedChatterRecord] = []
+    with chatter_path.open("r", encoding="utf-8") as handle:
+        for line_no, raw_line in enumerate(handle, start=1):
+            line = raw_line.strip()
+            if not line or line.startswith("#"):
+                continue
+            try:
+                parsed = json.loads(line)
+            except json.JSONDecodeError as exc:
+                raise ChatterValidationError(
+                    f"{chatter_path}:{line_no}: invalid JSONL record"
+                ) from exc
+            records.append(
+                SanitizedChatterRecord.from_mapping(
+                    parsed,
+                    source_name=f"{chatter_path}:{line_no}",
+                )
+            )
+    return records
+
+
+def chatter_records_to_events(
+    records: Iterable[SanitizedChatterRecord | dict[str, Any]],
+) -> list[dict[str, Any]]:
+    events: list[dict[str, Any]] = []
+    for idx, record_like in enumerate(records, start=1):
+        record = _coerce_record(record_like, idx)
+        source_ref = dict(record.source_ref)
+        event_id = f"ctx_chatter_{_slug(record.record_id)}"
+        event_text = _event_label(record)
+        events.append(
+            {
+                "id": event_id,
+                "context_type": "chatter",
+                "date_cell": record.observed_date.isoformat(),
+                "event": event_text,
+                "parties": record.actor_hint or record.region_hint,
+                "motive": record.motive_hint or "current chatter",
+                "why": record.summary,
+                "source": source_ref["url"],
+                "source_ref": source_ref,
+                "start": record.observed_date,
+                "end": record.observed_date,
+                "tags": record.tags,
+                "source_type": record.source_type,
+                "collection_tier": record.collection_tier,
+                "confidence": record.confidence,
+            }
+        )
+    return events
+
+
+def tags_from_chatter(record: SanitizedChatterRecord) -> set[str]:
+    text = " ".join(
+        [
+            record.actor_hint,
+            record.region_hint,
+            record.target_sector,
+            record.vector_class,
+            record.motive_hint,
+            record.summary,
+            record.source_type,
+            record.collection_tier,
+        ]
+    ).lower()
+    keyword_map = {
+        "edge": ("edge", "vpn", "gateway", "perimeter", "router", "appliance"),
+        "appliance": ("appliance", "firewall", "secure edge", "vpn"),
+        "supply_chain": ("supply chain", "vendor", "managed service", "mft"),
+        "financial": ("bank", "swift", "crypto", "exchange", "wallet", "financial"),
+        "election": ("election", "campaign", "voter", "political"),
+        "ics": ("ics", "ot", "plc", "scada", "grid", "water", "energy"),
+        "wiper": ("wiper", "destructive", "wipe"),
+        "ransomware": ("ransomware", "extortion", "leak site"),
+        "phishing": ("phish", "credential", "login"),
+        "data_theft": ("data theft", "exfil", "leak", "theft"),
+        "shutdown": ("shutdown", "disruption", "outage", "disable"),
+        "persistence": ("persistence", "pre-position", "dwell", "access"),
+        "prc": ("prc", "china", "chinese", "taiwan", "mss", "volt"),
+        "russia": ("russia", "russian", "gru", "sandworm", "svr"),
+        "iran": ("iran", "iranian", "irgc", "mois"),
+        "dprk": ("dprk", "north korea", "lazarus", "rgb"),
+        "us_gov": ("us government", "federal", "defense", "dib", "agency"),
+        "sanctions": ("sanction", "ofac", "designation"),
+        "indictment": ("indictment", "charged", "prosecution"),
+    }
+    tags: set[str] = set()
+    for tag, needles in keyword_map.items():
+        if any(_contains_term(text, needle) for needle in needles):
+            tags.add(tag)
+    return tags
+
+
+def _coerce_record(
+    value: SanitizedChatterRecord | dict[str, Any],
+    idx: int,
+) -> SanitizedChatterRecord:
+    if isinstance(value, SanitizedChatterRecord):
+        return value
+    return SanitizedChatterRecord.from_mapping(
+        value,
+        source_name=f"sanitized chatter record {idx}",
+    )
+
+
+def _source_ref(
+    value: Any,
+    record_id: str,
+    observed_at: str,
+    summary: str,
+) -> dict[str, str]:
+    if not isinstance(value, dict):
+        raise ChatterValidationError(f"{record_id}: source_ref must be an object")
+    _assert_allowed_keys(value, ALLOWED_SOURCE_REF_KEYS, f"{record_id}.source_ref")
+    source_id = _optional_str(value, "id") or f"src_chatter_{_slug(record_id)}"
+    label = _required_str(value, "label", record_id)
+    url = _required_str(value, "url", record_id)
+    date_value = _optional_str(value, "date") or _parse_datetime(
+        observed_at,
+        f"{record_id}.observed_at",
+    ).date().isoformat()
+    supports = _optional_str(value, "supports") or _truncate(summary, 180)
+    _assert_safe_string(url, f"{record_id}.source_ref.url")
+    _assert_safe_string(label, f"{record_id}.source_ref.label")
+    _assert_safe_string(supports, f"{record_id}.source_ref.supports")
+    return {
+        "id": source_id,
+        "label": label,
+        "url": url,
+        "date": date_value,
+        "supports": supports,
+    }
+
+
+def _assert_allowed_keys(
+    value: dict[str, Any],
+    allowed: set[str],
+    path: str,
+) -> None:
+    unknown = sorted(str(key) for key in value if str(key) not in allowed)
+    if unknown:
+        raise ChatterValidationError(f"{path}: unsupported field(s): {', '.join(unknown)}")
+
+
+def _assert_no_raw_material(value: Any, path: str) -> None:
+    if isinstance(value, dict):
+        for key, nested in value.items():
+            key_text = str(key).lower()
+            if key_text in BANNED_RAW_KEYS:
+                raise ChatterValidationError(f"{path}: banned raw field {key}")
+            _assert_no_raw_material(nested, f"{path}.{key}")
+        return
+    if isinstance(value, list):
+        for idx, nested in enumerate(value):
+            _assert_no_raw_material(nested, f"{path}[{idx}]")
+        return
+    if isinstance(value, str):
+        _assert_safe_string(value, path)
+
+
+def _assert_safe_string(value: str, path: str) -> None:
+    for pattern, label in BANNED_VALUE_PATTERNS:
+        if pattern.search(value):
+            raise ChatterValidationError(f"{path}: contains {label}")
+
+
+def _required_str(value: dict[str, Any], key: str, source_name: str) -> str:
+    result = value.get(key)
+    if not isinstance(result, str) or not result.strip():
+        raise ChatterValidationError(f"{source_name}: missing or invalid {key}")
+    return result.strip()
+
+
+def _optional_str(value: dict[str, Any], key: str) -> str:
+    result = value.get(key)
+    if result is None:
+        return ""
+    if not isinstance(result, str):
+        raise ChatterValidationError(f"{key} must be a string when present")
+    return result.strip()
+
+
+def _parse_datetime(value: str, label: str) -> datetime:
+    try:
+        return datetime.fromisoformat(value.replace("Z", "+00:00"))
+    except ValueError as exc:
+        raise ChatterValidationError(f"{label} must be ISO 8601 datetime") from exc
+
+
+def _contains_term(text: str, term: str) -> bool:
+    term = term.lower().strip()
+    if not term:
+        return False
+    if " " in term or "-" in term:
+        return term in text
+    return re.search(rf"(?<![a-z0-9_-]){re.escape(term)}(?![a-z0-9_-])", text) is not None
+
+
+def _event_label(record: SanitizedChatterRecord) -> str:
+    vector = record.vector_class or "cyber activity"
+    tier = record.collection_tier.replace("_", " ")
+    return f"Sanitized {tier}: {vector}"
+
+
+def _slug(value: str) -> str:
+    return re.sub(r"[^a-z0-9]+", "_", value.lower()).strip("_") or "record"
+
+
+def _truncate(value: str, limit: int) -> str:
+    clean = re.sub(r"\s+", " ", value).strip()
+    if len(clean) <= limit:
+        return clean
+    return clean[: limit - 1].rstrip() + "."

@@ -62,7 +62,7 @@ We pitch PS4 as the primary. The PS3 framing is a backup if a judge pushes on mi
 |---|---|
 | **Public GitHub repo on submission** | Repo `github.com/Ayush1298567/Prophet` is public. Keep it public. |
 | **New work only — from scratch during the event** | The `research/` folder and `PROPHET_TECHNICAL_WRITEUP.md` are **planning documents** authored 2026-05-02 before the start. All code (`src/`, `ui/`, agent loop, sandbox config, UI) is written 1145 Sat → 1200 Sun. We will note this explicitly in `README.md`. |
-| **Tooling open and reasonably available** | Anthropic Claude API, public Vulhub images, public Nuclei templates, public CISA/NVD/EPSS feeds — all freely accessible. No private datasets, no proprietary models. |
+| **Tooling open and reasonably available** | Current MVP uses Codex terminal / agent-in-the-loop operation, deterministic Python, public CISA/NVD/EPSS feeds, public advisories, and local fixtures. No runtime model API key is required for Stage 2. No private datasets, no proprietary models. |
 | **Fits one of five problem statements** | PS4 primary, PS3 secondary. Stated at submission. |
 | **Team ≤ 4** | TBD — confirm at team formation 0900–1100 Sat. |
 
@@ -70,11 +70,11 @@ We pitch PS4 as the primary. The PS3 framing is a backup if a judge pushes on mi
 
 | Partner | Resource | Decision |
 |---|---|---|
-| **Anthropic** (implicit via Claude API) | Standard Claude API + tool use | **Yes — core.** `claude-sonnet-4-6` for the agent loop. `claude-opus-4-7` for tougher reasoning if budget allows. |
+| **OpenAI Codex** | Terminal / workspace agent | **Yes — current operator loop.** Codex runs repo tasks, tests, scraper orchestration, and Stage 3 patch/Sigma work interactively instead of adding an app-level AI API. |
+| **Anthropic** (implicit via Claude API) | Standard Claude API + tool use | **Optional / future.** Original planning assumed Claude API, but the current hackathon MVP does not require runtime API credentials. |
 | **Anthropic CVP** | Cyber Verification Program (gates Tier-2 cyber capability) | **Apply now, do not block on it.** Approval is 2–5 days, longer than the hackathon. Demo runs entirely within standard AUP — see "Reconciliation" below. |
 | **Palantir AIP** | On-site account provisioning | **Stretch goal only.** If ahead at hour 16+, write Prophet's predicted-vulnerability output as an AIP Ontology object for partner-judge resonance. Otherwise drop. |
 | **Palantir CASK** | Edge hardware kit (Problem Statements 1 & 2) | **Skip for build, mention in pitch.** "Prophet's loop is small enough to run disconnected on a CASK-class edge kit." Don't try to deploy on hardware in 24h. |
-| **OpenAI Codex** | Workspace access | **Optional — IDE assist only.** Don't put a second model in the agent loop; complexity for no demo gain. |
 | **Danti** | Geospatial intelligence | Not relevant to Prophet. Skip. |
 
 ## Reconciling the writeup with the hackathon

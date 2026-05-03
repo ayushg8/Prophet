@@ -1,0 +1,399 @@
+{
+  "forecast_id": "ws-20260502-e241de4c",
+  "generated_at": "2026-05-02T23:45:00Z",
+  "input_candidate_id": "cs-fixture-financial-theft-001",
+  "schema_version": "world_forecast.v0.1",
+  "strategic_frame": {
+    "adversary_class": "DPRK-revenue-generation-class",
+    "target_scope": "US government and defense-industrial technology environments",
+    "geographic_scope": "US federal / DIB infrastructure",
+    "forecast_assumptions": [
+      "Stage 1 candidate is treated as fixture_financial_workflow_theft for timing and vector matching.",
+      "Forecast uses sector-level targets only; no named live targets are produced.",
+      "Geopolitical confidence is computed separately from any Cyber Side technical priority score."
+    ],
+    "excluded_uses": [
+      "No exploit payloads",
+      "No target-control instructions",
+      "No named live targets"
+    ]
+  },
+  "strike_windows": [
+    {
+      "window_id": "win_1",
+      "rank": 1,
+      "start_date": "2026-05-01",
+      "end_date": "2026-05-08",
+      "confidence": "high",
+      "confidence_score": 0.79,
+      "why_this_window": "48th ASEAN Leaders' Summit & Related Summits is ranked because its DIPL timing overlaps the candidate's financial messaging or digital-asset custody workflow compromise profile. The nearest historical anchor is Lazarus / Bangladesh Bank SWIFT heist / sanctions-retaliation pattern, Feb 2016, where the corpus pattern matched DPRK \u2192 financial infrastructure (banks, crypto exchanges, DeFi bridges) when sanctions tighten or revenue gaps widen. Vector = bespoke tooling against high-value financial messaging/custody systems; preference for lateral targets in jurisd.",
+      "trigger_signals": [
+        "DIPL",
+        "diplomatic collection window",
+        "DPRK revenue pressure"
+      ],
+      "historical_analogies": [
+        {
+          "case_id": "hist_3",
+          "case_name": "Lazarus / Bangladesh Bank SWIFT heist / sanctions-retaliation pattern, Feb 2016",
+          "pattern_matched": "DPRK \u2192 financial infrastructure (banks, crypto exchanges, DeFi bridges) when sanctions tighten or revenue gaps widen. Vector = bespoke tooling against high-value financial messaging/custody systems; preference for lateral targets in jurisd.",
+          "time_to_burn": "From the 6 Jan 2016 nuclear test (sanctions-tightening trigger) to the SWIFT heist 4\u20135 Feb 2016: **~30 days**. Initial network access predated this by ~12+ months; the burn window.",
+          "source_ref_ids": [
+            "src_hist_3_corpus"
+          ]
+        },
+        {
+          "case_id": "hist_4",
+          "case_name": "SolarWinds (SUNBURST) / APT29 / Trump\u2013Biden transition",
+          "pattern_matched": "Russia (SVR) \u2192 US/allied government and tech-supply-chain; vector = software supply-chain compromise of widely deployed enterprise software (Orion, then later Mimecast, JetBrains TeamCity-adjacent reporting); operational tempo = espionage.",
+          "time_to_burn": "Long-fuse espionage, not a triggered burn. From build-system access (Sep 2019) to first weaponized update push (Mar 2020): **~6 months** of patient operational development. From w.",
+          "source_ref_ids": [
+            "src_hist_4_corpus"
+          ]
+        }
+      ],
+      "source_ref_ids": [
+        "src_ctx_cal_01",
+        "src_context_calendar",
+        "src_hist_3_corpus",
+        "src_hist_4_corpus"
+      ]
+    },
+    {
+      "window_id": "win_2",
+      "rank": 2,
+      "start_date": "2026-05-07",
+      "end_date": "2026-05-14",
+      "confidence": "high",
+      "confidence_score": 0.75,
+      "why_this_window": "Trump\u2013Xi bilateral summit, Beijing is ranked because its DIPL timing overlaps the candidate's financial messaging or digital-asset custody workflow compromise profile. The nearest historical anchor is Lazarus / Bangladesh Bank SWIFT heist / sanctions-retaliation pattern, Feb 2016, where the corpus pattern matched DPRK \u2192 financial infrastructure (banks, crypto exchanges, DeFi bridges) when sanctions tighten or revenue gaps widen. Vector = bespoke tooling against high-value financial messaging/custody systems; preference for lateral targets in jurisd.",
+      "trigger_signals": [
+        "DIPL",
+        "diplomatic collection window",
+        "DPRK revenue pressure"
+      ],
+      "historical_analogies": [
+        {
+          "case_id": "hist_3",
+          "case_name": "Lazarus / Bangladesh Bank SWIFT heist / sanctions-retaliation pattern, Feb 2016",
+          "pattern_matched": "DPRK \u2192 financial infrastructure (banks, crypto exchanges, DeFi bridges) when sanctions tighten or revenue gaps widen. Vector = bespoke tooling against high-value financial messaging/custody systems; preference for lateral targets in jurisd.",
+          "time_to_burn": "From the 6 Jan 2016 nuclear test (sanctions-tightening trigger) to the SWIFT heist 4\u20135 Feb 2016: **~30 days**. Initial network access predated this by ~12+ months; the burn window.",
+          "source_ref_ids": [
+            "src_hist_3_corpus"
+          ]
+        },
+        {
+          "case_id": "hist_4",
+          "case_name": "SolarWinds (SUNBURST) / APT29 / Trump\u2013Biden transition",
+          "pattern_matched": "Russia (SVR) \u2192 US/allied government and tech-supply-chain; vector = software supply-chain compromise of widely deployed enterprise software (Orion, then later Mimecast, JetBrains TeamCity-adjacent reporting); operational tempo = espionage.",
+          "time_to_burn": "Long-fuse espionage, not a triggered burn. From build-system access (Sep 2019) to first weaponized update push (Mar 2020): **~6 months** of patient operational development. From w.",
+          "source_ref_ids": [
+            "src_hist_4_corpus"
+          ]
+        }
+      ],
+      "source_ref_ids": [
+        "src_ctx_cal_02",
+        "src_context_calendar",
+        "src_hist_3_corpus",
+        "src_hist_4_corpus"
+      ]
+    },
+    {
+      "window_id": "win_3",
+      "rank": 3,
+      "start_date": "2026-06-07",
+      "end_date": "2026-06-14",
+      "confidence": "high",
+      "confidence_score": 0.75,
+      "why_this_window": "G7 Summit, \u00c9vian, France is ranked because its DIPL timing overlaps the candidate's financial messaging or digital-asset custody workflow compromise profile. The nearest historical anchor is Lazarus / Bangladesh Bank SWIFT heist / sanctions-retaliation pattern, Feb 2016, where the corpus pattern matched DPRK \u2192 financial infrastructure (banks, crypto exchanges, DeFi bridges) when sanctions tighten or revenue gaps widen. Vector = bespoke tooling against high-value financial messaging/custody systems; preference for lateral targets in jurisd.",
+      "trigger_signals": [
+        "DIPL",
+        "diplomatic collection window",
+        "DPRK revenue pressure"
+      ],
+      "historical_analogies": [
+        {
+          "case_id": "hist_3",
+          "case_name": "Lazarus / Bangladesh Bank SWIFT heist / sanctions-retaliation pattern, Feb 2016",
+          "pattern_matched": "DPRK \u2192 financial infrastructure (banks, crypto exchanges, DeFi bridges) when sanctions tighten or revenue gaps widen. Vector = bespoke tooling against high-value financial messaging/custody systems; preference for lateral targets in jurisd.",
+          "time_to_burn": "From the 6 Jan 2016 nuclear test (sanctions-tightening trigger) to the SWIFT heist 4\u20135 Feb 2016: **~30 days**. Initial network access predated this by ~12+ months; the burn window.",
+          "source_ref_ids": [
+            "src_hist_3_corpus"
+          ]
+        },
+        {
+          "case_id": "hist_4",
+          "case_name": "SolarWinds (SUNBURST) / APT29 / Trump\u2013Biden transition",
+          "pattern_matched": "Russia (SVR) \u2192 US/allied government and tech-supply-chain; vector = software supply-chain compromise of widely deployed enterprise software (Orion, then later Mimecast, JetBrains TeamCity-adjacent reporting); operational tempo = espionage.",
+          "time_to_burn": "Long-fuse espionage, not a triggered burn. From build-system access (Sep 2019) to first weaponized update push (Mar 2020): **~6 months** of patient operational development. From w.",
+          "source_ref_ids": [
+            "src_hist_4_corpus"
+          ]
+        }
+      ],
+      "source_ref_ids": [
+        "src_ctx_cal_15",
+        "src_context_calendar",
+        "src_hist_3_corpus",
+        "src_hist_4_corpus"
+      ]
+    }
+  ],
+  "strike_vectors": [
+    {
+      "vector_id": "vec_1",
+      "rank": 1,
+      "vector_class": "financial or high-value data theft operation",
+      "target_sector": "financial services, crypto custody, and sensitive data processors",
+      "likely_objective": "data_theft",
+      "non_actionable_mechanism": "The forecast stays at fraud and custody-system risk level without describing theft procedures or account paths.",
+      "candidate_fit": "Fits candidates tied to data access, financial systems, managed transfer, or credential reuse.",
+      "confidence": "medium",
+      "confidence_score": 0.63,
+      "why_this_vector": "DPRK and Cl0p anchors show revenue-driven actors burn access around sanctions pressure, market stress, or response gaps.",
+      "defensive_implication": "Prioritize anomaly detection, transfer review, credential controls, and extortion-resilient backup and disclosure workflows.",
+      "source_ref_ids": [
+        "src_hist_3_corpus",
+        "src_hist_4_corpus",
+        "src_hist_1_corpus"
+      ]
+    },
+    {
+      "vector_id": "vec_2",
+      "rank": 2,
+      "vector_class": "living-off-the-land pre-positioning",
+      "target_sector": "US critical infrastructure and defense-support enterprise networks",
+      "likely_objective": "persistence",
+      "non_actionable_mechanism": "Adversary value comes from maintaining low-noise access with ordinary administration tooling until a separate strategic trigger raises activation risk.",
+      "candidate_fit": "Fits candidates whose effect is durable access, control, or pre-positioning rather than immediate destructive impact.",
+      "confidence": "medium",
+      "confidence_score": 0.6,
+      "why_this_vector": "Volt Typhoon and SolarWinds-style anchors show that access can sit dormant until a geopolitical trigger makes activation valuable.",
+      "defensive_implication": "Prioritize behavior-based detections for administrative-tool misuse, account hygiene, and suspicious egress from critical services.",
+      "source_ref_ids": [
+        "src_hist_3_corpus",
+        "src_hist_4_corpus",
+        "src_hist_10_corpus"
+      ]
+    },
+    {
+      "vector_id": "vec_3",
+      "rank": 3,
+      "vector_class": "mass extortion against enterprise services",
+      "target_sector": "managed file transfer, SaaS, retail, logistics, healthcare, and government vendors",
+      "likely_objective": "data_theft",
+      "non_actionable_mechanism": "Adversary value comes from burning a broadly useful enterprise-service weakness around a response-gap window for maximum leverage.",
+      "candidate_fit": "Fits candidates involving high-value data access, managed workflows, or financial pressure.",
+      "confidence": "medium",
+      "confidence_score": 0.6,
+      "why_this_vector": "MOVEit and related managed-file-transfer anchors show mass data-theft campaigns can be timed to holidays and operational response gaps.",
+      "defensive_implication": "Prioritize externally exposed service patching, data-egress monitoring, and weekend/holiday incident staffing.",
+      "source_ref_ids": [
+        "src_hist_3_corpus",
+        "src_hist_4_corpus",
+        "src_hist_1_corpus"
+      ]
+    }
+  ],
+  "summary": {
+    "one_line": "For financial messaging or digital-asset custody workflow compromise, rank financial or high-value data theft operation highest and treat 2026-05-01 to 2026-05-08 as the lead strike-window forecast.",
+    "recommended_demo_path": "Use vec_1 inside win_1 as context for a safe Stage 3 validation scenario.",
+    "stage3_priority": "Prioritize anomaly detection, transfer review, credential controls, and extortion-resilient backup and disclosure workflows.",
+    "analyst_notes": [
+      "Vector descriptions are intentionally non-actionable and sector-level.",
+      "Every ranked window and vector includes source_ref_ids for UI citation rendering."
+    ]
+  },
+  "source_refs": [
+    {
+      "id": "src_context_calendar",
+      "label": "World Side current context: calendar events",
+      "url": "world-side/data/calendar_events.md",
+      "date": "2026-05-02",
+      "supports": "scheduled geopolitical and infrastructure stress windows"
+    },
+    {
+      "id": "src_context_indictments",
+      "label": "World Side current context: indictments and prosecutions",
+      "url": "world-side/data/indictments_state.md",
+      "date": "2026-05-02",
+      "supports": "legal pressure indicators that can alter actor tempo"
+    },
+    {
+      "id": "src_context_sanctions",
+      "label": "World Side current context: sanctions state",
+      "url": "world-side/data/sanctions_state.md",
+      "date": "2026-05-02",
+      "supports": "sanctions pressure indicators used for motive scoring"
+    },
+    {
+      "id": "src_ctx_cal_01",
+      "label": "Calendar context: 48th ASEAN Leaders' Summit & Related Summits",
+      "url": "https://asean2026.gov.ph/",
+      "date": "2026-05-08",
+      "supports": "First ASEAN leaders' summit of 2026 PH chairship; high-value target for PRC, DPRK reconnaissance against ministry mail; historically tied to spear-phishing waves against MFAs of a."
+    },
+    {
+      "id": "src_ctx_cal_02",
+      "label": "Calendar context: Trump\u2013Xi bilateral summit, Beijing",
+      "url": "https://www.cnbc.com/2026/03/25/trump-xi-beijing-china-summit.html",
+      "date": "2026-05-14",
+      "supports": "First US presidential visit to China since 2017. State and non-state actors (PRC MSS, DPRK RGB, Russian SVR) historically run intensive collection ops in 7-day pre-window against."
+    },
+    {
+      "id": "src_ctx_cal_15",
+      "label": "Calendar context: G7 Summit, \u00c9vian, France",
+      "url": "https://www.g7.utoronto.ca/whatsnew/2026-location.html",
+      "date": "2026-06-14",
+      "supports": "Pre-summit espionage windows are well-documented (CitizenLab, FireEye/Mandiant). Russian, PRC, DPRK, Iranian collection operations against MFA, sherpa-track staff, and journalist."
+    },
+    {
+      "id": "src_hist_10_corpus",
+      "label": "Historical corpus: Ivanti Connect Secure (UNC5221) / PRC ops, Dec 2023\u2013Jan 2024",
+      "url": "world-side/data/historical_pairings.md#10-ivanti-connect-secure-unc5221-prc-ops-dec-2023-jan-2024",
+      "date": "2026-05-02",
+      "supports": "PRC-nexus \u2192 enterprise edge/perimeter appliances (VPN, NetScaler, Fortigate, SonicWall, Citrix) at scale; vector = chained 0-days in security appliances themselves (the ironic tar."
+    },
+    {
+      "id": "src_hist_10_corpus_web_1",
+      "label": "Mandiant \u2014 \"Cutting Edge: Suspected APT Targets Ivanti Connect Secure VPN in New Zero-Day Exploitation\" (12 Jan 2024)",
+      "url": "https://cloud.google.com/blog/topics/threat-intelligence/ivanti-connect-secure-vpn-zero-day",
+      "date": "2026-05-02",
+      "supports": "external source for Ivanti Connect Secure (UNC5221) / PRC ops, Dec 2023\u2013Jan 2024"
+    },
+    {
+      "id": "src_hist_10_corpus_web_2",
+      "label": "Volexity \u2014 \"Active Exploitation of Two Zero-Day Vulnerabilities in Ivanti Connect Secure VPN\" (10 Jan 2024)",
+      "url": "https://www.volexity.com/blog/2024/01/10/active-exploitation-of-two-zero-day-vulnerabilities-in-ivanti-connect-secure-vpn/",
+      "date": "2026-05-02",
+      "supports": "external source for Ivanti Connect Secure (UNC5221) / PRC ops, Dec 2023\u2013Jan 2024"
+    },
+    {
+      "id": "src_hist_12_corpus",
+      "label": "Historical corpus: Shamoon / Saudi Aramco / Iran response to oil embargo, August 2012",
+      "url": "world-side/data/historical_pairings.md#12-shamoon-saudi-aramco-iran-response-to-oil-embargo-august-2012",
+      "date": "2026-05-02",
+      "supports": "Iran \u2192 Gulf state hydrocarbons and downstream (Aramco, RasGas, Sadara, SAIPEM); vector = wiper deployed via insider-assisted credential abuse; payoff = mass workstation destructio."
+    },
+    {
+      "id": "src_hist_12_corpus_web_1",
+      "label": "CISA \u2014 Joint Security Awareness Report (JSAR-12-241-01B) \"Shamoon/DistTrack Malware\"",
+      "url": "https://www.cisa.gov/news-events/ics-alerts/ics-alert-12-240-01b",
+      "date": "2026-05-02",
+      "supports": "external source for Shamoon / Saudi Aramco / Iran response to oil embargo, August 2012"
+    },
+    {
+      "id": "src_hist_12_corpus_web_2",
+      "label": "Symantec \u2014 \"The Shamoon Attacks\" (16 Aug 2012)",
+      "url": "https://www.broadcom.com/support/security-center/protection-bulletin/the-shamoon-attacks",
+      "date": "2026-05-02",
+      "supports": "external source for Shamoon / Saudi Aramco / Iran response to oil embargo, August 2012"
+    },
+    {
+      "id": "src_hist_1_corpus",
+      "label": "Historical corpus: Sandworm / NotPetya / Ukraine pre-anniversary, June 2017",
+      "url": "world-side/data/historical_pairings.md#1-sandworm-notpetya-ukraine-pre-anniversary-june-2017",
+      "date": "2026-05-02",
+      "supports": "Russia (GRU) \u2192 Ukraine; supply-chain compromise of locally ubiquitous software \u2192 wiper disguised as ransomware \u2192 spillover via worm-class SMB exploit. Trigger features: anniversar."
+    },
+    {
+      "id": "src_hist_1_corpus_web_1",
+      "label": "CISA Petya Ransomware Alert TA17-181A",
+      "url": "https://www.cisa.gov/news-events/alerts/2017/07/01/petya-ransomware",
+      "date": "2026-05-02",
+      "supports": "external source for Sandworm / NotPetya / Ukraine pre-anniversary, June 2017"
+    },
+    {
+      "id": "src_hist_1_corpus_web_2",
+      "label": "Wired \u2014 \"The Untold Story of NotPetya, the Most Devastating Cyberattack in History\" (Andy Greenberg, 22 Aug 2018)",
+      "url": "https://www.wired.com/story/notpetya-cyberattack-ukraine-russia-code-crashed-the-world/",
+      "date": "2026-05-02",
+      "supports": "external source for Sandworm / NotPetya / Ukraine pre-anniversary, June 2017"
+    },
+    {
+      "id": "src_hist_3_corpus",
+      "label": "Historical corpus: Lazarus / Bangladesh Bank SWIFT heist / sanctions-retaliation pattern, Feb 2016",
+      "url": "world-side/data/historical_pairings.md#3-lazarus-bangladesh-bank-swift-heist-sanctions-retaliation-pattern-feb-2016",
+      "date": "2026-05-02",
+      "supports": "DPRK \u2192 financial infrastructure (banks, crypto exchanges, DeFi bridges) when sanctions tighten or revenue gaps widen. Vector = bespoke tooling against high-value financial messagi."
+    },
+    {
+      "id": "src_hist_3_corpus_web_1",
+      "label": "CISA AA20-239A \u2014 \"Guidance on the North Korean Cyber Threat\" / BeagleBoyz",
+      "url": "https://www.cisa.gov/news-events/cybersecurity-advisories/aa20-106a",
+      "date": "2026-05-02",
+      "supports": "external source for Lazarus / Bangladesh Bank SWIFT heist / sanctions-retaliation pattern, Feb 2016"
+    },
+    {
+      "id": "src_hist_3_corpus_web_2",
+      "label": "US DoJ Complaint \u2014 US v. Park Jin Hyok (8 Jun 2018, unsealed 6 Sep 2018)",
+      "url": "https://www.justice.gov/opa/press-release/file/1092091/download",
+      "date": "2026-05-02",
+      "supports": "external source for Lazarus / Bangladesh Bank SWIFT heist / sanctions-retaliation pattern, Feb 2016"
+    },
+    {
+      "id": "src_hist_4_corpus",
+      "label": "Historical corpus: SolarWinds (SUNBURST) / APT29 / Trump\u2013Biden transition",
+      "url": "world-side/data/historical_pairings.md#4-solarwinds-sunburst-apt29-trump-biden-transition",
+      "date": "2026-05-02",
+      "supports": "Russia (SVR) \u2192 US/allied government and tech-supply-chain; vector = software supply-chain compromise of widely deployed enterprise software (Orion, then later Mimecast, JetBrains."
+    },
+    {
+      "id": "src_hist_4_corpus_web_1",
+      "label": "CISA Alert AA20-352A \u2014 \"Advanced Persistent Threat Compromise of Government Agencies, Critical Infrastructure, and Private Sector Organizations\"",
+      "url": "https://www.cisa.gov/news-events/cybersecurity-advisories/aa20-352a",
+      "date": "2026-05-02",
+      "supports": "external source for SolarWinds (SUNBURST) / APT29 / Trump\u2013Biden transition"
+    },
+    {
+      "id": "src_hist_4_corpus_web_2",
+      "label": "Mandiant / FireEye \u2014 \"Highly Evasive Attacker Leverages SolarWinds Supply Chain to Compromise Multiple Global Victims With SUNBURST Backdoor\" (13 Dec 2020)",
+      "url": "https://cloud.google.com/blog/topics/threat-intelligence/evasive-attacker-leverages-solarwinds-supply-chain-compromises-with-sunburst-backdoor/",
+      "date": "2026-05-02",
+      "supports": "external source for SolarWinds (SUNBURST) / APT29 / Trump\u2013Biden transition"
+    },
+    {
+      "id": "src_hist_9_corpus",
+      "label": "Historical corpus: MOVEit / Cl0p / Russia-aligned summer 2023",
+      "url": "world-side/data/historical_pairings.md#9-moveit-cl0p-russia-aligned-summer-2023",
+      "date": "2026-05-02",
+      "supports": "Russia-tolerated criminal \u2192 Western enterprise SaaS / managed file-transfer appliances; vector = pre-stockpiled n-day or 0-day in widely-deployed B2B appliances; timing = aligned."
+    },
+    {
+      "id": "src_hist_9_corpus_web_1",
+      "label": "CISA AA23-158A \u2014 \"#StopRansomware: CL0P Ransomware Gang Exploits CVE-2023-34362 MOVEit Vulnerability\"",
+      "url": "https://www.cisa.gov/news-events/cybersecurity-advisories/aa23-158a",
+      "date": "2026-05-02",
+      "supports": "external source for MOVEit / Cl0p / Russia-aligned summer 2023"
+    },
+    {
+      "id": "src_hist_9_corpus_web_2",
+      "label": "Mandiant \u2014 \"Zero-Day Vulnerability in MOVEit Transfer Exploited for Data Theft\" (1 Jun 2023)",
+      "url": "https://cloud.google.com/blog/topics/threat-intelligence/zero-day-moveit-data-theft/",
+      "date": "2026-05-02",
+      "supports": "external source for MOVEit / Cl0p / Russia-aligned summer 2023"
+    },
+    {
+      "id": "src_stage1_1",
+      "label": "Historical corpus: Lazarus / Bangladesh Bank SWIFT heist",
+      "url": "world-side/data/historical_pairings.md#3-lazarus--bangladesh-bank-swift-heist--sanctions-retaliation-pattern-feb-2016",
+      "date": "2026-05-02",
+      "supports": "DPRK-linked operations have used financial infrastructure theft as a revenue response to sanctions pressure"
+    },
+    {
+      "id": "src_stage1_2",
+      "label": "Sanctions state: DPRK cyber-fraud and IT-worker sanctions",
+      "url": "world-side/data/sanctions_state.md#43-dprk-north-korea",
+      "date": "2026-05-02",
+      "supports": "DPRK cyber operations are revenue-driven and accelerate when sanctions tighten revenue channels"
+    },
+    {
+      "id": "src_stage1_3",
+      "label": "MITRE ATT&CK Lazarus Group",
+      "url": "https://attack.mitre.org/groups/G0032/",
+      "date": "2026-05-02",
+      "supports": "Lazarus is a documented DPRK-linked threat group associated with financial theft campaigns"
+    }
+  ]
+}

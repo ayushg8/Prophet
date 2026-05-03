@@ -1,0 +1,153 @@
+{
+  "forecast_id": "ws-golden-financial-theft-001",
+  "generated_at": "2026-05-03T00:05:00Z",
+  "input_candidate_id": "cs-fixture-financial-theft-001",
+  "schema_version": "world_forecast.v0.1",
+  "strategic_frame": {
+    "adversary_class": "DPRK-revenue-generation-class",
+    "target_scope": "financial institutions, payment operations, and digital-asset custody workflows",
+    "geographic_scope": "US and allied financial ecosystem",
+    "forecast_assumptions": [
+      "The Stage 1 candidate is a workflow-compromise class rather than a named CVE.",
+      "The forecast models theft risk at the sector level and does not include transaction instructions.",
+      "Current context includes 2026 DPRK sanctions pressure and scheduled financial market events."
+    ],
+    "excluded_uses": [
+      "No exploit payloads",
+      "No target-control instructions",
+      "No named live targets"
+    ]
+  },
+  "strike_windows": [
+    {
+      "window_id": "win_1",
+      "rank": 1,
+      "start_date": "2026-05-12",
+      "end_date": "2026-06-17",
+      "confidence": "medium",
+      "confidence_score": 0.7,
+      "why_this_window": "The March 2026 DPRK IT-worker sanctions directly targeted revenue channels, and the corpus gives a 30-90 day burn range for DPRK financial theft after revenue-pressure triggers. The June 16-17 FOMC meeting adds a market-stress date inside that sanctions-response band.",
+      "trigger_signals": ["DPRK revenue-channel sanctions", "FOMC market event", "financial-theft historical pattern"],
+      "historical_analogies": [
+        {
+          "case_id": "hist_3",
+          "case_name": "Lazarus / Bangladesh Bank SWIFT heist",
+          "pattern_matched": "DPRK-linked theft operations align with sanctions tightening and foreign-currency pressure.",
+          "time_to_burn": "~30 days from nuclear-test sanctions trigger to SWIFT theft",
+          "source_ref_ids": ["src_hist_3"]
+        }
+      ],
+      "source_ref_ids": ["src_sanctions_dprk", "src_calendar_fomc_june", "src_hist_3"]
+    },
+    {
+      "window_id": "win_2",
+      "rank": 2,
+      "start_date": "2026-09-09",
+      "end_date": "2026-09-18",
+      "confidence": "medium",
+      "confidence_score": 0.62,
+      "why_this_window": "The DPRK Founding Day anniversary and the September FOMC meeting create a second symbolic and market-timing cluster. The calendar file explicitly tags DPRK national-day windows and FOMC meetings as financial-risk signals for Lazarus/APT38-style activity.",
+      "trigger_signals": ["DPRK Founding Day", "September FOMC meeting", "sanctions-funded revenue pressure"],
+      "historical_analogies": [
+        {
+          "case_id": "hist_3",
+          "case_name": "Lazarus / Bangladesh Bank SWIFT heist",
+          "pattern_matched": "Revenue-driven DPRK operations prefer financial infrastructure and custody workflows.",
+          "time_to_burn": "30-90 days after revenue-pressure trigger in corpus summary",
+          "source_ref_ids": ["src_hist_3"]
+        }
+      ],
+      "source_ref_ids": ["src_calendar_dprk_day", "src_calendar_fomc_sept", "src_hist_3"]
+    }
+  ],
+  "strike_vectors": [
+    {
+      "vector_id": "vec_1",
+      "rank": 1,
+      "vector_class": "financial-messaging or custody workflow compromise",
+      "target_sector": "banks, payment processors, and digital-asset custody providers",
+      "likely_objective": "data_theft",
+      "non_actionable_mechanism": "Adversary interest centers on abusing access to financial workflows for theft; no transaction mechanics, tooling details, or target names are included.",
+      "candidate_fit": "Directly matches the fixture candidate's financial workflow compromise class and revenue objective.",
+      "confidence": "medium",
+      "confidence_score": 0.73,
+      "why_this_vector": "The Bangladesh Bank anchor and DPRK sanctions profile both identify financial theft as the characteristic DPRK cyber response to revenue pressure.",
+      "defensive_implication": "Prioritize monitoring, approval controls, and alerting around abnormal financial workflow behavior in safe simulated data.",
+      "source_ref_ids": ["src_hist_3", "src_sanctions_dprk", "src_mitre_lazarus"]
+    },
+    {
+      "vector_id": "vec_2",
+      "rank": 2,
+      "vector_class": "IT-worker or contractor-access abuse",
+      "target_sector": "financial technology, digital-asset, and payment operations vendors",
+      "likely_objective": "persistence",
+      "non_actionable_mechanism": "The vector remains at workforce-access and vendor-risk level without describing impersonation, onboarding, or access procedures.",
+      "candidate_fit": "Fits the candidate when Stage 1 wants a non-CVE revenue-access scenario tied to sanctions pressure.",
+      "confidence": "medium",
+      "confidence_score": 0.58,
+      "why_this_vector": "The sanctions and indictment snapshots both identify DPRK IT-worker revenue schemes as active pressure points in 2025-2026.",
+      "defensive_implication": "Stage 3 can demonstrate checks against synthetic contractor-access anomalies rather than exploit payloads.",
+      "source_ref_ids": ["src_sanctions_dprk", "src_indictments_dprk_it"]
+    }
+  ],
+  "summary": {
+    "one_line": "For a financial-theft candidate, the strongest forecast is DPRK revenue pressure peaking in the May-June 2026 sanctions-response and FOMC window.",
+    "recommended_demo_path": "Use a synthetic financial-workflow fixture and show how sanctions and market dates raise timing confidence.",
+    "stage3_priority": "Validate controls and alerts for abnormal workflow use in a toy financial dataset.",
+    "analyst_notes": [
+      "The enum currently uses data_theft for theft-class operations; downstream code may later add a dedicated financial_theft objective.",
+      "All financial vectors are intentionally non-procedural."
+    ]
+  },
+  "source_refs": [
+    {
+      "id": "src_hist_3",
+      "label": "Historical corpus: Lazarus / Bangladesh Bank SWIFT heist",
+      "url": "world-side/data/historical_pairings.md#3-lazarus--bangladesh-bank-swift-heist--sanctions-retaliation-pattern-feb-2016",
+      "date": "2026-05-02",
+      "supports": "DPRK-linked financial theft followed sanctions and revenue pressure"
+    },
+    {
+      "id": "src_sanctions_dprk",
+      "label": "Sanctions state: DPRK profile and March 2026 IT-worker sanctions",
+      "url": "world-side/data/sanctions_state.md#43-dprk-north-korea",
+      "date": "2026-05-02",
+      "supports": "DPRK cyber operations are revenue-driven and sanctions tightening accelerates tempo"
+    },
+    {
+      "id": "src_calendar_fomc_june",
+      "label": "Calendar events: June FOMC meeting",
+      "url": "world-side/data/calendar_events.md#master-chronological-table",
+      "date": "2026-05-02",
+      "supports": "June 16-17, 2026 FOMC meeting is a financial market event"
+    },
+    {
+      "id": "src_calendar_dprk_day",
+      "label": "Calendar events: DPRK Founding Day",
+      "url": "world-side/data/calendar_events.md#master-chronological-table",
+      "date": "2026-05-02",
+      "supports": "September 9, 2026 DPRK Founding Day is tagged as an anniversary window for DPRK activity"
+    },
+    {
+      "id": "src_calendar_fomc_sept",
+      "label": "Calendar events: September FOMC meeting",
+      "url": "world-side/data/calendar_events.md#master-chronological-table",
+      "date": "2026-05-02",
+      "supports": "September 15-16, 2026 FOMC meeting is a financial market event"
+    },
+    {
+      "id": "src_indictments_dprk_it",
+      "label": "Indictments state: DPRK IT-worker scheme defendants",
+      "url": "world-side/data/indictments_state.md#18-four-north-korean-it-worker-scheme-defendants-charged--june-2025",
+      "date": "2026-05-02",
+      "supports": "DPRK IT-worker schemes are a documented revenue-generation pathway"
+    },
+    {
+      "id": "src_mitre_lazarus",
+      "label": "MITRE ATT&CK Lazarus Group",
+      "url": "https://attack.mitre.org/groups/G0032/",
+      "date": "2026-05-02",
+      "supports": "Lazarus is a documented DPRK-linked threat group"
+    }
+  ]
+}

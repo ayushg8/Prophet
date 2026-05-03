@@ -28,7 +28,7 @@ build/
 .envrc
 
 # Local data / artifacts
-data/
+/data/
 *.db
 *.sqlite
 *.sqlite3

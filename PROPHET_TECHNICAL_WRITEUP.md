@@ -76,7 +76,7 @@ Project Prophet is a Claude-orchestrated agent loop that uses CISA's CVE corpus 
 | Intel | CVE ingest | NVD CVE API 2.0 | rate-limited; cache locally |
 | Intel | Exploit-likelihood scoring | EPSS v4 (FIRST.org) | baseline to beat |
 | Intel | Threat-actor mapping | MITRE ATT&CK STIX | optional Phase IV enrichment |
-| Predictor | Reasoning model | Claude Opus 4.7 (or Sonnet 4.6) via Anthropic API | requires CVP authorization |
+| Predictor | Reasoning / operator loop | Current MVP: Codex terminal drives repo operations; Stage 2 forecaster is deterministic Python | no runtime model API key required for Stage 2 |
 | Predictor | Feature pipeline | Python | CWE, CPE, vendor, time-to-KEV deltas as inputs |
 | Sandbox | Vulnerable target | vulhub, Metasploitable3, DVWA, Juice Shop, retired HTB | Docker compose, ephemeral |
 | Sandbox | Network isolation | docker network + host iptables egress block | demo-able to judges |

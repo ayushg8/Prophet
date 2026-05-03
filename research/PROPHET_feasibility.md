@@ -238,7 +238,7 @@ Log4Shell wins because: the Vulhub environment is stable and well-documented; th
 - A production SIEM integration. The Sigma rule is generated and syntactically valid YAML but is not loaded into a running Elastic/Splunk/Wazuh instance.
 - A multi-target scanner. One CVE, one container, one loop per demo run. Parallelism is explicitly out of scope.
 - Live-infra testing against any host outside localhost. The sandbox boundary is absolute.
-- Custom model weights or fine-tuning. Standard claude-sonnet-4-6 API throughout.
+- Custom model weights or fine-tuning. Current Stage 2 runs as deterministic Python and the hackathon demo can be operated through Codex terminal / agent-in-the-loop without a runtime AI API key.
 - An ATT&CK navigator visualization. ATT&CK technique references appear as text annotations in the triage output; no interactive graph.
 - Statistical validation of the prediction claim. No backtested precision/recall table is produced in 24 hours. The claim is methodological, not empirical.
 - Real zero-day discovery. The sketch's "generate new zero-day" (Panel 4, Phase II) is the one item that is explicitly descoped. Legally and technically, this is the right call for a hackathon demo targeting judges, not a red team engagement.
