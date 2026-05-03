@@ -275,7 +275,7 @@
       "collection": {
         "method": "api",
         "format": "json",
-        "url": "https://services.nvd.nist.gov/rest/json/cves/2.0",
+        "url": "https://services.nvd.nist.gov/rest/json/cves/2.0?resultsPerPage=20",
         "url_template": null,
         "params": {
           "pubStartDate": "{window_start_iso}",
@@ -583,7 +583,7 @@
     },
     {
       "id": "ofac_sanctions_list_service",
-      "enabled": false,
+      "enabled": true,
       "lane": "official_gov_feeds",
       "source_type": "gov_feed",
       "display_name": "OFAC Sanctions List Service",
@@ -633,7 +633,7 @@
           "target_lists",
           "credentials"
         ],
-        "notes": "Disabled until a dedicated aggregate-only CSV collector exists. Use for sanctions pressure metadata, not screening or identity export."
+        "notes": "Aggregate-only CSV collector is implemented. Use for sanctions pressure metadata, not screening or identity export; never retain individual names, addresses, identifiers, or raw rows."
       },
       "relevance": {
         "stage2_use": "timing_signal",
@@ -911,7 +911,7 @@
       "collection": {
         "method": "api",
         "format": "json",
-        "url": "https://api.github.com/advisories",
+        "url": "https://api.github.com/advisories?sort=updated&direction=desc&per_page=100",
         "url_template": null,
         "params": {
           "sort": "updated",
@@ -978,7 +978,7 @@
       "collection": {
         "method": "api",
         "format": "json",
-        "url": "https://api.github.com/repos/projectdiscovery/nuclei-templates/commits",
+        "url": "https://api.github.com/repos/projectdiscovery/nuclei-templates/commits?path=http/cves&per_page=100",
         "url_template": null,
         "params": {
           "path": "http/cves",
@@ -1293,7 +1293,7 @@
       "collection": {
         "method": "api",
         "format": "json",
-        "url": null,
+        "url": "https://www.reddit.com/r/netsec+blueteamsec+cybersecurity/new.json?limit=50",
         "url_template": "https://www.reddit.com/r/{community}/new/.json",
         "params": {
           "communities": [
@@ -1357,7 +1357,7 @@
     },
     {
       "id": "mastodon_public_security_tags",
-      "enabled": true,
+      "enabled": false,
       "lane": "public_social_chatter",
       "source_type": "public_social",
       "display_name": "Mastodon Public Security Hashtag RSS",
@@ -1419,7 +1419,7 @@
           "credentials",
           "target_lists"
         ],
-        "notes": "Public hashtag RSS only; hash authors before local storage when possible."
+        "notes": "Disabled until a specific instance/tag expansion plan is reviewed. Public hashtag RSS only; hash authors before local storage when possible."
       },
       "relevance": {
         "stage2_use": "timing_signal",
@@ -1428,6 +1428,311 @@
           "mastodon",
           "public_social",
           "hashtag_chatter"
+        ]
+      }
+    },
+    {
+      "id": "reliefweb_active_disasters_api",
+      "enabled": true,
+      "lane": "osint_context_feeds",
+      "source_type": "osint_context",
+      "display_name": "ReliefWeb Active Disaster Metadata API",
+      "collection": {
+        "method": "api",
+        "format": "json",
+        "url": "https://api.reliefweb.int/v1/disasters?appname=prophet&limit=20&profile=list&preset=latest",
+        "url_template": null,
+        "params": {
+          "appname": "prophet",
+          "profile": "list",
+          "preset": "latest",
+          "limit": "20"
+        },
+        "cadence_minutes": 180,
+        "auth_method": "none",
+        "respect_robots_txt": true,
+        "rate_limit_per_minute": 2
+      },
+      "normalization": {
+        "record_type": "advisory",
+        "extract_fields": [
+          "id",
+          "fields.name",
+          "fields.date",
+          "fields.country",
+          "fields.type",
+          "fields.status",
+          "fields.url"
+        ],
+        "time_field_candidates": [
+          "fields.date.changed",
+          "fields.date.created"
+        ],
+        "dedupe_keys": [
+          "id",
+          "fields.date.changed"
+        ]
+      },
+      "safety": {
+        "store_raw": false,
+        "raw_retention_hours": 0,
+        "max_text_chars": 500,
+        "prompt_eligibility": "after_sanitization",
+        "drop_content": [
+          "report_bodies",
+          "attachments",
+          "personal_contact_info",
+          "victim_lists",
+          "credentials"
+        ],
+        "notes": "Collects coarse disaster metadata only for infrastructure-stress timing context."
+      },
+      "relevance": {
+        "stage2_use": "background_context",
+        "default_weight": 0.35,
+        "tags": [
+          "reliefweb",
+          "disaster",
+          "infrastructure_stress"
+        ]
+      }
+    },
+    {
+      "id": "gdelt_cyber_geopolitics_articles",
+      "enabled": true,
+      "lane": "osint_context_feeds",
+      "source_type": "osint_context",
+      "display_name": "GDELT Cyber-Geopolitics Article Metadata",
+      "collection": {
+        "method": "api",
+        "format": "json",
+        "url": "https://api.gdeltproject.org/api/v2/doc/doc?query=(cyberattack%20OR%20sanctions%20OR%20critical%20infrastructure)&mode=artlist&format=json&maxrecords=20&sort=hybridrel&timespan=24h",
+        "url_template": null,
+        "params": {
+          "query": "cyberattack OR sanctions OR critical infrastructure",
+          "mode": "artlist",
+          "format": "json",
+          "timespan": "24h",
+          "maxrecords": "20"
+        },
+        "cadence_minutes": 120,
+        "auth_method": "none",
+        "respect_robots_txt": true,
+        "rate_limit_per_minute": 2
+      },
+      "normalization": {
+        "record_type": "advisory",
+        "extract_fields": [
+          "url",
+          "title",
+          "seendate",
+          "domain",
+          "sourcecountry",
+          "language"
+        ],
+        "time_field_candidates": [
+          "seendate"
+        ],
+        "dedupe_keys": [
+          "url",
+          "seendate"
+        ]
+      },
+      "safety": {
+        "store_raw": false,
+        "raw_retention_hours": 0,
+        "max_text_chars": 500,
+        "prompt_eligibility": "after_sanitization",
+        "drop_content": [
+          "article_body",
+          "images",
+          "comments",
+          "personal_contact_info",
+          "credentials",
+          "target_lists"
+        ],
+        "notes": "Article-list metadata only. Do not fetch article pages or copy article bodies into prompts."
+      },
+      "relevance": {
+        "stage2_use": "background_context",
+        "default_weight": 0.4,
+        "tags": [
+          "gdelt",
+          "news",
+          "geopolitical_pressure"
+        ]
+      }
+    },
+    {
+      "id": "gdacs_alerts_rss",
+      "enabled": true,
+      "lane": "osint_context_feeds",
+      "source_type": "osint_context",
+      "display_name": "GDACS Public Disaster Alert RSS",
+      "collection": {
+        "method": "rss",
+        "format": "rss",
+        "url": "https://www.gdacs.org/xml/rss.xml",
+        "url_template": null,
+        "params": {},
+        "cadence_minutes": 180,
+        "auth_method": "none",
+        "respect_robots_txt": true,
+        "rate_limit_per_minute": 2
+      },
+      "normalization": {
+        "record_type": "advisory",
+        "extract_fields": [
+          "title",
+          "link",
+          "pubDate"
+        ],
+        "time_field_candidates": [
+          "pubDate"
+        ],
+        "dedupe_keys": [
+          "link",
+          "title"
+        ]
+      },
+      "safety": {
+        "store_raw": false,
+        "raw_retention_hours": 0,
+        "max_text_chars": 500,
+        "prompt_eligibility": "after_sanitization",
+        "drop_content": [
+          "raw_alert_body",
+          "personal_contact_info",
+          "credentials"
+        ],
+        "notes": "Public alert headline metadata only for disaster/infrastructure context."
+      },
+      "relevance": {
+        "stage2_use": "background_context",
+        "default_weight": 0.35,
+        "tags": [
+          "gdacs",
+          "disaster",
+          "infrastructure_stress"
+        ]
+      }
+    },
+    {
+      "id": "usgs_significant_earthquakes_day_geojson",
+      "enabled": true,
+      "lane": "official_gov_feeds",
+      "source_type": "gov_feed",
+      "display_name": "USGS Significant Earthquakes GeoJSON",
+      "collection": {
+        "method": "api",
+        "format": "json",
+        "url": "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/significant_day.geojson",
+        "url_template": null,
+        "params": {},
+        "cadence_minutes": 60,
+        "auth_method": "none",
+        "respect_robots_txt": true,
+        "rate_limit_per_minute": 2
+      },
+      "normalization": {
+        "record_type": "advisory",
+        "extract_fields": [
+          "features.id",
+          "features.properties.title",
+          "features.properties.time",
+          "features.properties.mag",
+          "features.properties.place",
+          "features.properties.url"
+        ],
+        "time_field_candidates": [
+          "features.properties.time"
+        ],
+        "dedupe_keys": [
+          "features.id",
+          "features.properties.time"
+        ]
+      },
+      "safety": {
+        "store_raw": false,
+        "raw_retention_hours": 0,
+        "max_text_chars": 500,
+        "prompt_eligibility": "after_sanitization",
+        "drop_content": [
+          "raw_geojson_geometry",
+          "personal_contact_info",
+          "credentials"
+        ],
+        "notes": "Public event metadata only. Precise geometry is not surfaced to Prophet forecasts."
+      },
+      "relevance": {
+        "stage2_use": "background_context",
+        "default_weight": 0.3,
+        "tags": [
+          "usgs",
+          "earthquake",
+          "infrastructure_stress"
+        ]
+      }
+    },
+    {
+      "id": "worldmonitor_bootstrap_api",
+      "enabled": false,
+      "lane": "osint_context_feeds",
+      "source_type": "osint_context",
+      "display_name": "World Monitor Bootstrap API Optional Context",
+      "collection": {
+        "method": "api",
+        "format": "json",
+        "url": "https://api.worldmonitor.app/api/bootstrap",
+        "url_template": null,
+        "params": {
+          "auth_header": "X-WorldMonitor-Key",
+          "key_env": "WORLDMONITOR_API_KEY"
+        },
+        "cadence_minutes": 30,
+        "auth_method": "api_key_required",
+        "respect_robots_txt": true,
+        "rate_limit_per_minute": 1
+      },
+      "normalization": {
+        "record_type": "advisory",
+        "extract_fields": [
+          "seed_key",
+          "record_count",
+          "fetched_at",
+          "region_hint",
+          "analyst_summary"
+        ],
+        "time_field_candidates": [
+          "fetched_at",
+          "observed_at"
+        ],
+        "dedupe_keys": [
+          "seed_key",
+          "fetched_at"
+        ]
+      },
+      "safety": {
+        "store_raw": false,
+        "raw_retention_hours": 0,
+        "max_text_chars": 500,
+        "prompt_eligibility": "after_sanitization",
+        "drop_content": [
+          "api_key",
+          "raw_bootstrap_payload",
+          "precise_tracking_identifiers",
+          "private_user_preferences",
+          "credentials"
+        ],
+        "notes": "Disabled until a World Monitor key is obtained out-of-band. Treat as optional context enhancer, never a required demo dependency."
+      },
+      "relevance": {
+        "stage2_use": "background_context",
+        "default_weight": 0.45,
+        "tags": [
+          "worldmonitor",
+          "optional_api",
+          "dashboard_context"
         ]
       }
     },

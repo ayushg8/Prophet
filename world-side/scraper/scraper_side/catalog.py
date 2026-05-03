@@ -53,10 +53,27 @@ CATALOG_COLLECTOR_MAP = {
     "state_travel_advisories_rss": "official_rss",
     "doj_cyber_press_releases_api": "doj_press_releases",
     "federal_register_sanctions_api": "federal_register_documents",
+    "ofac_sanctions_list_service": "ofac_sdn_csv",
     "noaa_nhc_atlantic_rss": "official_rss",
     "noaa_nhc_eastern_pacific_rss": "official_rss",
+    "cisa_cybersecurity_advisories": "html_link_index",
+    "cisa_ics_advisories": "html_link_index",
+    "github_advisory_database": "github_advisories",
+    "nuclei_templates_cve_commits": "github_commits",
+    "openwall_oss_security_index": "html_link_index",
     "fortinet_psirt_rss": "official_rss",
     "ivanti_security_advisory_rss": "official_rss",
+    "reddit_security_public_new": "reddit_listing",
+    "reliefweb_active_disasters_api": "reliefweb_disasters",
+    "gdelt_cyber_geopolitics_articles": "gdelt_articles",
+    "usgs_significant_earthquakes_day_geojson": "geojson_features",
+    "gdacs_alerts_rss": "official_rss",
+    "worldmonitor_bootstrap_api": "sanitized_json",
+    "telegram_public_channel_metadata": "sanitized_json",
+    "onion_public_landing_metadata": "sanitized_json",
+    "high_risk_forum_topic_metadata": "sanitized_json",
+    "high_risk_leak_claim_metadata": "sanitized_json",
+    "high_risk_paste_index_metadata": "sanitized_json",
 }
 
 READY_COLLECTORS = {
@@ -66,6 +83,14 @@ READY_COLLECTORS = {
     "official_rss",
     "doj_press_releases",
     "federal_register_documents",
+    "ofac_sdn_csv",
+    "github_advisories",
+    "github_commits",
+    "reddit_listing",
+    "reliefweb_disasters",
+    "gdelt_articles",
+    "geojson_features",
+    "html_link_index",
 }
 
 def load_source_catalog(path: str | Path | None = None) -> list[CatalogEntry]:
@@ -187,6 +212,9 @@ def _entry_from_mapping(
         options = {}
     if not isinstance(options, dict):
         raise ValueError(f"catalog source {name}: options must be an object")
+    display_name = _str_value(value, "display_name")
+    if display_name and "display_label" not in options:
+        options = {**options, "display_label": display_name}
 
     raw_source_type = _str_value(value, "source_type") or "official_government"
     source_type = CATALOG_SOURCE_TYPE_MAP.get(raw_source_type, raw_source_type)
@@ -225,8 +253,21 @@ def normalize_collector(value: str) -> str:
         "atom": "official_rss",
         "doj": "doj_press_releases",
         "federal_register": "federal_register_documents",
+        "ofac": "ofac_sdn_csv",
+        "ofac_sdn": "ofac_sdn_csv",
+        "github_advisory": "github_advisories",
+        "github_advisories_api": "github_advisories",
+        "github_commit": "github_commits",
+        "github_commits_api": "github_commits",
+        "reddit": "reddit_listing",
+        "reliefweb": "reliefweb_disasters",
+        "gdelt": "gdelt_articles",
+        "geojson": "geojson_features",
+        "html": "html_link_index",
+        "html_index": "html_link_index",
         "sanitized": "sanitized_json",
         "sanitized_records": "sanitized_json",
+        "metadata_jsonl": "sanitized_json",
     }
     return aliases.get(clean, clean)
 

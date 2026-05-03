@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -160,6 +161,44 @@ class ForecasterSmokeTests(unittest.TestCase):
         forecast["strike_vectors"][0]["procedure"] = ["do not allow this field"]
         with self.assertRaises(ValidationError):
             validate_world_forecast(forecast)
+
+    def test_world_console_assets_exist_and_parse(self) -> None:
+        app_dir = WORLD_SIDE / "app"
+        index = app_dir / "index.html"
+        script = app_dir / "app.js"
+        styles = app_dir / "styles.css"
+        for path in (index, script, styles):
+            self.assertTrue(path.exists(), f"{path} should exist")
+
+        html = index.read_text(encoding="utf-8")
+        for element_id in (
+            "statusStrip",
+            "scoreRing",
+            "regionGrid",
+            "feedList",
+            "forecastDetail",
+        ):
+            self.assertIn(element_id, html)
+
+        source = script.read_text(encoding="utf-8")
+        self.assertIn("Cyber Pressure Index", html)
+        for phrase in (
+            "worldmonitor_bootstrap_api",
+            "sanitized-chatter-sample.jsonl",
+            "golden-forecast-edge-appliance.json",
+        ):
+            self.assertIn(phrase, source)
+
+        node = shutil.which("node")
+        if node:
+            proc = subprocess.run(
+                [node, "--check", str(script)],
+                cwd=ROOT,
+                text=True,
+                capture_output=True,
+                check=False,
+            )
+            self.assertEqual(proc.returncode, 0, proc.stderr)
 
     def assert_source_coverage(self, forecast: dict) -> None:
         source_ids = {ref["id"] for ref in forecast["source_refs"]}

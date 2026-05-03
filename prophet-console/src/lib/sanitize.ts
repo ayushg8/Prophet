@@ -12,12 +12,11 @@ const REPLACEMENTS: [string | RegExp, string][] = [
   // Credentials
   ['sshadmin', '[OPERATOR]'],
   ['sshguest', '[GUEST]'],
-  // The actual password string (with spaces and special chars)
-  ['exploit :-)', '[REDACTED]'],
-  // Variant without space
-  ['exploit:-)', '[REDACTED]'],
-  // Guest password
-  ['BduqHOzRDoh7jha43BEBeOYZ', '[REDACTED]'],
+  // Known lab-password shape from the burned demo credential, without
+  // storing the credential literal in the public repo.
+  [/exploit\s*:-\)/gi, '[REDACTED]'],
+  // High-entropy placeholder-style passwords that may appear in lab output.
+  [/\b[A-Za-z0-9]{20,}\b/g, '[REDACTED]'],
 
   // Working LDAP/exploit endpoints — allow redacted form already in use
   // but strip real ones

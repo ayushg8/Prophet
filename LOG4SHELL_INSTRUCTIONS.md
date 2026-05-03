@@ -44,7 +44,7 @@ sshguest gains Administrator privileges
 2. **SSH into your Windows machine as admin**:
    ```bash
    ssh sshadmin@10.1.60.232
-   # Password: exploit :-)
+   # Use key auth or the current out-of-band password. Never commit passwords.
    ```
 
 ### Step 2: Run Setup (As Administrator)
@@ -101,7 +101,7 @@ The script will:
 7. **SSH as low-privilege user**:
    ```bash
    ssh sshguest@10.1.60.232
-   # Password: BduqHOzRDoh7jha43BEBeOYZ
+   # Use the current out-of-band guest password. Never commit passwords.
    ```
 
 8. **Show current privileges**:

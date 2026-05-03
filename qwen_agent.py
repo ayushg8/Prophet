@@ -4,13 +4,14 @@ Qwen Agent Loop — drives exploit setup on Windows machine via SSH
 Uses local Qwen 3.5 35B at 10.1.60.216:1234 as the brain
 """
 
+import os
 import subprocess, json, urllib.request, time, sys
 
-LLM_URL   = "http://10.1.60.216:1234/v1/chat/completions"
-MODEL     = "qwen/qwen3.5-35b-a3b"
-WIN_HOST  = "10.1.60.232"
-WIN_USER  = "sshadmin"
-WIN_PASS  = "exploit :-)"
+LLM_URL   = os.environ.get("QWEN_AGENT_LLM_URL", "http://127.0.0.1:1234/v1/chat/completions")
+MODEL     = os.environ.get("QWEN_AGENT_MODEL", "qwen/qwen3.5-35b-a3b")
+WIN_HOST  = os.environ.get("QWEN_AGENT_WIN_HOST", "")
+WIN_USER  = os.environ.get("QWEN_AGENT_WIN_USER", "")
+WIN_PASS  = os.environ.get("QWEN_AGENT_WIN_PASS", "")
 MAX_STEPS = 40
 
 SYSTEM_PROMPT = """You are an autonomous Windows exploitation agent.
@@ -48,6 +49,11 @@ Begin. Check the ISO first."""
 
 def ssh(cmd: str) -> str:
     """Run a command on the Windows machine via SSH"""
+    if not (WIN_HOST and WIN_USER and WIN_PASS):
+        raise RuntimeError(
+            "Set QWEN_AGENT_WIN_HOST, QWEN_AGENT_WIN_USER, and "
+            "QWEN_AGENT_WIN_PASS in the local environment; never commit them."
+        )
     safe_cmd = cmd.replace('"', '\\"').replace("'", "\\'")
     expect_script = f"""
 set timeout 120

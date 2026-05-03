@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Prophet World Console</title>
+    <link rel="stylesheet" href="./styles.css">
+  </head>
+  <body>
+    <main class="shell">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">Prophet Stage 2</p>
+          <h1>World Console</h1>
+        </div>
+        <div class="status-strip" id="statusStrip"></div>
+      </header>
+
+      <section class="toolbar" aria-label="Console views">
+        <button class="tab is-active" type="button" data-view="overview">Overview</button>
+        <button class="tab" type="button" data-view="sources">Sources</button>
+        <button class="tab" type="button" data-view="forecasts">Forecasts</button>
+      </section>
+
+      <section class="view is-active" id="overviewView">
+        <div class="overview-grid">
+          <section class="panel score-panel">
+            <div class="panel-head">
+              <p class="kicker">Cyber Pressure Index</p>
+              <strong id="pressureLabel">Loading</strong>
+            </div>
+            <div class="score-ring" id="scoreRing">
+              <span id="scoreValue">--</span>
+            </div>
+            <div class="score-breakdown" id="scoreBreakdown"></div>
+          </section>
+
+          <section class="panel map-panel">
+            <div class="panel-head">
+              <p class="kicker">Geopolitical Pressure Map</p>
+              <strong id="topRegion">Regional Heat</strong>
+            </div>
+            <div class="region-grid" id="regionGrid"></div>
+          </section>
+
+          <section class="panel feed-panel">
+            <div class="panel-head">
+              <p class="kicker">Live Source Feed</p>
+              <strong id="feedCount">0 records</strong>
+            </div>
+            <div class="feed-list" id="feedList"></div>
+          </section>
+        </div>
+      </section>
+
+      <section class="view" id="sourcesView">
+        <div class="source-layout">
+          <section class="panel">
+            <div class="panel-head">
+              <p class="kicker">Source Lanes</p>
+              <strong id="sourceSummary">Catalog</strong>
+            </div>
+            <div class="lane-list" id="laneList"></div>
+          </section>
+          <section class="panel">
+            <div class="panel-head">
+              <p class="kicker">Integration Boundary</p>
+              <strong>Open-source first</strong>
+            </div>
+            <div class="boundary-list" id="boundaryList"></div>
+          </section>
+        </div>
+      </section>
+
+      <section class="view" id="forecastsView">
+        <div class="forecast-layout">
+          <aside class="forecast-nav" id="forecastNav"></aside>
+          <section class="panel forecast-detail" id="forecastDetail"></section>
+        </div>
+      </section>
+    </main>
+
+    <script src="./app.js"></script>
+  </body>
+</html>
