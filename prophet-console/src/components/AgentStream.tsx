@@ -19,16 +19,22 @@ function TypewriterText({ content }: { content: string }) {
 
   useEffect(() => {
     indexRef.current = 0;
-    setDisplayed('');
-    const interval = setInterval(() => {
-      if (indexRef.current < content.length) {
-        indexRef.current += 1;
-        setDisplayed(content.slice(0, indexRef.current));
-      } else {
-        clearInterval(interval);
-      }
-    }, 22);
-    return () => clearInterval(interval);
+    let interval: number | undefined;
+    const resetFrame = window.requestAnimationFrame(() => {
+      setDisplayed('');
+      interval = window.setInterval(() => {
+        if (indexRef.current < content.length) {
+          indexRef.current += 1;
+          setDisplayed(content.slice(0, indexRef.current));
+        } else if (interval !== undefined) {
+          window.clearInterval(interval);
+        }
+      }, 22);
+    });
+    return () => {
+      window.cancelAnimationFrame(resetFrame);
+      if (interval !== undefined) window.clearInterval(interval);
+    };
   }, [content]);
 
   return (

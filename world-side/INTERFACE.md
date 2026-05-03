@@ -4,6 +4,7 @@ This file defines the JSON shapes Prophet's components exchange. Both sides impl
 
 **Direction A:** Exploit Engine → Forecaster (exploit candidate)
 **Direction B:** Forecaster → Exploit Engine / Console (strike forecast)
+**Direction C:** Exploit Engine → Console (predicted exploit + defense + validation). Defined in `cyber-side/INTERFACE.md`.
 
 ---
 
@@ -165,7 +166,8 @@ See `world-side/outputs/golden-forecast-edge-appliance.json` for a complete work
 
 ## What stays out of this contract
 
-- Patch / Sigma rule — separate Exploit Engine output, merged at the Console layer
-- Sandbox validation result — separate Exploit Engine output
+- Patch / Sigma rule — separate Exploit Engine output, merged at the Console layer.
+  See **Direction C** in `cyber-side/INTERFACE.md`.
+- Sandbox validation result — separate Exploit Engine output, also Direction C.
 - Actual exploit payloads, exploit-generation logic, or target-control instructions
 - Internal reasoning chains or tool call logs — only conclusions cross the wire

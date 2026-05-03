@@ -2,7 +2,7 @@
 // and summary fields from a World Side forecast.
 // Uses useState for confidence bar animation mount trigger — 'use client' pattern.
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { SourceRefProps } from './SourceCitation';
 import './forecast.css';
 
@@ -148,9 +148,7 @@ export function ForecastPanel({
   scraperRunState = 'idle',
   scraperStatusMessage,
 }: ForecastPanelProps) {
-  // Controls animated fill of the confidence bar on mount
   const [fillWidth, setFillWidth] = useState(0);
-  const mountedRef = useRef(false);
 
   const data = forecast ?? DEFAULT_FORECAST;
   const topVector = data.strike_vectors?.[0] ?? null;
@@ -158,26 +156,22 @@ export function ForecastPanel({
   const frame = data.strategic_frame;
   const summary = data.summary;
 
-  // Animate the confidence bar to its target value after mount
-  useEffect(() => {
-    if (mountedRef.current) return;
-    mountedRef.current = true;
-    // Defer one frame so CSS transition fires
-    const id = window.requestAnimationFrame(() => {
-      setFillWidth(topVector ? topVector.confidence_score * 100 : 0);
-    });
-    return () => window.cancelAnimationFrame(id);
-  }, [topVector]);
+  const confidenceWidth = topVector ? topVector.confidence_score * 100 : 0;
 
-  // Also reset animation when forecast changes
+  // Reset and refill on a frame boundary so React 19 hook lint stays happy.
   useEffect(() => {
-    setFillWidth(0);
-    const id = window.requestAnimationFrame(() => {
-      setFillWidth(topVector ? topVector.confidence_score * 100 : 0);
+    let fillFrame: number | undefined;
+    const resetFrame = window.requestAnimationFrame(() => {
+      setFillWidth(0);
+      fillFrame = window.requestAnimationFrame(() => {
+        setFillWidth(confidenceWidth);
+      });
     });
-    return () => window.cancelAnimationFrame(id);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [data.forecast_id]);
+    return () => {
+      window.cancelAnimationFrame(resetFrame);
+      if (fillFrame !== undefined) window.cancelAnimationFrame(fillFrame);
+    };
+  }, [data.forecast_id, confidenceWidth]);
 
   if (!data || !frame) {
     return (

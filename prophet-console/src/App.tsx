@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { Header } from './components/Header';
 import { TriageQueue } from './components/TriageQueue';
 import { PhaseProgress } from './components/PhaseProgress';
@@ -27,6 +27,7 @@ import { getForecastForCandidate } from './data/worldSide';
 import type { StrikeForecast } from './data/worldSide';
 import { startReplay } from './data/replayController';
 import type { ReplayHandle } from './data/replayController';
+import { sanitize } from './lib/sanitize';
 import './index.css';
 
 type Phase = 'INTEL' | 'PLAN' | 'EXECUTE' | 'DEFEND';
@@ -40,6 +41,37 @@ interface ScraperRunResponse {
   forecast?: StrikeForecast;
   stdoutTail?: string;
   stderrTail?: string;
+}
+
+interface CyberDemoArtifactResponse {
+  ok: boolean;
+  status: string;
+  message?: string;
+  artifact?: {
+    predicted_exploit?: {
+      exploit_class_label?: string;
+      non_actionable_rationale?: string;
+    };
+    defense?: {
+      patch?: {
+        diff?: string;
+      };
+      sigma_rule?: {
+        yaml?: string;
+      };
+    };
+    validation?: {
+      pre_patch_status?: string;
+      post_patch_status?: string;
+      post_patch_excerpt?: string;
+    };
+  };
+}
+
+function forecastForCveId(cveId: string): StrikeForecast | null {
+  const cve = cves.find((item) => item.cveId === cveId);
+  const candidateId = cve?.worldCandidateId ?? null;
+  return candidateId ? getForecastForCandidate(candidateId) ?? null : null;
 }
 
 export default function App() {
@@ -60,19 +92,14 @@ export default function App() {
   const [scraperStatusMessage, setScraperStatusMessage] = useState<string | undefined>(
     'Start npm run dev:control to enable live VM runs',
   );
+  const [isLoadingCyberFixture, setIsLoadingCyberFixture] = useState(false);
   // runCycle increments each time the user resets, so PreflightChecklist re-runs
   const [runCycle, setRunCycle] = useState(0);
-  const [activeForecast, setActiveForecast] = useState<StrikeForecast | null>(null);
+  const [activeForecast, setActiveForecast] = useState<StrikeForecast | null>(() =>
+    forecastForCveId('CVE-2021-44228'),
+  );
 
   const replayRef = useRef<ReplayHandle | null>(null);
-
-  // Derive a default forecast from the currently selected CVE so the Mission
-  // Context strip shows context immediately, even before the demo runs.
-  useEffect(() => {
-    const cve = cves.find((c) => c.cveId === selectedCveId);
-    const candidateId = cve?.worldCandidateId ?? null;
-    setActiveForecast(candidateId ? getForecastForCandidate(candidateId) ?? null : null);
-  }, [selectedCveId]);
 
   const handleEvent = useCallback((event: AgentEvent) => {
     if (event.kind === 'phase') {
@@ -119,7 +146,7 @@ export default function App() {
     const handle = startReplay(
       mockEvents,
       handleEvent,
-      (_resolve) => {
+      () => {
         // Gate opened via handleEvent processing the human_gate event
       },
     );
@@ -198,6 +225,60 @@ export default function App() {
     }
   }, []);
 
+  const handleLoadCyberFixture = useCallback(async () => {
+    setIsLoadingCyberFixture(true);
+
+    try {
+      const response = await fetch('http://127.0.0.1:8787/api/cyber/demo-artifact', {
+        method: 'POST',
+        headers: {
+          'x-prophet-control': 'local-console',
+        },
+      });
+      const payload = (await response.json()) as CyberDemoArtifactResponse;
+
+      if (!response.ok || !payload.ok || !payload.artifact) {
+        setExploitStatus('idle');
+        setExploitExcerpt(
+          sanitize(payload.message || 'Cyber fixture unavailable. Start npm run dev:control.'),
+        );
+        return;
+      }
+
+      const artifact = payload.artifact;
+      const patch = artifact.defense?.patch?.diff ?? null;
+      const sigma = artifact.defense?.sigma_rule?.yaml ?? null;
+      const postStatus = artifact.validation?.post_patch_status;
+      const excerpt = artifact.validation?.post_patch_excerpt;
+      const rationale = artifact.predicted_exploit?.non_actionable_rationale;
+
+      setPatchDiff(patch);
+      setSigmaRule(sigma);
+      setExploitStatus(postStatus === 'blocked' || postStatus === 'not_vulnerable'
+        ? 'blocked'
+        : postStatus === 'vulnerable'
+          ? 'vulnerable'
+          : 'idle');
+      setExploitExcerpt(sanitize(excerpt || payload.message || 'Cyber fixture loaded.'));
+      if (rationale) {
+        setStreamEvents((prev) => [
+          ...prev,
+          {
+            kind: 'text',
+            content: sanitize(`Cyber fixture loaded: ${rationale}`),
+          },
+        ]);
+      }
+    } catch {
+      setExploitStatus('idle');
+      setExploitExcerpt(
+        sanitize('Local control server offline. Run npm run dev:control in prophet-console.'),
+      );
+    } finally {
+      setIsLoadingCyberFixture(false);
+    }
+  }, []);
+
   const handleAuthorize = () => {
     setGateOpen(false);
     replayRef.current?.authorize();
@@ -208,6 +289,11 @@ export default function App() {
     replayRef.current?.reset();
     setIsRunning(false);
     setRunCycle((c) => c + 1);
+  };
+
+  const handleSelectCve = (cveId: string) => {
+    setSelectedCveId(cveId);
+    setActiveForecast(forecastForCveId(cveId));
   };
 
   if (view === 'landing') {
@@ -257,7 +343,7 @@ export default function App() {
             <TriageQueue
               cves={cves}
               selectedId={selectedCveId}
-              onSelect={setSelectedCveId}
+              onSelect={handleSelectCve}
             />
           </div>
 
@@ -275,7 +361,12 @@ export default function App() {
               exploitStatus={exploitStatus}
             />
             <ExploitPanel status={exploitStatus} responseExcerpt={exploitExcerpt} />
-            <DefencePanel patchDiff={patchDiff} sigmaRule={sigmaRule} />
+            <DefencePanel
+              patchDiff={patchDiff}
+              sigmaRule={sigmaRule}
+              onLoadFixture={handleLoadCyberFixture}
+              isLoadingFixture={isLoadingCyberFixture}
+            />
           </aside>
         </div>
 

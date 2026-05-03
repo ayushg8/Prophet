@@ -28,7 +28,7 @@ npm run dev:control
 # listens on http://127.0.0.1:8787
 ```
 
-With both commands running, `DEMO REFRESH` uses the tracked sanitized chatter fixture and refreshes the forecast locally. `RUN SCRAPER VM` calls the local control server, which uses SSH key auth to run `world-side/scripts/run-scraper-vm-workflow.sh`. That script pulls back sanitized JSONL only, validates it through the Forecaster, and returns a refreshed forecast to the Console. If key auth is not ready, the button fails closed and does not prompt for a password.
+With both commands running, `DEMO REFRESH` uses the tracked sanitized chatter fixture and refreshes the forecast locally. `LOAD FIXTURE` in the Defence panel loads the cyber-side Direction C fixture from `cyber-side/fixtures/exploit-engine-output-edge-appliance.json` into the Exploit and Defence panels. `RUN SCRAPER VM` calls the local control server, which uses SSH key auth to run `world-side/scripts/run-scraper-vm-workflow.sh`. That script pulls back sanitized JSONL only, validates it through the Forecaster, and returns a refreshed forecast to the Console. If key auth is not ready, the button fails closed and does not prompt for a password.
 
 Before relying on the live VM button:
 

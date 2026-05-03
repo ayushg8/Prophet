@@ -1,0 +1,157 @@
+# Interface Contract — Exploit Engine → Console
+
+This file extends `world-side/INTERFACE.md` with **Direction C**: the JSON
+artifact the Exploit Engine emits to the Console after it consumes a Forecaster
+output (Direction B). Direction C is the cyber-side's canonical output contract.
+
+> **Direction A** — Exploit Engine → Forecaster (exploit candidate). See `world-side/INTERFACE.md`.
+> **Direction B** — Forecaster → Exploit Engine / Console (strike forecast). See `world-side/INTERFACE.md`.
+> **Direction C** — Exploit Engine → Console (predicted exploit class + defense + validation). Defined here.
+
+## What Direction C is for
+
+The Exploit Engine reads a Direction B forecast and a Direction A candidate,
+runs a sandbox-only validation loop on a vulnerable-by-design target, and emits
+a single artifact the Console can render. The artifact answers:
+
+- which exploit class did the engine pick, given the forecast
+- what is the non-actionable rationale (no payloads, no target-control steps)
+- what is the defense (patch diff + Sigma rule)
+- what was the sandbox validation outcome before/after the patch
+
+This artifact is **not** the live event stream the Console renders during a
+demo — `prophet-console/src/data/mockEvents.ts` already encodes that stream.
+Direction C is the **end-of-run, signed summary** that the Console can also
+load directly when no live engine is reachable (fixture mode).
+
+## Hard rules
+
+- No exploit payloads, no shell commands, no credentials, no live target IPs.
+- Sandbox host references use the placeholder `[LAB-HOST]`.
+- `patch_diff` describes a defensive change to a vulnerable-by-design app, not an
+  exploit primitive.
+- `sigma_rule` must be valid YAML and must describe **detection only**.
+- `validation` must record a sandbox identifier and the localhost-only scope.
+- Banned top-level keys are inherited from Direction B's vector contract:
+  no `payload`, `procedure`, `target_host`, `ip`, `credentials`, etc.
+
+## Schema
+
+```jsonc
+{
+  "artifact_id":       "string",       // e.g. "ee-20260503-edge-appliance-001"
+  "generated_at":      "string",       // ISO 8601 UTC
+  "schema_version":    "string",       // e.g. "exploit_engine_artifact.v0.1"
+
+  "input_refs": {
+    "candidate_id":     "string",      // Direction A candidate_id
+    "forecast_id":      "string",      // Direction B forecast_id
+    "vector_id":        "string"       // strike_vector vector_id chosen by the engine
+  },
+
+  "predicted_exploit": {
+    "exploit_class_label":   "string", // e.g. "JNDI lookup → library RCE"
+    "cwe_ids":               ["string"], // e.g. ["CWE-917"]
+    "cve_id":                "string | null", // populated for known_cve replays
+    "kev_listed":            "boolean",
+    "epss_score":            "number | null",
+    "attack_technique":      "string | null", // e.g. "T1190"
+    "non_actionable_rationale": "string", // 1–4 sentences, no payload, no procedure
+    "confidence":            "high | medium | low",
+    "confidence_score":      "number"   // 0.0–1.0
+  },
+
+  "defense": {
+    "patch": {
+      "summary":       "string",       // 1 sentence: what the patch does
+      "patch_format":  "unified_diff | config_snippet | jvm_flag_set",
+      "diff":          "string",       // unified diff text (defensive change only)
+      "applies_to":    "string",       // e.g. "VulnerableApp / Log4j 2.14.0"
+      "rollback_note": "string"        // how to revert in the sandbox
+    },
+    "sigma_rule": {
+      "rule_id":     "string",         // matches `id:` field inside the YAML
+      "title":       "string",
+      "yaml":        "string",         // valid Sigma YAML, detection-only
+      "level":       "low | medium | high | critical",
+      "logsources":  ["string"]        // e.g. ["webserver", "app_log"]
+    }
+  },
+
+  "validation": {
+    "sandbox_id":            "string", // e.g. "lab-host:8080" or "localhost-vulhub-log4shell"
+    "scope":                 "string", // must include "localhost only"
+    "pre_patch_status":      "vulnerable | not_vulnerable | error",
+    "pre_patch_excerpt":     "string", // sanitized indicator, e.g. nuclei single-line summary
+    "post_patch_status":     "vulnerable | not_vulnerable | blocked | error",
+    "post_patch_excerpt":    "string", // sanitized indicator after defense applied
+    "validation_tool":       "string", // e.g. "nuclei v3.x against vulhub container"
+    "validation_template":   "string | null", // e.g. "http/cves/2021/CVE-2021-44228.yaml"
+    "wall_time_seconds":     "number"
+  },
+
+  "operator_notes": {
+    "human_gate_decision":   "approved | denied | bypassed_for_fixture",
+    "operator_label":        "string", // initials or anonymized handle
+    "post_run_caveats":      ["string"]
+  },
+
+  "audit": {
+    "run_id":        "string",         // e.g. "PRO-20260503-001"
+    "signed_sha256": "string | null",  // optional content hash for the artifact
+    "emitted_by":    "string"          // "exploit-engine@dell-lab" or "fixture"
+  },
+
+  "source_refs": [
+    {
+      "id":        "string",
+      "label":     "string",
+      "url":       "string",
+      "supports":  "string"
+    }
+  ]
+}
+```
+
+## Console wiring
+
+The current Console (`prophet-console/`) already renders three primitives that
+match this artifact 1-to-1:
+
+| Console primitive            | Artifact field                                   |
+|---|---|
+| `ExploitPanel.status`        | `validation.post_patch_status` (mapped)          |
+| `ExploitPanel.responseExcerpt` | `validation.post_patch_excerpt` (sanitized)    |
+| `DefencePanel.patchDiff`     | `defense.patch.diff`                             |
+| `DefencePanel.sigmaRule`     | `defense.sigma_rule.yaml`                        |
+| `AgentStream` text events    | `predicted_exploit.non_actionable_rationale`     |
+
+Mapping for `ExploitPanel.status`:
+
+| `pre_patch_status` | `post_patch_status` | UI status   |
+|---|---|---|
+| any                | `not_vulnerable` or `blocked` | `blocked`   |
+| `vulnerable`       | (not yet emitted)             | `vulnerable` |
+| any                | `error`                       | `idle` (with error excerpt) |
+| any                | `vulnerable`                  | `vulnerable` (defense not validated) |
+
+## What stays out of Direction C
+
+- Live tool-call traces. Use the `mockEvents.ts` event stream for those — the
+  artifact is the end-of-run summary, not the playback log.
+- Real CVE-specific exploit payload bytes, JNDI strings, OGNL fragments, etc.
+  Public reference URLs are fine; reproducing payloads in the artifact is not.
+- Internal LLM reasoning chains, agent tool-call logs, or scraper output.
+- Any reference to a live operational target, IP, or credential.
+
+## Validation
+
+`cyber-side/validator.py` validates an artifact against this contract using
+only the Python standard library. `cyber-side/tests/test_exploit_engine_artifact.py`
+exercises the validator on the golden fixture in `cyber-side/fixtures/`.
+
+Run:
+
+```bash
+PYTHONPATH=cyber-side python3 -m unittest discover -s cyber-side/tests
+```

@@ -17,6 +17,10 @@ const demoChatterFile = path.join(
   repoRoot,
   'world-side/fixtures/sanitized-chatter-sample.jsonl',
 );
+const cyberArtifactFile = path.join(
+  repoRoot,
+  'cyber-side/fixtures/exploit-engine-output-edge-appliance.json',
+);
 const forecastOut = path.join(
   repoRoot,
   'world-side/outputs/runtime/live-scraper-forecast-edge-appliance.json',
@@ -102,6 +106,30 @@ const server = createServer(async (req, res) => {
       message: result.message,
     };
     writeJson(res, result.ok ? 200 : 500, result);
+    return;
+  }
+
+  if (req.method === 'POST' && req.url === '/api/cyber/demo-artifact') {
+    if (!isConsoleRequest(req, allowedOrigin)) {
+      writeForbidden(res);
+      return;
+    }
+
+    try {
+      const artifact = JSON.parse(await readFile(cyberArtifactFile, 'utf8'));
+      writeJson(res, 200, {
+        ok: true,
+        status: 'cyber_artifact_loaded',
+        message: 'Cyber fixture loaded from cyber-side/fixtures.',
+        artifact,
+      });
+    } catch (error) {
+      writeJson(res, 500, {
+        ok: false,
+        status: 'cyber_artifact_unreadable',
+        message: `Cyber fixture could not be read: ${error.message}`,
+      });
+    }
     return;
   }
 

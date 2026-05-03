@@ -14,7 +14,7 @@ const REPLACEMENTS: [string | RegExp, string][] = [
   ['sshguest', '[GUEST]'],
   // Known lab-password shape from the burned demo credential, without
   // storing the credential literal in the public repo.
-  [/exploit\s*:-\)/gi, '[REDACTED]'],
+  [/exploit\s*:-[)]/gi, '[REDACTED]'],
   // High-entropy placeholder-style passwords that may appear in lab output.
   [/\b[A-Za-z0-9]{20,}\b/g, '[REDACTED]'],
 
@@ -25,7 +25,7 @@ const REPLACEMENTS: [string | RegExp, string][] = [
 
   // Raw Runtime.exec / cmd.exe payload fragments
   [/cmd\.exe \/c net localgroup administrators[^\n]*/gi, '[REDACTED PAYLOAD]'],
-  [/Runtime\.getRuntime\(\)\.exec\([^\)]+\)/g, '[REDACTED EXEC]'],
+  [/Runtime\.getRuntime\(\)\.exec\([^)]+\)/g, '[REDACTED EXEC]'],
 
   // World-Side additions — patterns scanned from stage2 fixtures and outputs.
   // The INTERFACE.md schema explicitly bans named live targets, individual
@@ -46,7 +46,7 @@ const REPLACEMENTS: [string | RegExp, string][] = [
   [/ldap:\/\/localhost:\d+\/[^\s"]*/g, 'ldap://[REDACTED]/[REDACTED]'],
 
   // Actor email or handle patterns (schema bans these; strip if present)
-  [/[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}/g, '[EMAIL-REDACTED]'],
+  [/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g, '[EMAIL-REDACTED]'],
 ];
 
 export function sanitize(input: string): string {

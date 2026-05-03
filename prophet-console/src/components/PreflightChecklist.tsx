@@ -18,8 +18,8 @@ const CHECKS: CheckItem[] = [
   { id: 'target',    label: 'LAB TARGET',          detail: '[LAB-HOST]:8080 · reachable' },
   { id: 'vulnapp',   label: 'VULNERABLEAPP',       detail: 'Log4j 2.14.0 · running' },
   { id: 'sandbox',   label: 'SANDBOX ISOLATION',   detail: 'enforced' },
-  { id: 'cvp',       label: 'ANTHROPIC CVP',       detail: 'authorized' },
-  { id: 'qwen',      label: 'QWEN EXECUTOR',       detail: 'online · [LLM-HOST]:1234' },
+  { id: 'codex',     label: 'CODEX TERMINAL',      detail: 'operator loop ready' },
+  { id: 'fixture',   label: 'FIXTURE FALLBACK',    detail: 'world + cyber artifacts loaded' },
 ];
 
 // Total animation budget: 1.2s across all items
@@ -37,27 +37,32 @@ export function PreflightChecklist({ isRunning, onReady }: PreflightChecklistPro
 
   // Re-run checklist animation on each run cycle
   useEffect(() => {
-    setChecked(new Set());
-    setAnimating(true);
-    onReady(false);
+    let timer: number | undefined;
+    const resetFrame = window.requestAnimationFrame(() => {
+      setChecked(new Set());
+      setAnimating(true);
+      onReady(false);
 
-    let idx = 0;
-    const tick = () => {
-      if (idx >= CHECKS.length) {
-        setAnimating(false);
-        onReady(true);
-        return;
-      }
-      const id = CHECKS[idx].id;
-      setChecked((prev) => new Set([...prev, id]));
-      idx += 1;
-      timer = window.setTimeout(tick, TICK_INTERVAL_MS);
+      let idx = 0;
+      const tick = () => {
+        if (idx >= CHECKS.length) {
+          setAnimating(false);
+          onReady(true);
+          return;
+        }
+        const id = CHECKS[idx].id;
+        setChecked((prev) => new Set([...prev, id]));
+        idx += 1;
+        timer = window.setTimeout(tick, TICK_INTERVAL_MS);
+      };
+
+      timer = window.setTimeout(tick, 200);
+    });
+    return () => {
+      window.cancelAnimationFrame(resetFrame);
+      if (timer !== undefined) window.clearTimeout(timer);
     };
-
-    let timer = window.setTimeout(tick, 200);
-    return () => window.clearTimeout(timer);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isRunning]);
+  }, [isRunning, onReady]);
 
   const allDone = checked.size === CHECKS.length;
 

@@ -8,6 +8,8 @@ type DefenceTab = 'patch' | 'sigma';
 interface DefencePanelProps {
   patchDiff: string | null;
   sigmaRule: string | null;
+  onLoadFixture?: () => void;
+  isLoadingFixture?: boolean;
 }
 
 // Bracketed [ COPY ] / [ COPIED ] button
@@ -51,7 +53,12 @@ function CodeBlock({ code, language }: CodeBlockProps) {
   );
 }
 
-export function DefencePanel({ patchDiff, sigmaRule }: DefencePanelProps) {
+export function DefencePanel({
+  patchDiff,
+  sigmaRule,
+  onLoadFixture,
+  isLoadingFixture = false,
+}: DefencePanelProps) {
   const [activeTab, setActiveTab] = useState<DefenceTab>('patch');
 
   const hasContent = patchDiff !== null || sigmaRule !== null;
@@ -65,24 +72,39 @@ export function DefencePanel({ patchDiff, sigmaRule }: DefencePanelProps) {
           DEFENCE ARTIFACTS
           <span className="panel-header-chevron--right" aria-hidden>◣</span>
         </span>
-        {hasContent && (
-          <div className="defence-tabs" role="tablist" aria-label="Defence artifact tabs">
-            <button
-              role="tab"
-              aria-selected={activeTab === 'patch'}
-              className={`defence-tab${activeTab === 'patch' ? ' defence-tab--active' : ''}`}
-              onClick={() => setActiveTab('patch')}
-            >
-              PATCH
-            </button>
-            <button
-              role="tab"
-              aria-selected={activeTab === 'sigma'}
-              className={`defence-tab${activeTab === 'sigma' ? ' defence-tab--active' : ''}`}
-              onClick={() => setActiveTab('sigma')}
-            >
-              SIGMA
-            </button>
+        {(hasContent || onLoadFixture) && (
+          <div className="defence-header-actions">
+            {onLoadFixture && (
+              <button
+                className="defence-load-btn"
+                type="button"
+                onClick={onLoadFixture}
+                disabled={isLoadingFixture}
+                aria-label="Load cyber defense fixture"
+              >
+                [ {isLoadingFixture ? 'LOADING' : 'LOAD FIXTURE'} ]
+              </button>
+            )}
+            {hasContent && (
+              <div className="defence-tabs" role="tablist" aria-label="Defence artifact tabs">
+                <button
+                  role="tab"
+                  aria-selected={activeTab === 'patch'}
+                  className={`defence-tab${activeTab === 'patch' ? ' defence-tab--active' : ''}`}
+                  onClick={() => setActiveTab('patch')}
+                >
+                  PATCH
+                </button>
+                <button
+                  role="tab"
+                  aria-selected={activeTab === 'sigma'}
+                  className={`defence-tab${activeTab === 'sigma' ? ' defence-tab--active' : ''}`}
+                  onClick={() => setActiveTab('sigma')}
+                >
+                  SIGMA
+                </button>
+              </div>
+            )}
           </div>
         )}
       </div>

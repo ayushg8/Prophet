@@ -70,12 +70,19 @@ Prophet/
 │   └── cisa_kev_2026-05-01.json     ← CISA KEV seed
 ├── world-side/                      ← Forecaster
 │   ├── README.md                    ← forecaster orientation + how to run
-│   ├── INTERFACE.md                 ← Forecaster → Exploit Engine JSON contract
+│   ├── INTERFACE.md                 ← Direction A + B JSON contract; pointer to Direction C
 │   ├── forecaster/                  ← forecasting engine (Python)
 │   ├── scraper/                     ← isolated scraper machine
 │   ├── data/                        ← geopolitical corpus (research artifacts)
 │   ├── fixtures/                    ← exploit candidate mocks for dev/test
 │   └── outputs/                     ← generated forecasts (golden + live)
+├── cyber-side/                      ← Exploit Engine contract + fixture path
+│   ├── README.md                    ← Mode A (fixture) + Mode B (Dell live) runbook
+│   ├── INTERFACE.md                 ← Direction C contract (engine → Console)
+│   ├── INTEGRATIONS.md              ← Idan's Palantir/Danti handoff
+│   ├── validator.py                 ← stdlib-only artifact validator
+│   ├── fixtures/                    ← Direction C goldens for fixture mode
+│   └── tests/                       ← unittest coverage for the validator
 ├── prophet-console/                 ← Console (React + Vite + TS)
 │   └── src/
 │       ├── components/              ← UI components
@@ -89,7 +96,7 @@ Prophet/
 |---|---|
 | Forecaster | **Done.** Outputs `strike_windows` + `strike_vectors` JSON. Golden fixtures in `world-side/outputs/`. |
 | Console | **In progress.** Core layout and components built. Integration with forecaster JSON underway. |
-| Exploit Engine | **In progress.** Idan working on SSH machine overnight. Contract defined in `INTERFACE.md`. |
+| Exploit Engine | **In progress.** Idan working on Dell locally; Dell currently unreachable from dev box. Contract: Direction A + B in `world-side/INTERFACE.md`, Direction C in `cyber-side/INTERFACE.md`. Fixture-mode demo path works without Dell. |
 | Demo (Log4Shell) | **Setup done.** Java PoC and lab scripts at repo root. See `LOG4SHELL_INSTRUCTIONS.md`. |
 
 ## OPSEC — non-negotiable
