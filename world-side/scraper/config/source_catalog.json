@@ -275,7 +275,7 @@
       "collection": {
         "method": "api",
         "format": "json",
-        "url": "https://services.nvd.nist.gov/rest/json/cves/2.0?resultsPerPage=20",
+        "url": "https://services.nvd.nist.gov/rest/json/cves/2.0",
         "url_template": null,
         "params": {
           "pubStartDate": "{window_start_iso}",
@@ -583,7 +583,7 @@
     },
     {
       "id": "ofac_sanctions_list_service",
-      "enabled": true,
+      "enabled": false,
       "lane": "official_gov_feeds",
       "source_type": "gov_feed",
       "display_name": "OFAC Sanctions List Service",
@@ -633,7 +633,7 @@
           "target_lists",
           "credentials"
         ],
-        "notes": "Aggregate-only CSV collector is implemented. Use for sanctions pressure metadata, not screening or identity export; never retain individual names, addresses, identifiers, or raw rows."
+        "notes": "Disabled until a dedicated aggregate-only CSV collector exists. Use for sanctions pressure metadata, not screening or identity export."
       },
       "relevance": {
         "stage2_use": "timing_signal",
@@ -911,7 +911,7 @@
       "collection": {
         "method": "api",
         "format": "json",
-        "url": "https://api.github.com/advisories?sort=updated&direction=desc&per_page=100",
+        "url": "https://api.github.com/advisories",
         "url_template": null,
         "params": {
           "sort": "updated",
@@ -978,7 +978,7 @@
       "collection": {
         "method": "api",
         "format": "json",
-        "url": "https://api.github.com/repos/projectdiscovery/nuclei-templates/commits?path=http/cves&per_page=100",
+        "url": "https://api.github.com/repos/projectdiscovery/nuclei-templates/commits",
         "url_template": null,
         "params": {
           "path": "http/cves",
@@ -1293,7 +1293,7 @@
       "collection": {
         "method": "api",
         "format": "json",
-        "url": "https://www.reddit.com/r/netsec+blueteamsec+cybersecurity/new.json?limit=50",
+        "url": null,
         "url_template": "https://www.reddit.com/r/{community}/new/.json",
         "params": {
           "communities": [
@@ -1357,7 +1357,7 @@
     },
     {
       "id": "mastodon_public_security_tags",
-      "enabled": false,
+      "enabled": true,
       "lane": "public_social_chatter",
       "source_type": "public_social",
       "display_name": "Mastodon Public Security Hashtag RSS",
@@ -1419,7 +1419,7 @@
           "credentials",
           "target_lists"
         ],
-        "notes": "Disabled until a specific instance/tag expansion plan is reviewed. Public hashtag RSS only; hash authors before local storage when possible."
+        "notes": "Public hashtag RSS only; hash authors before local storage when possible."
       },
       "relevance": {
         "stage2_use": "timing_signal",
@@ -2207,8 +2207,8 @@
       "source_type": "high_risk_metadata",
       "display_name": "Public Onion Landing Page Metadata Placeholder",
       "collection": {
-        "method": "manual_metadata_export",
-        "format": "metadata_jsonl",
+        "method": "placeholder_metadata_registry",
+        "format": "none",
         "url": null,
         "url_template": null,
         "params": {
@@ -2277,8 +2277,8 @@
       "source_type": "high_risk_metadata",
       "display_name": "High-Risk Forum Topic Metadata Placeholder",
       "collection": {
-        "method": "manual_metadata_export",
-        "format": "metadata_jsonl",
+        "method": "placeholder_metadata_registry",
+        "format": "none",
         "url": null,
         "url_template": null,
         "params": {
@@ -2349,8 +2349,8 @@
       "source_type": "high_risk_metadata",
       "display_name": "High-Risk Leak Claim Metadata Placeholder",
       "collection": {
-        "method": "manual_metadata_export",
-        "format": "metadata_jsonl",
+        "method": "placeholder_metadata_registry",
+        "format": "none",
         "url": null,
         "url_template": null,
         "params": {

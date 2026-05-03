@@ -45,7 +45,7 @@ In flight:
 - `outputs/` — generated and golden Direction B forecast examples for UI / Cyber Side handoff.
 - `tests/` — stdlib `unittest` smoke tests for loaders, schemas, CLI, source coverage, and non-actionable vector constraints.
 - `scraper/` — isolated scraper machine access docs + setup script. Network reachability is being resolved by Idan (venue wifi appears to block peer-to-peer; Tailscale or similar is the likely fix).
-- `scraper/config/source_catalog.json` — source matrix for official feeds, public chatter, high-risk metadata, OSINT context, and analysis-tool references. Safe official/RSS/API/HTML/CSV metadata collectors are enabled; auth-gated, onion, Telegram, AIS/flight, Mastodon expansion, and target-enumeration lanes are disabled by default.
+- `scraper/config/source_catalog.json` — source matrix for official feeds, public chatter, high-risk metadata, OSINT context, and analysis-tool references. Safe official/RSS/API collectors are enabled; auth-gated, onion, Telegram, AIS/flight, and target-enumeration lanes are disabled by default.
 - `data/` — historical pairings corpus, calendar of timing windows, indictment + sanctions snapshots. Substantial pre-event research artifacts; will feed the analogy engine and the current-context engine when those are built.
 
 ## Run the forecaster
@@ -91,13 +91,9 @@ List the loaded source catalog:
 PYTHONPATH=world-side/scraper python3 -m scraper_side.cli --list-sources
 ```
 
-On a Linux isolated scraper host, use `scraper/bin/bootstrap-scraper-machine.sh` once, then emit sanitized JSONL plus run manifests into `/srv/scraper/output/`:
+On a Linux isolated scraper host, use `scraper/bin/bootstrap-scraper-machine.sh` once, then emit sanitized JSONL into `/srv/scraper/output/`.
 
-```bash
-SCRAPER_LIVE=1 SCRAPER_LIMIT=50 /srv/scraper/app/bin/run-once.sh
-```
-
-On a Windows OpenSSH scraper host, deploy `world-side/scraper/` to `C:\srv\scraper\app`, run `scraper/bin/bootstrap-scraper-windows.ps1`, then run `scraper/bin/run-once-windows.ps1` to emit sanitized JSONL into `C:\srv\scraper\output`. Use `-AllEnabled -Live` for a full safe-source pass, or `-Source <id>` / `-Collector <name>` for smoke tests.
+On a Windows OpenSSH scraper host, deploy `world-side/scraper/` to `C:\srv\scraper\app`, run `scraper/bin/bootstrap-scraper-windows.ps1`, then run `scraper/bin/run-once-windows.ps1` to emit sanitized JSONL into `C:\srv\scraper\output`.
 
 ## Files in this folder
 

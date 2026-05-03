@@ -1,0 +1,4 @@
+spawn ssh -o StrictHostKeyChecking=no ssladmin@10.1.60.232
+expect "password:"
+send "exploit :-)"
+interact

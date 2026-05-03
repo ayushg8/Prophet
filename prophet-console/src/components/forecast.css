@@ -1,0 +1,551 @@
+/* ── forecast.css ────────────────────────────────────────────────────────────
+   All CSS for:
+     StrikeWindowTimeline  → .swt-*
+     ForecastPanel         → .fp-*
+     HistoricalAnalogyCard → .hac-*
+     SourceCitation        → .src-*
+
+   Variables reuse global tokens from index.css. ──────────────────────────── */
+
+/* ── Shared card surface ─────────────────────────────────────────────────── */
+.swt-card,
+.fp-card {
+  background: var(--surface-elevated);
+  border: 1px solid var(--border-accent);
+  border-radius: var(--radius);
+  backdrop-filter: blur(2px);
+  overflow: visible;
+  position: relative;
+}
+
+/* ── StrikeWindowTimeline ────────────────────────────────────────────────── */
+
+.swt-card {
+  min-height: 220px;
+  display: flex;
+  flex-direction: column;
+}
+
+.swt-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 9px 12px 8px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.swt-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--dim);
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.swt-eyebrow-chevron {
+  color: var(--accent);
+  font-size: 9px;
+}
+
+.swt-body {
+  flex: 1;
+  padding: 10px 12px 8px;
+  overflow: hidden;
+  position: relative;
+}
+
+/* Axis container — holds bars above and date labels below */
+.swt-axis-wrap {
+  position: relative;
+  height: 108px;
+  margin-bottom: 2px;
+}
+
+/* The horizontal axis line */
+.swt-axis-line {
+  position: absolute;
+  bottom: 24px;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: var(--border);
+}
+
+/* Date label positioned below axis */
+.swt-date-label {
+  position: absolute;
+  bottom: 6px;
+  font-family: var(--font-mono);
+  font-size: 8px;
+  letter-spacing: 0.10em;
+  color: var(--faint);
+  text-transform: uppercase;
+  transform: translateX(-50%);
+  white-space: nowrap;
+}
+
+/* A single date tick mark on the axis */
+.swt-tick {
+  position: absolute;
+  bottom: 23px;
+  width: 1px;
+  height: 5px;
+  background: var(--border);
+  transform: translateX(-50%);
+}
+
+/* Strike window bar wrapper */
+.swt-window-group {
+  position: absolute;
+  bottom: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  cursor: pointer;
+}
+
+.swt-window-bar {
+  border-radius: 2px 2px 0 0;
+  width: 100%;
+  transition: filter 150ms ease-out, opacity 150ms ease-out;
+  position: relative;
+}
+
+/* Confidence-based bar styles */
+.swt-window-bar--high {
+  background: var(--accent);
+}
+
+.swt-window-bar--medium {
+  background: rgba(245, 158, 11, 0.6);
+  border-top: 1px dashed var(--accent);
+}
+
+.swt-window-bar--low {
+  background: rgba(245, 158, 11, 0.3);
+}
+
+.swt-window-bar:hover,
+.swt-window-group:hover .swt-window-bar {
+  filter: brightness(1.2);
+}
+
+/* Bar label shown above each bar */
+.swt-bar-label {
+  font-family: var(--font-mono);
+  font-size: 8px;
+  letter-spacing: 0.10em;
+  color: var(--primary);
+  white-space: nowrap;
+  margin-bottom: 2px;
+  opacity: 0.85;
+}
+
+/* Active (selected) strike window: pulsing amber border */
+.swt-window-group--active .swt-window-bar {
+  outline: 1px solid var(--accent);
+  animation: swt-active-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes swt-active-pulse {
+  0%, 100% { outline-color: rgba(245, 158, 11, 0.4); }
+  50%       { outline-color: rgba(245, 158, 11, 0.95); }
+}
+
+/* Trigger signal chips row */
+.swt-signals {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+  margin-top: 2px;
+}
+
+.swt-signal-chip {
+  font-family: var(--font-mono);
+  font-size: 8px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 1px 4px;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  color: var(--faint);
+  background: rgba(15, 20, 25, 0.7);
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.swt-signal-chip-chevron {
+  color: var(--accent);
+  font-size: 7px;
+}
+
+/* Detail panel (expanded on bar click) */
+.swt-detail {
+  margin-top: 8px;
+  padding: 10px;
+  background: rgba(10, 13, 18, 0.85);
+  border: 1px solid var(--border-accent);
+  border-radius: var(--radius);
+  backdrop-filter: blur(4px);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.swt-detail-heading {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  color: var(--accent);
+  text-transform: uppercase;
+}
+
+.swt-detail-why {
+  font-size: 11px;
+  line-height: 1.55;
+  color: var(--secondary);
+}
+
+.swt-detail-analogies {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.swt-detail-sources {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 2px;
+}
+
+.swt-null-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 160px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  color: var(--faint);
+  text-transform: uppercase;
+}
+
+/* ── ForecastPanel ───────────────────────────────────────────────────────── */
+
+.fp-card {
+  min-height: 280px;
+  display: flex;
+  flex-direction: column;
+}
+
+.fp-header {
+  display: flex;
+  align-items: center;
+  padding: 9px 12px 8px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.fp-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--dim);
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.fp-eyebrow-chevron {
+  color: var(--accent);
+  font-size: 9px;
+}
+
+.fp-body {
+  flex: 1;
+  padding: 10px 12px 8px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px 16px;
+  align-content: start;
+}
+
+.fp-col {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.fp-field {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.fp-field-label {
+  font-family: var(--font-mono);
+  font-size: 8.5px;
+  letter-spacing: 0.18em;
+  color: var(--faint);
+  text-transform: uppercase;
+}
+
+.fp-field-value {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--primary);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  line-height: 1.3;
+}
+
+.fp-field-value--small {
+  font-family: var(--font-ui);
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--secondary);
+  text-transform: none;
+  letter-spacing: 0.01em;
+  line-height: 1.4;
+}
+
+/* Confidence bar with verbal label */
+.fp-confidence-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.fp-confidence-track {
+  flex: 1;
+  height: 3px;
+  background: var(--border);
+  border-radius: 1px;
+  overflow: hidden;
+}
+
+.fp-confidence-fill {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 1px;
+  width: 0;
+  transition: width 600ms ease-out;
+}
+
+.fp-confidence-label {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  color: var(--accent);
+  text-transform: uppercase;
+  min-width: 40px;
+}
+
+/* Footer row */
+.fp-footer {
+  padding: 8px 12px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.fp-footer-row {
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+}
+
+.fp-footer-key {
+  font-family: var(--font-mono);
+  font-size: 8.5px;
+  letter-spacing: 0.18em;
+  color: var(--faint);
+  text-transform: uppercase;
+  min-width: 80px;
+  flex-shrink: 0;
+}
+
+.fp-footer-val {
+  font-size: 11px;
+  color: var(--secondary);
+  line-height: 1.4;
+  font-style: italic;
+}
+
+.fp-footer-val--mono {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-style: normal;
+  letter-spacing: 0.06em;
+  color: var(--primary);
+  text-transform: uppercase;
+}
+
+/* Disclaimer */
+.fp-disclaimer {
+  margin-top: 2px;
+  font-family: var(--font-mono);
+  font-size: 8px;
+  letter-spacing: 0.12em;
+  color: var(--faint);
+  opacity: 0.5;
+  text-align: right;
+  text-transform: uppercase;
+}
+
+.fp-null-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 240px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  color: var(--faint);
+  text-transform: uppercase;
+}
+
+/* ── HistoricalAnalogyCard ───────────────────────────────────────────────── */
+
+.hac-card {
+  background: rgba(15, 20, 25, 0.85);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  backdrop-filter: blur(4px);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px 10px;
+  width: 100%;
+  min-height: 76px;
+  transition: border-color 150ms ease-out;
+}
+
+.hac-card:hover {
+  border-color: rgba(245, 158, 11, 0.3);
+}
+
+.hac-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.hac-case-id {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  color: var(--accent);
+  text-transform: uppercase;
+  flex-shrink: 0;
+}
+
+.hac-case-name {
+  font-size: 11px;
+  color: var(--secondary);
+  line-height: 1.35;
+}
+
+.hac-body {
+  font-size: 11px;
+  color: var(--dim);
+  line-height: 1.5;
+}
+
+.hac-footer {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 2px;
+}
+
+.hac-burn-chip {
+  font-family: var(--font-mono);
+  font-size: 8.5px;
+  letter-spacing: 0.10em;
+  color: var(--faint);
+  text-transform: uppercase;
+  padding: 1px 5px;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  background: rgba(10, 13, 18, 0.7);
+}
+
+/* ── SourceCitation ──────────────────────────────────────────────────────── */
+
+.src-pill {
+  display: inline-flex;
+  align-items: center;
+  height: 20px;
+  padding: 0 5px;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  background: rgba(15, 20, 25, 0.75);
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  color: var(--faint);
+  cursor: pointer;
+  position: relative;
+  transition: border-color 150ms ease-out, color 150ms ease-out, background 150ms ease-out;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.src-pill:hover {
+  border-color: rgba(245, 158, 11, 0.4);
+  color: var(--accent);
+  background: rgba(245, 158, 11, 0.06);
+}
+
+/* Tooltip */
+.src-tooltip {
+  position: absolute;
+  bottom: calc(100% + 5px);
+  left: 50%;
+  transform: translateX(-50%);
+  min-width: 180px;
+  max-width: 280px;
+  background: var(--surface-elevated);
+  border: 1px solid var(--border-accent);
+  border-radius: var(--radius);
+  padding: 6px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  z-index: 50;
+  backdrop-filter: blur(4px);
+  pointer-events: none;
+}
+
+.src-tooltip-label {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.10em;
+  color: var(--primary);
+  text-transform: uppercase;
+  line-height: 1.4;
+}
+
+.src-tooltip-url {
+  font-family: var(--font-mono);
+  font-size: 8.5px;
+  letter-spacing: 0.06em;
+  color: var(--dim);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
