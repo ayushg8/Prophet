@@ -31,6 +31,18 @@ export interface StrikeVectorProps {
   source_ref_ids?: string[];
 }
 
+export interface StrikeWindowProps {
+  window_id: string;
+  rank: number;
+  start_date: string;
+  end_date: string;
+  confidence: 'high' | 'medium' | 'low';
+  confidence_score: number;
+  why_this_window?: string;
+  trigger_signals?: string[];
+  source_ref_ids?: string[];
+}
+
 export interface ForecastSummaryProps {
   one_line: string;
   recommended_demo_path: string;
@@ -42,6 +54,7 @@ export interface ForecastPanelData {
   forecast_id: string;
   generated_at: string;
   strategic_frame: StrategicFrameProps;
+  strike_windows?: StrikeWindowProps[];
   strike_vectors: StrikeVectorProps[];
   summary: ForecastSummaryProps;
   source_refs?: SourceRefProps[];
@@ -65,6 +78,24 @@ const DEFAULT_FORECAST: ForecastPanelData = {
       'Forecasting is sector-level only and does not identify live targets.',
     ],
   },
+  strike_windows: [
+    {
+      window_id: 'win_1',
+      rank: 1,
+      start_date: '2026-05-08',
+      end_date: '2026-05-18',
+      confidence: 'medium',
+      confidence_score: 0.67,
+      why_this_window:
+        'The May 14-15 Trump-Xi summit creates a high-value collection and positioning window around US-PRC negotiations.',
+      trigger_signals: [
+        'Trump-Xi bilateral summit',
+        'US-PRC diplomatic collection window',
+        'edge-appliance pre-positioning pattern',
+      ],
+      source_ref_ids: ['src_calendar_trump_xi', 'src_hist_8', 'src_hist_10'],
+    },
+  ],
   strike_vectors: [
     {
       vector_id: 'vec_1',
@@ -99,6 +130,11 @@ function confidenceLabel(score: number): string {
   return 'LOW';
 }
 
+function formatWindow(window: StrikeWindowProps | null): string {
+  if (!window) return 'NO WINDOW AVAILABLE';
+  return `${window.start_date} -> ${window.end_date}`;
+}
+
 // ── Component ─────────────────────────────────────────────────────────────
 
 export function ForecastPanel({ forecast }: ForecastPanelProps) {
@@ -108,6 +144,7 @@ export function ForecastPanel({ forecast }: ForecastPanelProps) {
 
   const data = forecast ?? DEFAULT_FORECAST;
   const topVector = data.strike_vectors?.[0] ?? null;
+  const topWindow = data.strike_windows?.[0] ?? null;
   const frame = data.strategic_frame;
   const summary = data.summary;
 
@@ -160,6 +197,28 @@ export function ForecastPanel({ forecast }: ForecastPanelProps) {
 
       {/* ── Two-column body ─────────────────────────────────────────── */}
       <div className="fp-body">
+        <div className="fp-deliverables" aria-label="Forecast deliverables">
+          <div className="fp-deliverable">
+            <span className="fp-deliverable-label">ATTACK METHOD / STRIKE VECTOR</span>
+            <span className="fp-deliverable-value">
+              {topVector?.vector_class ?? 'NO VECTOR AVAILABLE'}
+            </span>
+            <span className="fp-deliverable-note">
+              {topVector?.target_sector ?? 'Waiting for forecast output'}
+            </span>
+          </div>
+
+          <div className="fp-deliverable">
+            <span className="fp-deliverable-label">TIMEFRAME / STRIKE WINDOW</span>
+            <span className="fp-deliverable-value">{formatWindow(topWindow)}</span>
+            <span className="fp-deliverable-note">
+              {topWindow
+                ? `Rank ${topWindow.rank} · ${topWindow.confidence.toUpperCase()} confidence`
+                : 'Waiting for forecast output'}
+            </span>
+          </div>
+        </div>
+
         {/* Left column */}
         <div className="fp-col">
           <div className="fp-field">
