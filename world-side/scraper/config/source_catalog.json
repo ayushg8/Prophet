@@ -1,0 +1,2488 @@
+{
+  "schema_version": "prophet.scraper.source_catalog.v0.1",
+  "catalog_id": "prophet_world_side_scraper_sources",
+  "opsec_defaults": {
+    "run_location": "isolated_scraper_host_only",
+    "never_commit": [
+      "credentials",
+      "session files",
+      "raw scrape artifacts",
+      "real onion addresses",
+      "private channel exports",
+      "target lists",
+      "exploit payloads"
+    ],
+    "prompt_boundary": "Only sanitized records may leave the scraper host or be pasted into an AI prompt.",
+    "network_rules": [
+      "Collect only public sources unless Ayush explicitly approves a separate workflow.",
+      "Respect robots.txt and published rate limits for web sources.",
+      "Do not bypass login walls, CAPTCHAs, paywalls, or private invites.",
+      "Do not collect credential dumps, malware binaries, exploit payloads, or victim target lists."
+    ]
+  },
+  "lanes": {
+    "official_gov_feeds": {
+      "id": "official_gov_feeds",
+      "description": "Official US government vulnerability and advisory feeds suitable for direct citation.",
+      "collection_level": "official_record",
+      "requires_isolated_host": true,
+      "allowed_fields": [
+        "source_id",
+        "source_url",
+        "title",
+        "published_at",
+        "updated_at",
+        "cve_ids",
+        "affected_products",
+        "severity",
+        "summary",
+        "required_action",
+        "reference_urls"
+      ],
+      "blocked_fields": [
+        "credentials",
+        "session_tokens",
+        "exploit_payloads",
+        "victim_target_lists"
+      ],
+      "raw_content_policy": "cache_allowed",
+      "prompt_policy": "allowed_with_citation",
+      "sanitized_output": "official_feed_record"
+    },
+    "public_technical_chatter": {
+      "id": "public_technical_chatter",
+      "description": "Public technical discussion indexes, advisory databases, and repository activity used as early exploit-context signals.",
+      "collection_level": "public_metadata",
+      "requires_isolated_host": true,
+      "allowed_fields": [
+        "source_id",
+        "source_url",
+        "title",
+        "published_at",
+        "updated_at",
+        "cve_ids",
+        "product_names",
+        "tags",
+        "repository",
+        "author_org",
+        "short_excerpt",
+        "reference_urls"
+      ],
+      "blocked_fields": [
+        "full_exploit_code",
+        "weaponized_payloads",
+        "scanner_output",
+        "credentials",
+        "private_contact_info",
+        "victim_target_lists"
+      ],
+      "raw_content_policy": "discard_after_parse",
+      "prompt_policy": "sanitized_summary_only",
+      "sanitized_output": "technical_signal_record"
+    },
+    "public_social_chatter": {
+      "id": "public_social_chatter",
+      "description": "Public social posts and public community threads used only after minimization and deduplication.",
+      "collection_level": "public_summary",
+      "requires_isolated_host": true,
+      "allowed_fields": [
+        "source_id",
+        "platform",
+        "public_url",
+        "posted_at",
+        "observed_at",
+        "public_author_label",
+        "author_hash",
+        "cve_ids",
+        "product_names",
+        "topic_tags",
+        "engagement_counts",
+        "short_excerpt"
+      ],
+      "blocked_fields": [
+        "direct_messages",
+        "private_group_posts",
+        "personal_contact_info",
+        "raw_thread_exports",
+        "credentials",
+        "doxing_material",
+        "victim_target_lists"
+      ],
+      "raw_content_policy": "discard_after_parse",
+      "prompt_policy": "sanitized_summary_only",
+      "sanitized_output": "social_signal_record"
+    },
+    "high_risk_metadata_only": {
+      "id": "high_risk_metadata_only",
+      "description": "High-risk public or semi-public source families represented only by metadata labels. No endpoints, screenshots, raw text, credentials, or real hidden-service addresses belong in this repo.",
+      "collection_level": "metadata_only",
+      "requires_isolated_host": true,
+      "allowed_fields": [
+        "source_id",
+        "source_category",
+        "source_label",
+        "topic_hash",
+        "observed_at",
+        "first_seen_at",
+        "last_seen_at",
+        "language",
+        "claimed_actor",
+        "claimed_region",
+        "topic_tags",
+        "cve_ids",
+        "product_names",
+        "activity_count",
+        "analyst_summary"
+      ],
+      "blocked_fields": [
+        "real_hidden_service_addresses",
+        "raw_post_text",
+        "screenshots",
+        "credentials",
+        "session_files",
+        "contact_handles",
+        "payment_addresses",
+        "victim_target_lists",
+        "malware_samples",
+        "exploit_payloads"
+      ],
+      "raw_content_policy": "never_store",
+      "prompt_policy": "metadata_only",
+      "sanitized_output": "high_risk_metadata_record"
+    },
+    "osint_context_feeds": {
+      "id": "osint_context_feeds",
+      "description": "Public or API-gated context sources used only for broad geopolitical, infrastructure, transport, or exposure context. These are not target-enumeration lanes.",
+      "collection_level": "public_metadata",
+      "requires_isolated_host": true,
+      "allowed_fields": [
+        "source_id",
+        "source_url",
+        "title",
+        "observed_at",
+        "updated_at",
+        "region_hint",
+        "sector_hint",
+        "topic_tags",
+        "aggregate_count",
+        "analyst_summary"
+      ],
+      "blocked_fields": [
+        "raw_query_results",
+        "asset_ip_lists",
+        "credentials",
+        "personal_contact_info",
+        "victim_target_lists",
+        "tracking_identifiers",
+        "precise movement trails"
+      ],
+      "raw_content_policy": "discard_after_parse",
+      "prompt_policy": "sanitized_summary_only",
+      "sanitized_output": "osint_context_record"
+    },
+    "analysis_tooling_references": {
+      "id": "analysis_tooling_references",
+      "description": "Non-collection tools that may support visualization, simulation, or demo analysis. They are cataloged so agents do not confuse them with scrape targets.",
+      "collection_level": "metadata_only",
+      "requires_isolated_host": false,
+      "allowed_fields": [
+        "tool_id",
+        "tool_url",
+        "tool_name",
+        "use_case",
+        "analyst_summary"
+      ],
+      "blocked_fields": [
+        "credentials",
+        "session_tokens",
+        "private_project_exports",
+        "target_lists",
+        "exploit_payloads"
+      ],
+      "raw_content_policy": "never_store",
+      "prompt_policy": "metadata_only",
+      "sanitized_output": "tool_reference_record"
+    }
+  },
+  "sources": [
+    {
+      "id": "cisa_kev_json",
+      "enabled": true,
+      "lane": "official_gov_feeds",
+      "source_type": "gov_feed",
+      "display_name": "CISA Known Exploited Vulnerabilities JSON",
+      "collection": {
+        "method": "http_get",
+        "format": "json",
+        "url": "https://www.cisa.gov/sites/default/files/feeds/known_exploited_vulnerabilities.json",
+        "url_template": null,
+        "params": {},
+        "cadence_minutes": 360,
+        "auth_method": "none",
+        "respect_robots_txt": true,
+        "rate_limit_per_minute": 6
+      },
+      "normalization": {
+        "record_type": "vulnerability",
+        "extract_fields": [
+          "cveID",
+          "vendorProject",
+          "product",
+          "vulnerabilityName",
+          "dateAdded",
+          "dueDate",
+          "requiredAction",
+          "knownRansomwareCampaignUse",
+          "notes"
+        ],
+        "time_field_candidates": [
+          "dateAdded",
+          "dueDate"
+        ],
+        "dedupe_keys": [
+          "cveID",
+          "dateAdded"
+        ]
+      },
+      "safety": {
+        "store_raw": true,
+        "raw_retention_hours": 168,
+        "max_text_chars": 4000,
+        "prompt_eligibility": "allowed_with_citation",
+        "drop_content": [
+          "credentials",
+          "exploit_payloads",
+          "target_lists"
+        ],
+        "notes": "Official CISA feed; raw JSON may be cached for reproducible citation."
+      },
+      "relevance": {
+        "stage2_use": "exploit_context",
+        "default_weight": 0.95,
+        "tags": [
+          "kev",
+          "active_exploitation",
+          "official"
+        ]
+      }
+    },
+    {
+      "id": "nvd_cve_api_recent",
+      "enabled": true,
+      "lane": "official_gov_feeds",
+      "source_type": "gov_feed",
+      "display_name": "NVD CVE API 2.0 Recent Changes",
+      "collection": {
+        "method": "api",
+        "format": "json",
+        "url": "https://services.nvd.nist.gov/rest/json/cves/2.0",
+        "url_template": null,
+        "params": {
+          "pubStartDate": "{window_start_iso}",
+          "pubEndDate": "{window_end_iso}",
+          "resultsPerPage": "2000"
+        },
+        "cadence_minutes": 360,
+        "auth_method": "none",
+        "respect_robots_txt": true,
+        "rate_limit_per_minute": 2
+      },
+      "normalization": {
+        "record_type": "vulnerability",
+        "extract_fields": [
+          "vulnerabilities[].cve.id",
+          "vulnerabilities[].cve.published",
+          "vulnerabilities[].cve.lastModified",
+          "vulnerabilities[].cve.descriptions",
+          "vulnerabilities[].cve.references",
+          "vulnerabilities[].cve.metrics",
+          "vulnerabilities[].cve.weaknesses",
+          "vulnerabilities[].cve.configurations"
+        ],
+        "time_field_candidates": [
+          "published",
+          "lastModified"
+        ],
+        "dedupe_keys": [
+          "cve.id",
+          "lastModified"
+        ]
+      },
+      "safety": {
+        "store_raw": true,
+        "raw_retention_hours": 168,
+        "max_text_chars": 4000,
+        "prompt_eligibility": "allowed_with_citation",
+        "drop_content": [
+          "credentials",
+          "exploit_payloads",
+          "target_lists"
+        ],
+        "notes": "Use without an API key at conservative cadence; optional keys must never be added to this catalog."
+      },
+      "relevance": {
+        "stage2_use": "exploit_context",
+        "default_weight": 0.85,
+        "tags": [
+          "cve",
+          "nvd",
+          "official"
+        ]
+      }
+    },
+    {
+      "id": "first_epss_api",
+      "enabled": true,
+      "lane": "public_technical_chatter",
+      "source_type": "technical_api",
+      "display_name": "FIRST Exploit Prediction Scoring System API",
+      "collection": {
+        "method": "api",
+        "format": "json",
+        "url": "https://api.first.org/data/v1/epss?limit=100&order=!epss",
+        "url_template": "https://api.first.org/data/v1/epss?cve={cve_id}",
+        "params": {
+          "limit": "100",
+          "order": "!epss"
+        },
+        "cadence_minutes": 360,
+        "auth_method": "none",
+        "respect_robots_txt": true,
+        "rate_limit_per_minute": 2
+      },
+      "normalization": {
+        "record_type": "technical_signal",
+        "extract_fields": [
+          "cve",
+          "epss",
+          "percentile",
+          "date"
+        ],
+        "time_field_candidates": [
+          "date"
+        ],
+        "dedupe_keys": [
+          "cve",
+          "date"
+        ]
+      },
+      "safety": {
+        "store_raw": false,
+        "raw_retention_hours": 0,
+        "max_text_chars": 1000,
+        "prompt_eligibility": "after_sanitization",
+        "drop_content": [
+          "exploit_payloads",
+          "proof_of_concept",
+          "credentials",
+          "target_lists"
+        ],
+        "notes": "Collect EPSS score metadata only. Do not enrich with exploit writeups or proof-of-concept material."
+      },
+      "relevance": {
+        "stage2_use": "exploit_context",
+        "default_weight": 0.8,
+        "tags": [
+          "epss",
+          "exploit_probability",
+          "public_scoring"
+        ]
+      }
+    },
+    {
+      "id": "state_travel_advisories_rss",
+      "enabled": true,
+      "lane": "official_gov_feeds",
+      "source_type": "gov_feed",
+      "display_name": "U.S. State Department Travel Advisories RSS",
+      "collection": {
+        "method": "rss",
+        "format": "rss",
+        "url": "https://travel.state.gov/_res/rss/TAsTWs.xml",
+        "url_template": null,
+        "params": {},
+        "cadence_minutes": 720,
+        "auth_method": "none",
+        "respect_robots_txt": true,
+        "rate_limit_per_minute": 2
+      },
+      "normalization": {
+        "record_type": "advisory",
+        "extract_fields": [
+          "title",
+          "link",
+          "pubDate"
+        ],
+        "time_field_candidates": [
+          "pubDate"
+        ],
+        "dedupe_keys": [
+          "link",
+          "title"
+        ]
+      },
+      "safety": {
+        "store_raw": false,
+        "raw_retention_hours": 0,
+        "max_text_chars": 500,
+        "prompt_eligibility": "after_sanitization",
+        "drop_content": [
+          "full_advisory_body",
+          "personal_contact_info",
+          "credentials",
+          "target_lists"
+        ],
+        "notes": "Keep title, date, and link only as geopolitical instability context."
+      },
+      "relevance": {
+        "stage2_use": "timing_signal",
+        "default_weight": 0.65,
+        "tags": [
+          "state_department",
+          "travel_advisory",
+          "geopolitical_context"
+        ]
+      },
+      "options": {
+        "display_label": "State Department travel advisories",
+        "target_sector": "US travelers, embassies, and overseas operations",
+        "vector_class": "geopolitical instability timing signal",
+        "motive_hint": "regional instability or diplomatic risk",
+        "confidence": "medium",
+        "tags": [
+          "travel_advisory",
+          "state_department"
+        ]
+      }
+    },
+    {
+      "id": "doj_cyber_press_releases_api",
+      "enabled": true,
+      "lane": "official_gov_feeds",
+      "source_type": "gov_feed",
+      "display_name": "U.S. DOJ Cyber-Filtered Press Releases API",
+      "collection": {
+        "method": "api",
+        "format": "json",
+        "url": "https://www.justice.gov/api/v1/press_releases.json?pagesize=20&sort=created&direction=DESC&parameters%5Btitle%5D=cyber&fields=title,url,date,uuid",
+        "url_template": null,
+        "params": {
+          "pagesize": "20",
+          "sort": "created",
+          "direction": "DESC",
+          "parameters[title]": "cyber",
+          "fields": "title,url,date,uuid"
+        },
+        "cadence_minutes": 720,
+        "auth_method": "none",
+        "respect_robots_txt": true,
+        "rate_limit_per_minute": 2
+      },
+      "normalization": {
+        "record_type": "advisory",
+        "extract_fields": [
+          "title",
+          "url",
+          "date",
+          "uuid"
+        ],
+        "time_field_candidates": [
+          "date"
+        ],
+        "dedupe_keys": [
+          "uuid",
+          "url"
+        ]
+      },
+      "safety": {
+        "store_raw": false,
+        "raw_retention_hours": 0,
+        "max_text_chars": 500,
+        "prompt_eligibility": "after_sanitization",
+        "drop_content": [
+          "body",
+          "attachments",
+          "personal_contact_info",
+          "credentials",
+          "target_lists"
+        ],
+        "notes": "Collect DOJ title/date/link metadata only; omit press-release body text."
+      },
+      "relevance": {
+        "stage2_use": "timing_signal",
+        "default_weight": 0.7,
+        "tags": [
+          "doj",
+          "legal_pressure",
+          "indictments"
+        ]
+      }
+    },
+    {
+      "id": "federal_register_sanctions_api",
+      "enabled": true,
+      "lane": "official_gov_feeds",
+      "source_type": "gov_feed",
+      "display_name": "Federal Register Sanctions and Export-Control Search API",
+      "collection": {
+        "method": "api",
+        "format": "json",
+        "url": "https://www.federalregister.gov/api/v1/documents.json?conditions%5Bterm%5D=sanctions%20cyber%20export%20control&order=newest&per_page=20&fields%5B%5D=title&fields%5B%5D=publication_date&fields%5B%5D=html_url&fields%5B%5D=json_url&fields%5B%5D=agencies&fields%5B%5D=document_number",
+        "url_template": null,
+        "params": {
+          "conditions[term]": "sanctions cyber export control",
+          "order": "newest",
+          "per_page": "20"
+        },
+        "cadence_minutes": 720,
+        "auth_method": "none",
+        "respect_robots_txt": true,
+        "rate_limit_per_minute": 2
+      },
+      "normalization": {
+        "record_type": "advisory",
+        "extract_fields": [
+          "title",
+          "publication_date",
+          "html_url",
+          "json_url",
+          "agencies",
+          "document_number"
+        ],
+        "time_field_candidates": [
+          "publication_date"
+        ],
+        "dedupe_keys": [
+          "document_number",
+          "html_url"
+        ]
+      },
+      "safety": {
+        "store_raw": false,
+        "raw_retention_hours": 0,
+        "max_text_chars": 500,
+        "prompt_eligibility": "after_sanitization",
+        "drop_content": [
+          "body_html",
+          "full_text_xml",
+          "personal_contact_info",
+          "credentials",
+          "target_lists"
+        ],
+        "notes": "Use public document metadata only for sanctions/export-control pressure timing."
+      },
+      "relevance": {
+        "stage2_use": "timing_signal",
+        "default_weight": 0.68,
+        "tags": [
+          "federal_register",
+          "sanctions",
+          "export_control"
+        ]
+      }
+    },
+    {
+      "id": "ofac_sanctions_list_service",
+      "enabled": false,
+      "lane": "official_gov_feeds",
+      "source_type": "gov_feed",
+      "display_name": "OFAC Sanctions List Service",
+      "collection": {
+        "method": "api",
+        "format": "csv",
+        "url": "https://sanctionslistservice.ofac.treas.gov/api/PublicationPreview/exports/SDN.CSV",
+        "url_template": "https://sanctionslistservice.ofac.treas.gov/api/PublicationPreview/exports/{file_name}",
+        "params": {
+          "mode": "bulk_file_metadata_only",
+          "recent_actions_rss_retired": "2025-01-31"
+        },
+        "cadence_minutes": 720,
+        "auth_method": "none",
+        "respect_robots_txt": true,
+        "rate_limit_per_minute": 0
+      },
+      "normalization": {
+        "record_type": "advisory",
+        "extract_fields": [
+          "list_name",
+          "program",
+          "published_at",
+          "aggregate_count",
+          "analyst_summary"
+        ],
+        "time_field_candidates": [
+          "published_at",
+          "observed_at"
+        ],
+        "dedupe_keys": [
+          "list_name",
+          "program",
+          "published_at"
+        ]
+      },
+      "safety": {
+        "store_raw": false,
+        "raw_retention_hours": 0,
+        "max_text_chars": 280,
+        "prompt_eligibility": "metadata_only",
+        "drop_content": [
+          "individual_names",
+          "addresses",
+          "identification_numbers",
+          "raw_csv_rows",
+          "target_lists",
+          "credentials"
+        ],
+        "notes": "Disabled until a dedicated aggregate-only CSV collector exists. Use for sanctions pressure metadata, not screening or identity export."
+      },
+      "relevance": {
+        "stage2_use": "timing_signal",
+        "default_weight": 0.7,
+        "tags": [
+          "ofac",
+          "sanctions",
+          "legal_pressure"
+        ]
+      }
+    },
+    {
+      "id": "noaa_nhc_atlantic_rss",
+      "enabled": true,
+      "lane": "official_gov_feeds",
+      "source_type": "gov_feed",
+      "display_name": "NOAA NHC Atlantic Tropical Cyclone RSS",
+      "collection": {
+        "method": "rss",
+        "format": "rss",
+        "url": "https://www.nhc.noaa.gov/index-at.xml",
+        "url_template": null,
+        "params": {},
+        "cadence_minutes": 180,
+        "auth_method": "none",
+        "respect_robots_txt": true,
+        "rate_limit_per_minute": 2
+      },
+      "normalization": {
+        "record_type": "advisory",
+        "extract_fields": [
+          "title",
+          "link",
+          "pubDate"
+        ],
+        "time_field_candidates": [
+          "pubDate"
+        ],
+        "dedupe_keys": [
+          "link",
+          "title"
+        ]
+      },
+      "safety": {
+        "store_raw": false,
+        "raw_retention_hours": 0,
+        "max_text_chars": 500,
+        "prompt_eligibility": "after_sanitization",
+        "drop_content": [
+          "precise_facility_targets",
+          "personal_contact_info",
+          "credentials",
+          "target_lists"
+        ],
+        "notes": "Use storm headline/date/link as critical-infrastructure stress context, not as targeting information."
+      },
+      "relevance": {
+        "stage2_use": "timing_signal",
+        "default_weight": 0.45,
+        "tags": [
+          "noaa",
+          "hurricane",
+          "critical_infrastructure_stress"
+        ]
+      },
+      "options": {
+        "display_label": "NOAA NHC Atlantic tropical cyclone feed",
+        "target_sector": "US critical infrastructure under weather stress",
+        "vector_class": "critical-infrastructure weather stress signal",
+        "motive_hint": "disaster-response and reduced-staffing timing context",
+        "confidence": "medium",
+        "tags": [
+          "noaa",
+          "atlantic",
+          "hurricane"
+        ]
+      }
+    },
+    {
+      "id": "noaa_nhc_eastern_pacific_rss",
+      "enabled": true,
+      "lane": "official_gov_feeds",
+      "source_type": "gov_feed",
+      "display_name": "NOAA NHC Eastern Pacific Tropical Cyclone RSS",
+      "collection": {
+        "method": "rss",
+        "format": "rss",
+        "url": "https://www.nhc.noaa.gov/index-ep.xml",
+        "url_template": null,
+        "params": {},
+        "cadence_minutes": 180,
+        "auth_method": "none",
+        "respect_robots_txt": true,
+        "rate_limit_per_minute": 2
+      },
+      "normalization": {
+        "record_type": "advisory",
+        "extract_fields": [
+          "title",
+          "link",
+          "pubDate"
+        ],
+        "time_field_candidates": [
+          "pubDate"
+        ],
+        "dedupe_keys": [
+          "link",
+          "title"
+        ]
+      },
+      "safety": {
+        "store_raw": false,
+        "raw_retention_hours": 0,
+        "max_text_chars": 500,
+        "prompt_eligibility": "after_sanitization",
+        "drop_content": [
+          "precise_facility_targets",
+          "personal_contact_info",
+          "credentials",
+          "target_lists"
+        ],
+        "notes": "Use storm headline/date/link as Pacific and West Coast infrastructure stress context."
+      },
+      "relevance": {
+        "stage2_use": "timing_signal",
+        "default_weight": 0.4,
+        "tags": [
+          "noaa",
+          "hurricane",
+          "pacific",
+          "critical_infrastructure_stress"
+        ]
+      },
+      "options": {
+        "display_label": "NOAA NHC Eastern Pacific tropical cyclone feed",
+        "target_sector": "Pacific and West Coast critical infrastructure under weather stress",
+        "vector_class": "critical-infrastructure weather stress signal",
+        "motive_hint": "disaster-response and reduced-staffing timing context",
+        "confidence": "medium",
+        "tags": [
+          "noaa",
+          "eastern_pacific",
+          "hurricane"
+        ]
+      }
+    },
+    {
+      "id": "cisa_cybersecurity_advisories",
+      "enabled": true,
+      "lane": "official_gov_feeds",
+      "source_type": "gov_feed",
+      "display_name": "CISA Cybersecurity Alerts and Advisories",
+      "collection": {
+        "method": "html_index",
+        "format": "html",
+        "url": "https://www.cisa.gov/news-events/cybersecurity-advisories",
+        "url_template": null,
+        "params": {},
+        "cadence_minutes": 360,
+        "auth_method": "none",
+        "respect_robots_txt": true,
+        "rate_limit_per_minute": 6
+      },
+      "normalization": {
+        "record_type": "advisory",
+        "extract_fields": [
+          "advisory_id",
+          "title",
+          "published_at",
+          "updated_at",
+          "source_url",
+          "summary",
+          "cve_ids",
+          "mitigation_terms"
+        ],
+        "time_field_candidates": [
+          "published_at",
+          "updated_at"
+        ],
+        "dedupe_keys": [
+          "advisory_id",
+          "source_url"
+        ]
+      },
+      "safety": {
+        "store_raw": true,
+        "raw_retention_hours": 168,
+        "max_text_chars": 6000,
+        "prompt_eligibility": "allowed_with_citation",
+        "drop_content": [
+          "credentials",
+          "exploit_payloads",
+          "target_lists"
+        ],
+        "notes": "Official advisory pages can support demo citations and timing rationale."
+      },
+      "relevance": {
+        "stage2_use": "timing_signal",
+        "default_weight": 0.9,
+        "tags": [
+          "cisa",
+          "advisory",
+          "official"
+        ]
+      }
+    },
+    {
+      "id": "cisa_ics_advisories",
+      "enabled": true,
+      "lane": "official_gov_feeds",
+      "source_type": "gov_feed",
+      "display_name": "CISA ICS Advisories",
+      "collection": {
+        "method": "html_index",
+        "format": "html",
+        "url": "https://www.cisa.gov/news-events/ics-advisories",
+        "url_template": null,
+        "params": {},
+        "cadence_minutes": 720,
+        "auth_method": "none",
+        "respect_robots_txt": true,
+        "rate_limit_per_minute": 6
+      },
+      "normalization": {
+        "record_type": "advisory",
+        "extract_fields": [
+          "advisory_id",
+          "title",
+          "published_at",
+          "updated_at",
+          "source_url",
+          "vendor",
+          "product",
+          "cve_ids",
+          "critical_infrastructure_sector"
+        ],
+        "time_field_candidates": [
+          "published_at",
+          "updated_at"
+        ],
+        "dedupe_keys": [
+          "advisory_id",
+          "source_url"
+        ]
+      },
+      "safety": {
+        "store_raw": true,
+        "raw_retention_hours": 168,
+        "max_text_chars": 6000,
+        "prompt_eligibility": "allowed_with_citation",
+        "drop_content": [
+          "credentials",
+          "exploit_payloads",
+          "target_lists"
+        ],
+        "notes": "Useful for infrastructure and OT timing forecasts."
+      },
+      "relevance": {
+        "stage2_use": "timing_signal",
+        "default_weight": 0.85,
+        "tags": [
+          "cisa",
+          "ics",
+          "ot",
+          "official"
+        ]
+      }
+    },
+    {
+      "id": "github_advisory_database",
+      "enabled": true,
+      "lane": "public_technical_chatter",
+      "source_type": "technical_api",
+      "display_name": "GitHub Advisory Database",
+      "collection": {
+        "method": "api",
+        "format": "json",
+        "url": "https://api.github.com/advisories",
+        "url_template": null,
+        "params": {
+          "sort": "updated",
+          "direction": "desc",
+          "per_page": "100"
+        },
+        "cadence_minutes": 360,
+        "auth_method": "none",
+        "respect_robots_txt": true,
+        "rate_limit_per_minute": 1
+      },
+      "normalization": {
+        "record_type": "technical_signal",
+        "extract_fields": [
+          "ghsa_id",
+          "cve_id",
+          "url",
+          "html_url",
+          "summary",
+          "description",
+          "severity",
+          "published_at",
+          "updated_at",
+          "vulnerabilities",
+          "references"
+        ],
+        "time_field_candidates": [
+          "published_at",
+          "updated_at"
+        ],
+        "dedupe_keys": [
+          "ghsa_id",
+          "updated_at"
+        ]
+      },
+      "safety": {
+        "store_raw": false,
+        "raw_retention_hours": 0,
+        "max_text_chars": 2000,
+        "prompt_eligibility": "after_sanitization",
+        "drop_content": [
+          "exploit_code",
+          "credentials",
+          "target_lists"
+        ],
+        "notes": "Keep summaries and references; do not copy large advisory bodies into prompts."
+      },
+      "relevance": {
+        "stage2_use": "exploit_context",
+        "default_weight": 0.75,
+        "tags": [
+          "github",
+          "advisory",
+          "open_source"
+        ]
+      }
+    },
+    {
+      "id": "nuclei_templates_cve_commits",
+      "enabled": true,
+      "lane": "public_technical_chatter",
+      "source_type": "technical_api",
+      "display_name": "ProjectDiscovery Nuclei Templates CVE Commit Metadata",
+      "collection": {
+        "method": "api",
+        "format": "json",
+        "url": "https://api.github.com/repos/projectdiscovery/nuclei-templates/commits",
+        "url_template": null,
+        "params": {
+          "path": "http/cves",
+          "per_page": "100"
+        },
+        "cadence_minutes": 720,
+        "auth_method": "none",
+        "respect_robots_txt": true,
+        "rate_limit_per_minute": 1
+      },
+      "normalization": {
+        "record_type": "technical_signal",
+        "extract_fields": [
+          "sha",
+          "commit.author.date",
+          "commit.message",
+          "html_url",
+          "author.login"
+        ],
+        "time_field_candidates": [
+          "commit.author.date",
+          "commit.committer.date"
+        ],
+        "dedupe_keys": [
+          "sha"
+        ]
+      },
+      "safety": {
+        "store_raw": false,
+        "raw_retention_hours": 0,
+        "max_text_chars": 1000,
+        "prompt_eligibility": "after_sanitization",
+        "drop_content": [
+          "template_body",
+          "request_payloads",
+          "matcher_payloads",
+          "exploit_code",
+          "credentials",
+          "target_lists"
+        ],
+        "notes": "Collect commit metadata only. Do not fetch or store template contents."
+      },
+      "relevance": {
+        "stage2_use": "exploit_context",
+        "default_weight": 0.65,
+        "tags": [
+          "nuclei",
+          "template_metadata",
+          "public_research"
+        ]
+      }
+    },
+    {
+      "id": "openwall_oss_security_index",
+      "enabled": true,
+      "lane": "public_technical_chatter",
+      "source_type": "technical_index",
+      "display_name": "Openwall oss-security Public Archive Index",
+      "collection": {
+        "method": "html_index",
+        "format": "html",
+        "url": "https://www.openwall.com/lists/oss-security/",
+        "url_template": null,
+        "params": {},
+        "cadence_minutes": 720,
+        "auth_method": "none",
+        "respect_robots_txt": true,
+        "rate_limit_per_minute": 4
+      },
+      "normalization": {
+        "record_type": "technical_signal",
+        "extract_fields": [
+          "thread_url",
+          "subject",
+          "posted_at",
+          "public_author_label",
+          "cve_ids",
+          "product_names",
+          "short_excerpt"
+        ],
+        "time_field_candidates": [
+          "posted_at"
+        ],
+        "dedupe_keys": [
+          "thread_url",
+          "subject"
+        ]
+      },
+      "safety": {
+        "store_raw": false,
+        "raw_retention_hours": 0,
+        "max_text_chars": 1000,
+        "prompt_eligibility": "after_sanitization",
+        "drop_content": [
+          "full_thread_body",
+          "exploit_code",
+          "credentials",
+          "target_lists"
+        ],
+        "notes": "Use public thread metadata and minimal excerpts only."
+      },
+      "relevance": {
+        "stage2_use": "exploit_context",
+        "default_weight": 0.6,
+        "tags": [
+          "mailing_list",
+          "vulnerability_discussion",
+          "public_research"
+        ]
+      }
+    },
+    {
+      "id": "fortinet_psirt_rss",
+      "enabled": true,
+      "lane": "public_technical_chatter",
+      "source_type": "vendor_advisory",
+      "display_name": "Fortinet FortiGuard PSIRT Advisory RSS",
+      "collection": {
+        "method": "rss",
+        "format": "rss",
+        "url": "https://www.fortiguard.com/rss/ir.xml",
+        "url_template": null,
+        "params": {},
+        "cadence_minutes": 360,
+        "auth_method": "none",
+        "respect_robots_txt": true,
+        "rate_limit_per_minute": 2
+      },
+      "normalization": {
+        "record_type": "technical_signal",
+        "extract_fields": [
+          "title",
+          "link",
+          "pubDate"
+        ],
+        "time_field_candidates": [
+          "pubDate"
+        ],
+        "dedupe_keys": [
+          "link",
+          "title"
+        ]
+      },
+      "safety": {
+        "store_raw": false,
+        "raw_retention_hours": 0,
+        "max_text_chars": 500,
+        "prompt_eligibility": "after_sanitization",
+        "drop_content": [
+          "full_advisory_body",
+          "exploit_code",
+          "credentials",
+          "target_lists"
+        ],
+        "notes": "Collect advisory headline/date/link only. Do not fetch proof-of-concept material or customer-specific guidance."
+      },
+      "relevance": {
+        "stage2_use": "exploit_context",
+        "default_weight": 0.68,
+        "tags": [
+          "fortinet",
+          "psirt",
+          "edge_appliance"
+        ]
+      },
+      "options": {
+        "display_label": "Fortinet PSIRT advisory feed",
+        "target_sector": "organizations using Fortinet edge and security products",
+        "vector_class": "vendor vulnerability advisory signal",
+        "motive_hint": "public patch and advisory timing",
+        "confidence": "medium",
+        "tags": [
+          "fortinet",
+          "psirt",
+          "vendor_advisory"
+        ]
+      }
+    },
+    {
+      "id": "ivanti_security_advisory_rss",
+      "enabled": true,
+      "lane": "public_technical_chatter",
+      "source_type": "vendor_advisory",
+      "display_name": "Ivanti Security Advisory RSS",
+      "collection": {
+        "method": "rss",
+        "format": "rss",
+        "url": "https://www.ivanti.com/blog/topics/security-advisory/rss",
+        "url_template": null,
+        "params": {},
+        "cadence_minutes": 360,
+        "auth_method": "none",
+        "respect_robots_txt": true,
+        "rate_limit_per_minute": 2
+      },
+      "normalization": {
+        "record_type": "technical_signal",
+        "extract_fields": [
+          "title",
+          "link",
+          "pubDate"
+        ],
+        "time_field_candidates": [
+          "pubDate"
+        ],
+        "dedupe_keys": [
+          "link",
+          "title"
+        ]
+      },
+      "safety": {
+        "store_raw": false,
+        "raw_retention_hours": 0,
+        "max_text_chars": 500,
+        "prompt_eligibility": "after_sanitization",
+        "drop_content": [
+          "full_advisory_body",
+          "exploit_code",
+          "credentials",
+          "target_lists"
+        ],
+        "notes": "Collect advisory headline/date/link only; no customer portal content or support-case data."
+      },
+      "relevance": {
+        "stage2_use": "exploit_context",
+        "default_weight": 0.68,
+        "tags": [
+          "ivanti",
+          "vpn",
+          "edge_appliance"
+        ]
+      },
+      "options": {
+        "display_label": "Ivanti security advisory feed",
+        "target_sector": "organizations using Ivanti edge and enterprise management products",
+        "vector_class": "vendor vulnerability advisory signal",
+        "motive_hint": "public patch and advisory timing",
+        "confidence": "medium",
+        "tags": [
+          "ivanti",
+          "vendor_advisory",
+          "edge_appliance"
+        ]
+      }
+    },
+    {
+      "id": "microsoft_msrc_cvrf_api",
+      "enabled": false,
+      "lane": "public_technical_chatter",
+      "source_type": "vendor_advisory",
+      "display_name": "Microsoft MSRC Security Update Guide CVRF API",
+      "collection": {
+        "method": "api",
+        "format": "json",
+        "url": "https://api.msrc.microsoft.com/cvrf/v3.0/updates",
+        "url_template": "https://api.msrc.microsoft.com/cvrf/v3.0/cvrf/{yyyy-MMM}",
+        "params": {
+          "period_required": "true"
+        },
+        "cadence_minutes": 720,
+        "auth_method": "none",
+        "respect_robots_txt": true,
+        "rate_limit_per_minute": 1
+      },
+      "normalization": {
+        "record_type": "technical_signal",
+        "extract_fields": [
+          "DocumentTitle",
+          "DocumentTracking",
+          "Vulnerability",
+          "ProductTree"
+        ],
+        "time_field_candidates": [
+          "InitialReleaseDate",
+          "CurrentReleaseDate"
+        ],
+        "dedupe_keys": [
+          "ID",
+          "CurrentReleaseDate"
+        ]
+      },
+      "safety": {
+        "store_raw": false,
+        "raw_retention_hours": 0,
+        "max_text_chars": 500,
+        "prompt_eligibility": "after_sanitization",
+        "drop_content": [
+          "exploitability_assessment_details",
+          "customer_specific_data",
+          "exploit_code",
+          "credentials",
+          "target_lists"
+        ],
+        "notes": "Disabled until a period-aware collector exists; cataloged as a safe vendor-advisory lane."
+      },
+      "relevance": {
+        "stage2_use": "exploit_context",
+        "default_weight": 0.65,
+        "tags": [
+          "microsoft",
+          "msrc",
+          "patch_tuesday"
+        ]
+      }
+    },
+    {
+      "id": "reddit_security_public_new",
+      "enabled": true,
+      "lane": "public_social_chatter",
+      "source_type": "public_social",
+      "display_name": "Reddit Public Security Communities New Posts",
+      "collection": {
+        "method": "api",
+        "format": "json",
+        "url": null,
+        "url_template": "https://www.reddit.com/r/{community}/new/.json",
+        "params": {
+          "communities": [
+            "netsec",
+            "blueteamsec",
+            "cybersecurity"
+          ],
+          "limit": "50"
+        },
+        "cadence_minutes": 180,
+        "auth_method": "none",
+        "respect_robots_txt": true,
+        "rate_limit_per_minute": 1
+      },
+      "normalization": {
+        "record_type": "social_signal",
+        "extract_fields": [
+          "platform",
+          "community",
+          "post_id",
+          "title",
+          "permalink",
+          "created_utc",
+          "score",
+          "num_comments",
+          "cve_ids",
+          "product_names",
+          "short_excerpt"
+        ],
+        "time_field_candidates": [
+          "created_utc"
+        ],
+        "dedupe_keys": [
+          "platform",
+          "post_id"
+        ]
+      },
+      "safety": {
+        "store_raw": false,
+        "raw_retention_hours": 0,
+        "max_text_chars": 500,
+        "prompt_eligibility": "after_sanitization",
+        "drop_content": [
+          "comments_body",
+          "direct_messages",
+          "personal_contact_info",
+          "credentials",
+          "target_lists"
+        ],
+        "notes": "Collect public post metadata and titles; avoid full comment trees."
+      },
+      "relevance": {
+        "stage2_use": "timing_signal",
+        "default_weight": 0.45,
+        "tags": [
+          "reddit",
+          "public_social",
+          "community_chatter"
+        ]
+      }
+    },
+    {
+      "id": "mastodon_public_security_tags",
+      "enabled": true,
+      "lane": "public_social_chatter",
+      "source_type": "public_social",
+      "display_name": "Mastodon Public Security Hashtag RSS",
+      "collection": {
+        "method": "rss",
+        "format": "rss",
+        "url": null,
+        "url_template": "https://{instance}/tags/{tag}.rss",
+        "params": {
+          "instances": [
+            "infosec.exchange",
+            "mastodon.social"
+          ],
+          "tags": [
+            "cve",
+            "vulnerability",
+            "ransomware",
+            "threatintel"
+          ]
+        },
+        "cadence_minutes": 180,
+        "auth_method": "none",
+        "respect_robots_txt": true,
+        "rate_limit_per_minute": 2
+      },
+      "normalization": {
+        "record_type": "social_signal",
+        "extract_fields": [
+          "platform",
+          "instance",
+          "tag",
+          "entry_id",
+          "public_url",
+          "posted_at",
+          "public_author_label",
+          "author_hash",
+          "cve_ids",
+          "product_names",
+          "short_excerpt"
+        ],
+        "time_field_candidates": [
+          "posted_at",
+          "updated_at"
+        ],
+        "dedupe_keys": [
+          "platform",
+          "entry_id"
+        ]
+      },
+      "safety": {
+        "store_raw": false,
+        "raw_retention_hours": 0,
+        "max_text_chars": 500,
+        "prompt_eligibility": "after_sanitization",
+        "drop_content": [
+          "full_post_body",
+          "direct_messages",
+          "personal_contact_info",
+          "credentials",
+          "target_lists"
+        ],
+        "notes": "Public hashtag RSS only; hash authors before local storage when possible."
+      },
+      "relevance": {
+        "stage2_use": "timing_signal",
+        "default_weight": 0.4,
+        "tags": [
+          "mastodon",
+          "public_social",
+          "hashtag_chatter"
+        ]
+      }
+    },
+    {
+      "id": "telegram_public_channel_metadata",
+      "enabled": false,
+      "lane": "public_social_chatter",
+      "source_type": "public_social",
+      "display_name": "Telegram Public Channel Metadata Placeholder",
+      "collection": {
+        "method": "manual_metadata_export",
+        "format": "metadata_jsonl",
+        "url": null,
+        "url_template": null,
+        "params": {
+          "configured_out_of_band": "true",
+          "endpoint_policy": "do_not_commit_channel_names_or_invites"
+        },
+        "cadence_minutes": 360,
+        "auth_method": "not_applicable",
+        "respect_robots_txt": true,
+        "rate_limit_per_minute": 0
+      },
+      "normalization": {
+        "record_type": "social_signal",
+        "extract_fields": [
+          "source_label",
+          "topic_hash",
+          "observed_at",
+          "language",
+          "topic_tags",
+          "activity_count",
+          "analyst_summary"
+        ],
+        "time_field_candidates": [
+          "observed_at"
+        ],
+        "dedupe_keys": [
+          "source_label",
+          "topic_hash",
+          "observed_at"
+        ]
+      },
+      "safety": {
+        "store_raw": false,
+        "raw_retention_hours": 0,
+        "max_text_chars": 280,
+        "prompt_eligibility": "metadata_only",
+        "drop_content": [
+          "channel_names",
+          "invite_links",
+          "handles",
+          "message_text",
+          "media",
+          "phone_numbers",
+          "credentials",
+          "target_lists",
+          "exploit_payloads"
+        ],
+        "notes": "Disabled by default. Telegram collection must run only on the isolated scraper host and emit sanitized summaries without handles or raw posts."
+      },
+      "relevance": {
+        "stage2_use": "timing_signal",
+        "default_weight": 0.45,
+        "tags": [
+          "telegram",
+          "public_chatter",
+          "metadata_only"
+        ]
+      }
+    },
+    {
+      "id": "shodan_context_api",
+      "enabled": false,
+      "lane": "osint_context_feeds",
+      "source_type": "osint_context",
+      "display_name": "Shodan Internet Exposure Context API",
+      "collection": {
+        "method": "api",
+        "format": "json",
+        "url": "https://api.shodan.io/shodan/host/search",
+        "url_template": "https://api.shodan.io/shodan/host/search?query={aggregate_query}",
+        "params": {
+          "aggregate_only": "true",
+          "credential_policy": "api_key_out_of_repo"
+        },
+        "cadence_minutes": 720,
+        "auth_method": "api_key_required",
+        "respect_robots_txt": true,
+        "rate_limit_per_minute": 0
+      },
+      "normalization": {
+        "record_type": "technical_signal",
+        "extract_fields": [
+          "query_label",
+          "aggregate_count",
+          "country_counts",
+          "product_family",
+          "observed_at"
+        ],
+        "time_field_candidates": [
+          "observed_at"
+        ],
+        "dedupe_keys": [
+          "query_label",
+          "observed_at"
+        ]
+      },
+      "safety": {
+        "store_raw": false,
+        "raw_retention_hours": 0,
+        "max_text_chars": 280,
+        "prompt_eligibility": "metadata_only",
+        "drop_content": [
+          "host_results",
+          "ip_addresses",
+          "banners",
+          "ports",
+          "screenshots",
+          "credentials",
+          "target_lists"
+        ],
+        "notes": "Disabled. Treat as aggregate exposure context only; never export host lists, banners, IPs, or targetable search results."
+      },
+      "relevance": {
+        "stage2_use": "background_context",
+        "default_weight": 0.35,
+        "tags": [
+          "shodan",
+          "internet_exposure",
+          "aggregate_only"
+        ]
+      }
+    },
+    {
+      "id": "exa_osint_search_api",
+      "enabled": false,
+      "lane": "osint_context_feeds",
+      "source_type": "osint_context",
+      "display_name": "Exa AI OSINT Search API",
+      "collection": {
+        "method": "api",
+        "format": "json",
+        "url": "https://api.exa.ai/search",
+        "url_template": null,
+        "params": {
+          "summary_only": "true",
+          "credential_policy": "api_key_out_of_repo"
+        },
+        "cadence_minutes": 720,
+        "auth_method": "api_key_required",
+        "respect_robots_txt": true,
+        "rate_limit_per_minute": 0
+      },
+      "normalization": {
+        "record_type": "advisory",
+        "extract_fields": [
+          "query_label",
+          "result_title",
+          "result_url",
+          "published_at",
+          "analyst_summary"
+        ],
+        "time_field_candidates": [
+          "published_at",
+          "observed_at"
+        ],
+        "dedupe_keys": [
+          "result_url",
+          "query_label"
+        ]
+      },
+      "safety": {
+        "store_raw": false,
+        "raw_retention_hours": 0,
+        "max_text_chars": 280,
+        "prompt_eligibility": "after_sanitization",
+        "drop_content": [
+          "full_page_text",
+          "raw_search_results",
+          "credentials",
+          "personal_contact_info",
+          "target_lists",
+          "exploit_payloads"
+        ],
+        "notes": "Disabled until an API-key workflow exists. Use only for summarized public OSINT context and citations."
+      },
+      "relevance": {
+        "stage2_use": "background_context",
+        "default_weight": 0.4,
+        "tags": [
+          "exa",
+          "osint_search",
+          "summary_only"
+        ]
+      }
+    },
+    {
+      "id": "osint_framework_reference",
+      "enabled": false,
+      "lane": "analysis_tooling_references",
+      "source_type": "osint_context",
+      "display_name": "OSINT Framework Reference",
+      "collection": {
+        "method": "html_index",
+        "format": "html",
+        "url": "https://osintframework.com/",
+        "url_template": null,
+        "params": {},
+        "cadence_minutes": 1440,
+        "auth_method": "none",
+        "respect_robots_txt": true,
+        "rate_limit_per_minute": 0
+      },
+      "normalization": {
+        "record_type": "advisory",
+        "extract_fields": [
+          "tool_category",
+          "tool_name",
+          "public_url",
+          "analyst_summary"
+        ],
+        "time_field_candidates": [
+          "observed_at"
+        ],
+        "dedupe_keys": [
+          "tool_name",
+          "public_url"
+        ]
+      },
+      "safety": {
+        "store_raw": false,
+        "raw_retention_hours": 0,
+        "max_text_chars": 280,
+        "prompt_eligibility": "metadata_only",
+        "drop_content": [
+          "credentialed_tools",
+          "target_lists",
+          "personal_contact_info",
+          "exploit_payloads"
+        ],
+        "notes": "Cataloged as a reference, not a scrape target. Human approval required before adding any specific tool."
+      },
+      "relevance": {
+        "stage2_use": "background_context",
+        "default_weight": 0.2,
+        "tags": [
+          "osint_framework",
+          "reference"
+        ]
+      }
+    },
+    {
+      "id": "aishub_ais_api",
+      "enabled": false,
+      "lane": "osint_context_feeds",
+      "source_type": "osint_context",
+      "display_name": "AISHub AIS Shipping API",
+      "collection": {
+        "method": "api",
+        "format": "json",
+        "url": "https://data.aishub.net/ws.php",
+        "url_template": null,
+        "params": {
+          "aggregate_only": "true",
+          "credential_policy": "api_key_out_of_repo"
+        },
+        "cadence_minutes": 1440,
+        "auth_method": "api_key_required",
+        "respect_robots_txt": true,
+        "rate_limit_per_minute": 0
+      },
+      "normalization": {
+        "record_type": "advisory",
+        "extract_fields": [
+          "region_label",
+          "aggregate_count",
+          "observed_at",
+          "analyst_summary"
+        ],
+        "time_field_candidates": [
+          "observed_at"
+        ],
+        "dedupe_keys": [
+          "region_label",
+          "observed_at"
+        ]
+      },
+      "safety": {
+        "store_raw": false,
+        "raw_retention_hours": 0,
+        "max_text_chars": 280,
+        "prompt_eligibility": "metadata_only",
+        "drop_content": [
+          "vessel_identifiers",
+          "mmsi",
+          "imo",
+          "precise_tracks",
+          "coordinates",
+          "target_lists",
+          "credentials"
+        ],
+        "notes": "Disabled. Use only aggregate maritime stress or disruption context, never vessel-level tracking."
+      },
+      "relevance": {
+        "stage2_use": "background_context",
+        "default_weight": 0.3,
+        "tags": [
+          "ais",
+          "shipping",
+          "aggregate_only"
+        ]
+      }
+    },
+    {
+      "id": "barentswatch_historic_ais_api",
+      "enabled": false,
+      "lane": "osint_context_feeds",
+      "source_type": "osint_context",
+      "display_name": "BarentsWatch Historic AIS API",
+      "collection": {
+        "method": "api",
+        "format": "json",
+        "url": "https://developer.barentswatch.no/docs/AIS/historic-ais-api/",
+        "url_template": null,
+        "params": {
+          "aggregate_only": "true",
+          "credential_policy": "account_or_token_out_of_repo"
+        },
+        "cadence_minutes": 1440,
+        "auth_method": "account_required",
+        "respect_robots_txt": true,
+        "rate_limit_per_minute": 0
+      },
+      "normalization": {
+        "record_type": "advisory",
+        "extract_fields": [
+          "region_label",
+          "aggregate_count",
+          "time_window",
+          "analyst_summary"
+        ],
+        "time_field_candidates": [
+          "observed_at",
+          "time_window"
+        ],
+        "dedupe_keys": [
+          "region_label",
+          "time_window"
+        ]
+      },
+      "safety": {
+        "store_raw": false,
+        "raw_retention_hours": 0,
+        "max_text_chars": 280,
+        "prompt_eligibility": "metadata_only",
+        "drop_content": [
+          "vessel_identifiers",
+          "mmsi",
+          "imo",
+          "precise_tracks",
+          "coordinates",
+          "target_lists",
+          "credentials"
+        ],
+        "notes": "Disabled. Treat as aggregate maritime context only after terms and auth are reviewed."
+      },
+      "relevance": {
+        "stage2_use": "background_context",
+        "default_weight": 0.25,
+        "tags": [
+          "ais",
+          "historical_shipping",
+          "aggregate_only"
+        ]
+      }
+    },
+    {
+      "id": "marinecadastre_vessel_traffic_data",
+      "enabled": false,
+      "lane": "osint_context_feeds",
+      "source_type": "osint_context",
+      "display_name": "MarineCadastre Vessel Traffic Data",
+      "collection": {
+        "method": "html_index",
+        "format": "html",
+        "url": "https://hub.marinecadastre.gov/pages/vesseltraffic",
+        "url_template": null,
+        "params": {
+          "large_download_policy": "manual_review_required"
+        },
+        "cadence_minutes": 1440,
+        "auth_method": "none",
+        "respect_robots_txt": true,
+        "rate_limit_per_minute": 0
+      },
+      "normalization": {
+        "record_type": "advisory",
+        "extract_fields": [
+          "dataset_name",
+          "coverage_window",
+          "region_label",
+          "analyst_summary"
+        ],
+        "time_field_candidates": [
+          "coverage_window",
+          "observed_at"
+        ],
+        "dedupe_keys": [
+          "dataset_name",
+          "coverage_window"
+        ]
+      },
+      "safety": {
+        "store_raw": false,
+        "raw_retention_hours": 0,
+        "max_text_chars": 280,
+        "prompt_eligibility": "metadata_only",
+        "drop_content": [
+          "bulk_tracks",
+          "vessel_identifiers",
+          "coordinates",
+          "large_archives",
+          "target_lists"
+        ],
+        "notes": "Disabled because data dumps are large and movement-level. Use only aggregate, delayed context after human review."
+      },
+      "relevance": {
+        "stage2_use": "background_context",
+        "default_weight": 0.25,
+        "tags": [
+          "marinecadastre",
+          "shipping",
+          "delayed_dataset"
+        ]
+      }
+    },
+    {
+      "id": "kaggle_ais_dataset_reference",
+      "enabled": false,
+      "lane": "analysis_tooling_references",
+      "source_type": "osint_context",
+      "display_name": "Kaggle AIS Dataset Reference",
+      "collection": {
+        "method": "html_index",
+        "format": "html",
+        "url": "https://www.kaggle.com/datasets/eminserkanerdonmez/ais-dataset/data",
+        "url_template": null,
+        "params": {},
+        "cadence_minutes": 1440,
+        "auth_method": "account_required",
+        "respect_robots_txt": true,
+        "rate_limit_per_minute": 0
+      },
+      "normalization": {
+        "record_type": "advisory",
+        "extract_fields": [
+          "dataset_name",
+          "license",
+          "coverage_window",
+          "analyst_summary"
+        ],
+        "time_field_candidates": [
+          "observed_at"
+        ],
+        "dedupe_keys": [
+          "dataset_name"
+        ]
+      },
+      "safety": {
+        "store_raw": false,
+        "raw_retention_hours": 0,
+        "max_text_chars": 280,
+        "prompt_eligibility": "metadata_only",
+        "drop_content": [
+          "bulk_tracks",
+          "vessel_identifiers",
+          "coordinates",
+          "private_dataset_exports",
+          "credentials"
+        ],
+        "notes": "Disabled. Dataset account/licensing review required; do not download bulk movement data into the repo."
+      },
+      "relevance": {
+        "stage2_use": "background_context",
+        "default_weight": 0.15,
+        "tags": [
+          "kaggle",
+          "ais",
+          "dataset_reference"
+        ]
+      }
+    },
+    {
+      "id": "flightradar24_context_reference",
+      "enabled": false,
+      "lane": "osint_context_feeds",
+      "source_type": "osint_context",
+      "display_name": "Flightradar24 Flight Context Reference",
+      "collection": {
+        "method": "html_index",
+        "format": "html",
+        "url": "https://www.flightradar24.com/",
+        "url_template": null,
+        "params": {
+          "aggregate_only": "true"
+        },
+        "cadence_minutes": 1440,
+        "auth_method": "commercial_or_terms_review_required",
+        "respect_robots_txt": true,
+        "rate_limit_per_minute": 0
+      },
+      "normalization": {
+        "record_type": "advisory",
+        "extract_fields": [
+          "region_label",
+          "aggregate_count",
+          "observed_at",
+          "analyst_summary"
+        ],
+        "time_field_candidates": [
+          "observed_at"
+        ],
+        "dedupe_keys": [
+          "region_label",
+          "observed_at"
+        ]
+      },
+      "safety": {
+        "store_raw": false,
+        "raw_retention_hours": 0,
+        "max_text_chars": 280,
+        "prompt_eligibility": "metadata_only",
+        "drop_content": [
+          "tail_numbers",
+          "flight_numbers",
+          "precise_tracks",
+          "coordinates",
+          "target_lists",
+          "credentials"
+        ],
+        "notes": "Disabled. Treat as broad disruption context only after terms review; never collect flight-level tracking."
+      },
+      "relevance": {
+        "stage2_use": "background_context",
+        "default_weight": 0.25,
+        "tags": [
+          "flight_tracking",
+          "transportation",
+          "aggregate_only"
+        ]
+      }
+    },
+    {
+      "id": "defcon_inspiration_reference",
+      "enabled": false,
+      "lane": "analysis_tooling_references",
+      "source_type": "osint_context",
+      "display_name": "Sample DEFCON Projects Reference",
+      "collection": {
+        "method": "html_index",
+        "format": "html",
+        "url": "https://defcon-inspiration.cerebralvalley.ai/",
+        "url_template": null,
+        "params": {},
+        "cadence_minutes": 1440,
+        "auth_method": "none",
+        "respect_robots_txt": true,
+        "rate_limit_per_minute": 0
+      },
+      "normalization": {
+        "record_type": "advisory",
+        "extract_fields": [
+          "project_title",
+          "public_url",
+          "category",
+          "analyst_summary"
+        ],
+        "time_field_candidates": [
+          "observed_at"
+        ],
+        "dedupe_keys": [
+          "project_title",
+          "public_url"
+        ]
+      },
+      "safety": {
+        "store_raw": false,
+        "raw_retention_hours": 0,
+        "max_text_chars": 280,
+        "prompt_eligibility": "metadata_only",
+        "drop_content": [
+          "exploit_steps",
+          "payloads",
+          "credentials",
+          "target_lists"
+        ],
+        "notes": "Reference-only idea source; not a live intelligence feed."
+      },
+      "relevance": {
+        "stage2_use": "background_context",
+        "default_weight": 0.1,
+        "tags": [
+          "defcon",
+          "reference",
+          "ideas"
+        ]
+      }
+    },
+    {
+      "id": "kepler_gl_visualization_tool",
+      "enabled": false,
+      "lane": "analysis_tooling_references",
+      "source_type": "osint_context",
+      "display_name": "Kepler.gl Visualization Tool",
+      "collection": {
+        "method": "html_index",
+        "format": "html",
+        "url": "https://kepler.gl/",
+        "url_template": null,
+        "params": {},
+        "cadence_minutes": 1440,
+        "auth_method": "none",
+        "respect_robots_txt": true,
+        "rate_limit_per_minute": 0
+      },
+      "normalization": {
+        "record_type": "advisory",
+        "extract_fields": [
+          "tool_name",
+          "public_url",
+          "use_case",
+          "analyst_summary"
+        ],
+        "time_field_candidates": [
+          "observed_at"
+        ],
+        "dedupe_keys": [
+          "tool_name"
+        ]
+      },
+      "safety": {
+        "store_raw": false,
+        "raw_retention_hours": 0,
+        "max_text_chars": 280,
+        "prompt_eligibility": "metadata_only",
+        "drop_content": [
+          "private_project_exports",
+          "precise_tracks",
+          "target_lists",
+          "credentials"
+        ],
+        "notes": "Visualization reference only. Do not store private map exports or movement-level data in the repo."
+      },
+      "relevance": {
+        "stage2_use": "background_context",
+        "default_weight": 0.1,
+        "tags": [
+          "visualization",
+          "kepler_gl"
+        ]
+      }
+    },
+    {
+      "id": "deck_gl_visualization_tool",
+      "enabled": false,
+      "lane": "analysis_tooling_references",
+      "source_type": "osint_context",
+      "display_name": "deck.gl Visualization Tool",
+      "collection": {
+        "method": "html_index",
+        "format": "html",
+        "url": "https://deck.gl/",
+        "url_template": null,
+        "params": {},
+        "cadence_minutes": 1440,
+        "auth_method": "none",
+        "respect_robots_txt": true,
+        "rate_limit_per_minute": 0
+      },
+      "normalization": {
+        "record_type": "advisory",
+        "extract_fields": [
+          "tool_name",
+          "public_url",
+          "use_case",
+          "analyst_summary"
+        ],
+        "time_field_candidates": [
+          "observed_at"
+        ],
+        "dedupe_keys": [
+          "tool_name"
+        ]
+      },
+      "safety": {
+        "store_raw": false,
+        "raw_retention_hours": 0,
+        "max_text_chars": 280,
+        "prompt_eligibility": "metadata_only",
+        "drop_content": [
+          "private_project_exports",
+          "precise_tracks",
+          "target_lists",
+          "credentials"
+        ],
+        "notes": "Visualization reference only, not a scrape source."
+      },
+      "relevance": {
+        "stage2_use": "background_context",
+        "default_weight": 0.1,
+        "tags": [
+          "visualization",
+          "deck_gl"
+        ]
+      }
+    },
+    {
+      "id": "wokwi_hardware_sim_reference",
+      "enabled": false,
+      "lane": "analysis_tooling_references",
+      "source_type": "osint_context",
+      "display_name": "Wokwi Simulated Hardware Environment",
+      "collection": {
+        "method": "html_index",
+        "format": "html",
+        "url": "https://wokwi.com/",
+        "url_template": null,
+        "params": {},
+        "cadence_minutes": 1440,
+        "auth_method": "none",
+        "respect_robots_txt": true,
+        "rate_limit_per_minute": 0
+      },
+      "normalization": {
+        "record_type": "advisory",
+        "extract_fields": [
+          "tool_name",
+          "public_url",
+          "use_case",
+          "analyst_summary"
+        ],
+        "time_field_candidates": [
+          "observed_at"
+        ],
+        "dedupe_keys": [
+          "tool_name"
+        ]
+      },
+      "safety": {
+        "store_raw": false,
+        "raw_retention_hours": 0,
+        "max_text_chars": 280,
+        "prompt_eligibility": "metadata_only",
+        "drop_content": [
+          "private_project_exports",
+          "credentials",
+          "exploit_payloads",
+          "target_lists"
+        ],
+        "notes": "Simulation reference only. Any Stage 3 usage should be explicit and defensive."
+      },
+      "relevance": {
+        "stage2_use": "background_context",
+        "default_weight": 0.1,
+        "tags": [
+          "simulation",
+          "hardware",
+          "wokwi"
+        ]
+      }
+    },
+    {
+      "id": "onion_public_landing_metadata",
+      "enabled": false,
+      "lane": "high_risk_metadata_only",
+      "source_type": "high_risk_metadata",
+      "display_name": "Public Onion Landing Page Metadata Placeholder",
+      "collection": {
+        "method": "placeholder_metadata_registry",
+        "format": "none",
+        "url": null,
+        "url_template": null,
+        "params": {
+          "configured_out_of_band": "true",
+          "endpoint_policy": "do_not_commit_real_hidden_service_addresses"
+        },
+        "cadence_minutes": 720,
+        "auth_method": "not_applicable",
+        "respect_robots_txt": true,
+        "rate_limit_per_minute": 0
+      },
+      "normalization": {
+        "record_type": "high_risk_metadata_signal",
+        "extract_fields": [
+          "source_category",
+          "source_label",
+          "topic_hash",
+          "observed_at",
+          "claimed_actor",
+          "claimed_region",
+          "topic_tags",
+          "activity_count",
+          "analyst_summary"
+        ],
+        "time_field_candidates": [
+          "observed_at"
+        ],
+        "dedupe_keys": [
+          "source_label",
+          "topic_hash",
+          "observed_at"
+        ]
+      },
+      "safety": {
+        "store_raw": false,
+        "raw_retention_hours": 0,
+        "max_text_chars": 280,
+        "prompt_eligibility": "metadata_only",
+        "drop_content": [
+          "real_hidden_service_addresses",
+          "raw_page_text",
+          "screenshots",
+          "victim_names",
+          "credentials",
+          "payment_addresses",
+          "malware_samples",
+          "exploit_payloads",
+          "target_lists"
+        ],
+        "notes": "Disabled. Onion work is VM-only and metadata-only; never commit hidden-service addresses or raw page content."
+      },
+      "relevance": {
+        "stage2_use": "timing_signal",
+        "default_weight": 0.4,
+        "tags": [
+          "onion",
+          "metadata_only",
+          "vm_only"
+        ]
+      }
+    },
+    {
+      "id": "high_risk_forum_topic_metadata",
+      "enabled": false,
+      "lane": "high_risk_metadata_only",
+      "source_type": "high_risk_metadata",
+      "display_name": "High-Risk Forum Topic Metadata Placeholder",
+      "collection": {
+        "method": "placeholder_metadata_registry",
+        "format": "none",
+        "url": null,
+        "url_template": null,
+        "params": {
+          "configured_out_of_band": "true",
+          "endpoint_policy": "do_not_commit_real_addresses"
+        },
+        "cadence_minutes": 720,
+        "auth_method": "not_applicable",
+        "respect_robots_txt": true,
+        "rate_limit_per_minute": 0
+      },
+      "normalization": {
+        "record_type": "high_risk_metadata_signal",
+        "extract_fields": [
+          "source_category",
+          "source_label",
+          "topic_hash",
+          "observed_at",
+          "first_seen_at",
+          "last_seen_at",
+          "language",
+          "claimed_actor",
+          "topic_tags",
+          "activity_count",
+          "analyst_summary"
+        ],
+        "time_field_candidates": [
+          "observed_at",
+          "first_seen_at",
+          "last_seen_at"
+        ],
+        "dedupe_keys": [
+          "source_label",
+          "topic_hash"
+        ]
+      },
+      "safety": {
+        "store_raw": false,
+        "raw_retention_hours": 0,
+        "max_text_chars": 280,
+        "prompt_eligibility": "metadata_only",
+        "drop_content": [
+          "endpoint_addresses",
+          "raw_post_text",
+          "screenshots",
+          "contact_handles",
+          "credentials",
+          "payment_addresses",
+          "target_lists",
+          "exploit_payloads"
+        ],
+        "notes": "Disabled by default. Represents metadata generated on the isolated scraper only; no real endpoint belongs in git."
+      },
+      "relevance": {
+        "stage2_use": "timing_signal",
+        "default_weight": 0.55,
+        "tags": [
+          "high_risk",
+          "metadata_only",
+          "forum_activity"
+        ]
+      }
+    },
+    {
+      "id": "high_risk_leak_claim_metadata",
+      "enabled": false,
+      "lane": "high_risk_metadata_only",
+      "source_type": "high_risk_metadata",
+      "display_name": "High-Risk Leak Claim Metadata Placeholder",
+      "collection": {
+        "method": "placeholder_metadata_registry",
+        "format": "none",
+        "url": null,
+        "url_template": null,
+        "params": {
+          "configured_out_of_band": "true",
+          "endpoint_policy": "do_not_commit_real_addresses"
+        },
+        "cadence_minutes": 720,
+        "auth_method": "not_applicable",
+        "respect_robots_txt": true,
+        "rate_limit_per_minute": 0
+      },
+      "normalization": {
+        "record_type": "high_risk_metadata_signal",
+        "extract_fields": [
+          "source_category",
+          "source_label",
+          "topic_hash",
+          "observed_at",
+          "first_seen_at",
+          "last_seen_at",
+          "claimed_actor",
+          "claimed_region",
+          "topic_tags",
+          "activity_count",
+          "analyst_summary"
+        ],
+        "time_field_candidates": [
+          "observed_at",
+          "first_seen_at",
+          "last_seen_at"
+        ],
+        "dedupe_keys": [
+          "source_label",
+          "topic_hash"
+        ]
+      },
+      "safety": {
+        "store_raw": false,
+        "raw_retention_hours": 0,
+        "max_text_chars": 280,
+        "prompt_eligibility": "metadata_only",
+        "drop_content": [
+          "endpoint_addresses",
+          "raw_claim_text",
+          "screenshots",
+          "victim_names_unless_publicly_reported_by_authoritative_sources",
+          "credentials",
+          "payment_addresses",
+          "target_lists",
+          "malware_samples"
+        ],
+        "notes": "Use only coarse metadata such as category, timing, count, and sanitized analyst summary."
+      },
+      "relevance": {
+        "stage2_use": "timing_signal",
+        "default_weight": 0.5,
+        "tags": [
+          "high_risk",
+          "metadata_only",
+          "leak_claims"
+        ]
+      }
+    },
+    {
+      "id": "high_risk_paste_index_metadata",
+      "enabled": false,
+      "lane": "high_risk_metadata_only",
+      "source_type": "high_risk_metadata",
+      "display_name": "High-Risk Paste Index Metadata Placeholder",
+      "collection": {
+        "method": "manual_metadata_export",
+        "format": "metadata_jsonl",
+        "url": null,
+        "url_template": null,
+        "params": {
+          "input_filename": "paste_index_metadata.sanitized.jsonl",
+          "endpoint_policy": "do_not_commit_source_urls"
+        },
+        "cadence_minutes": 1440,
+        "auth_method": "not_applicable",
+        "respect_robots_txt": true,
+        "rate_limit_per_minute": 0
+      },
+      "normalization": {
+        "record_type": "high_risk_metadata_signal",
+        "extract_fields": [
+          "source_category",
+          "source_label",
+          "topic_hash",
+          "observed_at",
+          "language",
+          "topic_tags",
+          "cve_ids",
+          "product_names",
+          "activity_count",
+          "analyst_summary"
+        ],
+        "time_field_candidates": [
+          "observed_at"
+        ],
+        "dedupe_keys": [
+          "source_label",
+          "topic_hash",
+          "observed_at"
+        ]
+      },
+      "safety": {
+        "store_raw": false,
+        "raw_retention_hours": 0,
+        "max_text_chars": 280,
+        "prompt_eligibility": "metadata_only",
+        "drop_content": [
+          "source_urls",
+          "raw_paste_text",
+          "credentials",
+          "keys",
+          "tokens",
+          "personal_contact_info",
+          "target_lists",
+          "exploit_payloads"
+        ],
+        "notes": "Manual sanitized JSONL lane for counts and tags only. Raw paste material never enters the repo."
+      },
+      "relevance": {
+        "stage2_use": "timing_signal",
+        "default_weight": 0.35,
+        "tags": [
+          "high_risk",
+          "metadata_only",
+          "paste_activity"
+        ]
+      }
+    }
+  ]
+}

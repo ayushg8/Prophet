@@ -287,23 +287,66 @@ body {
   50% { opacity: 0.3; }
 }
 
+/* ── Mission Context strip (World-Side forecast above main layout) ─────── */
+.mission-context {
+  display: grid;
+  grid-template-columns: minmax(360px, 0.9fr) minmax(0, 1.4fr);
+  gap: 1px;
+  background: rgba(245, 158, 11, 0.1);
+  border-bottom: 1px solid var(--border, #21262d);
+  flex-shrink: 0;
+}
+
+.mission-context > * {
+  background: var(--bg, #0a0d12);
+  min-width: 0;
+}
+
 /* ── Main layout ─────────────────────────────────────────────────────────── */
 .main-layout {
   flex: 1;
   display: grid;
-  grid-template-columns: 320px 1fr 340px;
+  grid-template-columns: 300px 1fr 300px;
   grid-template-rows: 1fr;
   overflow: hidden;
+  min-height: 0;
 }
 
-/* ── Triage Queue (left rail) ────────────────────────────────────────────── */
+/* ── Stream-embedded analogy + source citation events ─────────────────── */
+.stream-analogy-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.stream-analogy-eyebrow {
+  font-family: var(--mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+  font-size: 10px;
+  letter-spacing: 0.32em;
+  color: var(--accent, #f59e0b);
+  opacity: 0.85;
+}
+
+.stream-source-wrapper {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.stream-source-prefix {
+  font-family: var(--mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+  font-size: 9px;
+  letter-spacing: 0.32em;
+  color: var(--text-dim, #7d8590);
+}
+
+/* ── Triage Queue (left rail — now inside .left-column) ─────────────────── */
 .triage-queue {
-  background: rgba(15, 20, 25, 0.82);
-  border-right: var(--border-w) solid var(--border);
+  background: transparent;
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  backdrop-filter: blur(2px);
+  flex: 1;
 }
 
 /* Eyebrow-style panel headers */
@@ -1535,3 +1578,389 @@ body {
   scrollbar-width: thin;
   scrollbar-color: var(--border) transparent;
 }
+
+/* ── Layout: left-column wraps PreflightChecklist + TriageQueue ─────────── */
+.left-column {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: rgba(15, 20, 25, 0.82);
+  border-right: var(--border-w) solid var(--border);
+  backdrop-filter: blur(2px);
+}
+
+/* ── PreflightChecklist ──────────────────────────────────────────────────── */
+.preflight {
+  flex-shrink: 0;
+  border-bottom: var(--border-w) solid var(--border);
+}
+
+.preflight-badge {
+  font-size: 9px;
+  color: var(--faint);
+  background: var(--surface-elevated);
+  border: var(--border-w) solid var(--border);
+  border-radius: var(--radius);
+  padding: 1px 6px;
+  font-family: var(--font-mono);
+  letter-spacing: 0.08em;
+  transition: color 300ms ease-out, border-color 300ms ease-out;
+}
+
+.preflight-badge--ready {
+  color: var(--success);
+  border-color: rgba(63, 185, 80, 0.5);
+}
+
+.preflight-list {
+  list-style: none;
+  padding: 6px 10px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.preflight-item {
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+  padding: 2px 2px;
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.06em;
+  color: var(--faint);
+  transition: color 300ms ease-out;
+}
+
+.preflight-item--done {
+  color: var(--secondary);
+}
+
+.preflight-item--checking {
+  color: var(--accent);
+}
+
+.preflight-tick {
+  min-width: 10px;
+  text-align: center;
+  font-size: 10px;
+  transition: color 300ms ease-out;
+}
+
+.preflight-item--done .preflight-tick {
+  color: var(--success);
+}
+
+.preflight-item--checking .preflight-tick {
+  color: var(--accent);
+  animation: blink 0.6s ease-in-out infinite;
+}
+
+.preflight-label {
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: 9px;
+  font-weight: 500;
+  min-width: 110px;
+  color: inherit;
+}
+
+.preflight-item--done .preflight-label {
+  color: var(--dim);
+}
+
+.preflight-detail {
+  font-size: 8.5px;
+  color: var(--faint);
+  opacity: 0.75;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.preflight-item--done .preflight-detail {
+  opacity: 0.55;
+}
+
+/* ── LabTopology ─────────────────────────────────────────────────────────── */
+.lab-topology {
+  border-bottom: var(--border-w) solid var(--border);
+  flex-shrink: 0;
+  background: transparent;
+}
+
+.topology-svg-wrapper {
+  padding: 8px 12px 4px;
+  display: flex;
+  justify-content: center;
+}
+
+/* ── LiveFeedTicker ──────────────────────────────────────────────────────── */
+.live-ticker {
+  height: 28px;
+  min-height: 28px;
+  flex-shrink: 0;
+  border-top: var(--border-w) solid var(--border);
+  background: rgba(10, 13, 18, 0.92);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  position: relative;
+  z-index: 6;
+}
+
+.live-ticker-inner {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  white-space: nowrap;
+  will-change: transform;
+}
+
+.live-ticker-entry {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: rgba(125, 133, 144, 0.6);
+  letter-spacing: 0.18em;
+  padding: 0 28px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border-right: 1px solid rgba(33, 38, 45, 0.5);
+}
+
+.live-ticker-tick {
+  color: rgba(245, 158, 11, 0.55);
+  font-size: 10px;
+  flex-shrink: 0;
+}
+
+/* ── RunbookDrawer ───────────────────────────────────────────────────────── */
+.runbook-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(1px);
+}
+
+.runbook-drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 460px;
+  background: var(--surface);
+  border-left: var(--border-w) solid var(--border-accent);
+  z-index: 60;
+  display: flex;
+  flex-direction: column;
+  transform: translateX(100%);
+  transition: transform 300ms cubic-bezier(0.22, 0.61, 0.36, 1);
+  overflow: hidden;
+}
+
+.runbook-drawer--open {
+  transform: translateX(0);
+}
+
+.runbook-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px 12px;
+  border-bottom: var(--border-w) solid var(--border);
+  flex-shrink: 0;
+}
+
+.runbook-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.42em;
+  color: var(--accent);
+  text-transform: uppercase;
+}
+
+.runbook-close {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  color: var(--dim);
+  background: transparent;
+  border: var(--border-w) solid var(--border);
+  padding: 3px 10px;
+  cursor: pointer;
+  border-radius: 0;
+  transition: color 150ms ease-out, border-color 150ms ease-out;
+}
+
+.runbook-close:hover {
+  color: var(--primary);
+  border-color: var(--secondary);
+}
+
+.runbook-subheader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 18px;
+  border-bottom: var(--border-w) solid var(--border);
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  color: var(--faint);
+  letter-spacing: 0.10em;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+}
+
+.runbook-cve {
+  color: var(--accent);
+  font-weight: 500;
+}
+
+.runbook-sep {
+  color: var(--border);
+}
+
+.runbook-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.runbook-body::-webkit-scrollbar {
+  width: 4px;
+}
+.runbook-body::-webkit-scrollbar-track {
+  background: transparent;
+}
+.runbook-body::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 2px;
+}
+
+.runbook-section {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.runbook-section-heading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--accent);
+  padding-bottom: 4px;
+  border-bottom: 1px solid rgba(245, 158, 11, 0.2);
+}
+
+.runbook-section-num {
+  color: var(--faint);
+  font-size: 9px;
+  min-width: 20px;
+}
+
+.runbook-steps {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-left: 4px;
+}
+
+.runbook-step {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  line-height: 1.55;
+  color: var(--secondary);
+  letter-spacing: 0.04em;
+}
+
+.runbook-step-num {
+  color: var(--faint);
+  min-width: 16px;
+  flex-shrink: 0;
+  font-size: 9px;
+  margin-top: 1px;
+}
+
+.runbook-step-text {
+  color: var(--secondary);
+}
+
+.runbook-footer {
+  padding: 10px 18px 12px;
+  border-top: var(--border-w) solid var(--border);
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--faint);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  flex-shrink: 0;
+}
+
+.runbook-footer-sep {
+  color: var(--border);
+}
+
+/* ── Runbook trigger button in header ────────────────────────────────────── */
+.runbook-btn {
+  background: transparent;
+  border: 1px solid rgba(125, 133, 144, 0.4);
+  color: var(--dim);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  padding: 5px 10px;
+  cursor: pointer;
+  transition: background 180ms ease-out, color 180ms ease-out, border-color 180ms ease-out;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border-radius: 0;
+}
+
+.runbook-btn:hover {
+  color: var(--primary);
+  border-color: var(--secondary);
+  background: rgba(125, 133, 144, 0.07);
+}
+
+/* run-btn disabled state */
+.run-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.run-btn:disabled:hover {
+  background: transparent;
+  color: var(--accent);
+  border-color: rgba(245, 158, 11, 0.6);
+}
+
+/* ── Right column: topology takes fixed space ────────────────────────────── */
+/* Override existing .right-column to allow topology + panels */
+.right-column {
+  border-left: var(--border-w) solid var(--border);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: rgba(15, 20, 25, 0.82);
+  backdrop-filter: blur(2px);
+}
+

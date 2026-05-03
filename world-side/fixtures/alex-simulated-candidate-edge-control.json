@@ -1,0 +1,55 @@
+{
+  "candidate_id": "cs-alex-sim-20260502-001",
+  "generated_at": "2026-05-02T23:55:00Z",
+  "identity": {
+    "candidate_type": "hypothesized_zero_day",
+    "candidate_label": "exploit_1",
+    "cve_id": null,
+    "cve_class_label": "edge-device auth bypass enabling administrative control",
+    "target_product": "representative enterprise VPN / perimeter gateway",
+    "target_component": "management-plane session gateway",
+    "cwe_ids": [
+      "CWE-287",
+      "CWE-306"
+    ]
+  },
+  "attack_hypothesis": {
+    "attack_vector": "High-level perimeter gateway authentication bypass leading to administrative control in a representative sandbox.",
+    "intended_effect": "control",
+    "destructiveness": "non_destructive",
+    "narrative": "This simulated Cyber Side candidate models the kind of exploit-class handoff Alex described: a hypothesized zero-day-style edge access path used for control, not destruction. It intentionally omits payloads, commands, target-control steps, and named live targets."
+  },
+  "rationale": {
+    "narrative": "Cyber Side would prioritize this class because public reporting and Prophet's corpus repeatedly show state-linked actors using perimeter appliances, VPNs, and gateways as durable access points before geopolitical trigger windows. The candidate is framed for safe localhost validation only.",
+    "confidence": "medium",
+    "stage1_priority_score": 0.76,
+    "priority_score_notes": "Simulated Cyber Side technical priority score for integration testing; World Side computes geopolitical timing separately."
+  },
+  "weaponization": {
+    "public_check_performed": true,
+    "public_status": "not_found",
+    "public_poc_available": false,
+    "public_poc_url": null,
+    "nuclei_template_available": false,
+    "in_the_wild_observed": false,
+    "kev_listed": false,
+    "epss_score": null
+  },
+  "source_refs": [
+    {
+      "label": "Historical corpus: Volt Typhoon pre-positioning",
+      "url": "world-side/data/historical_pairings.md#8-volt-typhoon--taiwan-strait-pre-positioning-campaign",
+      "supports": "edge and SOHO infrastructure can be used for long-dwell pre-positioning against US critical infrastructure"
+    },
+    {
+      "label": "Historical corpus: Ivanti Connect Secure PRC-nexus operations",
+      "url": "world-side/data/historical_pairings.md#10-ivanti-connect-secure-unc5221--prc-ops-dec-2023jan-2024",
+      "supports": "enterprise VPN and security appliances are recurring state-linked initial-access targets"
+    },
+    {
+      "label": "CISA AA24-038A",
+      "url": "https://www.cisa.gov/news-events/cybersecurity-advisories/aa24-038a",
+      "supports": "PRC state-sponsored actors maintained access to US critical infrastructure for possible future disruption"
+    }
+  ]
+}

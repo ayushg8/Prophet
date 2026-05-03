@@ -20,9 +20,11 @@ function StatusPill({ label, dotColor }: StatusPillProps) {
 interface HeaderProps {
   isRunning: boolean;
   onRunClick: () => void;
+  onRunbookClick: () => void;
+  runReady: boolean;
 }
 
-export function Header({ isRunning, onRunClick }: HeaderProps) {
+export function Header({ isRunning, onRunClick, onRunbookClick, runReady }: HeaderProps) {
   const [clock, setClock] = useState(() => new Date());
 
   useEffect(() => {
@@ -58,11 +60,23 @@ export function Header({ isRunning, onRunClick }: HeaderProps) {
           <StatusPill dotColor="var(--info)" label="CVP · AUTHORIZED" />
           <StatusPill dotColor="var(--success)" label="SANDBOX · ISOLATED" />
 
+          <button
+            className="runbook-btn"
+            onClick={onRunbookClick}
+            aria-label="Open Lab Runbook"
+          >
+            <span className="run-btn-bracket">[</span>
+            RUNBOOK
+            <span className="run-btn-bracket">]</span>
+          </button>
+
           {!isRunning && (
             <button
               className="run-btn"
               onClick={onRunClick}
+              disabled={!runReady}
               aria-label="Initiate Prophet Loop"
+              title={runReady ? undefined : 'Waiting for pre-flight checks…'}
             >
               <span className="run-btn-bracket">[</span>
               INITIATE PROPHET LOOP

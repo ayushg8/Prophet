@@ -1,0 +1,153 @@
+{
+  "forecast_id": "ws-golden-edge-appliance-001",
+  "generated_at": "2026-05-03T00:05:00Z",
+  "input_candidate_id": "cs-fixture-edge-appliance-001",
+  "schema_version": "world_forecast.v0.1",
+  "strategic_frame": {
+    "adversary_class": "PRC-prepositioning-class",
+    "target_scope": "US federal, defense-industrial, and critical-infrastructure perimeter services",
+    "geographic_scope": "US federal and allied Indo-Pacific defense ecosystem",
+    "forecast_assumptions": [
+      "The Stage 1 candidate is an edge-appliance access class rather than a named CVE.",
+      "Forecasting is sector-level only and does not identify live targets.",
+      "Current context includes May 2026 US-PRC and Indo-Pacific diplomatic events."
+    ],
+    "excluded_uses": [
+      "No exploit payloads",
+      "No target-control instructions",
+      "No named live targets"
+    ]
+  },
+  "strike_windows": [
+    {
+      "window_id": "win_1",
+      "rank": 1,
+      "start_date": "2026-05-08",
+      "end_date": "2026-05-18",
+      "confidence": "medium",
+      "confidence_score": 0.67,
+      "why_this_window": "The May 14-15 Trump-Xi summit creates a high-value collection and positioning window around US-PRC negotiations. The historical Volt Typhoon and Ivanti anchors support edge and perimeter infrastructure as a durable PRC-nexus access pattern rather than a one-day burn event.",
+      "trigger_signals": ["Trump-Xi bilateral summit", "US-PRC diplomatic collection window", "edge-appliance pre-positioning pattern"],
+      "historical_analogies": [
+        {
+          "case_id": "hist_8",
+          "case_name": "Volt Typhoon / Taiwan Strait pre-positioning",
+          "pattern_matched": "Long-dwell access against US critical infrastructure can be held for a later crisis trigger.",
+          "time_to_burn": "multi-year dwell; activation tied to future crisis",
+          "source_ref_ids": ["src_hist_8"]
+        },
+        {
+          "case_id": "hist_10",
+          "case_name": "Ivanti Connect Secure / UNC5221",
+          "pattern_matched": "PRC-nexus actors have repeatedly targeted enterprise edge and VPN appliances across diplomatic and Taiwan-related windows.",
+          "time_to_burn": "weeks of stealth exploitation around public disclosure and Taiwan election timing",
+          "source_ref_ids": ["src_hist_10"]
+        }
+      ],
+      "source_ref_ids": ["src_calendar_trump_xi", "src_hist_8", "src_hist_10"]
+    },
+    {
+      "window_id": "win_2",
+      "rank": 2,
+      "start_date": "2026-05-26",
+      "end_date": "2026-06-04",
+      "confidence": "medium",
+      "confidence_score": 0.6,
+      "why_this_window": "The Shangri-La Dialogue and Tiananmen anniversary form an Indo-Pacific defense and political-symbolism cluster. The corpus supports PRC-nexus pre-positioning through edge infrastructure when Taiwan, dissident, or defense-ministry collection incentives rise.",
+      "trigger_signals": ["Shangri-La Dialogue", "Tiananmen anniversary", "Indo-Pacific defense-ministry collection"],
+      "historical_analogies": [
+        {
+          "case_id": "hist_8",
+          "case_name": "Volt Typhoon / Taiwan Strait pre-positioning",
+          "pattern_matched": "Pre-positioning against US and allied critical infrastructure is linked to Taiwan-crisis contingency planning.",
+          "time_to_burn": "no destructive burn observed; access can remain dormant",
+          "source_ref_ids": ["src_hist_8"]
+        }
+      ],
+      "source_ref_ids": ["src_calendar_shangri_la", "src_calendar_tiananmen", "src_hist_8"]
+    }
+  ],
+  "strike_vectors": [
+    {
+      "vector_id": "vec_1",
+      "rank": 1,
+      "vector_class": "edge-appliance initial access and persistence",
+      "target_sector": "federal civilian agencies, defense contractors, and critical-infrastructure perimeter services",
+      "likely_objective": "persistence",
+      "non_actionable_mechanism": "Adversary interest centers on exposed perimeter services as access and observation points; this forecast does not include exploitation details or target-control steps.",
+      "candidate_fit": "Directly matches the fixture candidate's edge-device auth-bypass class and non-destructive persistence effect.",
+      "confidence": "medium",
+      "confidence_score": 0.72,
+      "why_this_vector": "Volt Typhoon and Ivanti anchors both show edge or perimeter appliance access as a recurring state-linked pattern against US and allied infrastructure.",
+      "defensive_implication": "Prioritize detection, inventory, configuration review, and safe localhost validation around the selected perimeter-service class.",
+      "source_ref_ids": ["src_hist_8", "src_hist_10", "src_cisa_aa24_038a"]
+    },
+    {
+      "vector_id": "vec_2",
+      "rank": 2,
+      "vector_class": "living-off-the-land persistence after perimeter access",
+      "target_sector": "critical-infrastructure operators and government-adjacent managed networks",
+      "likely_objective": "persistence",
+      "non_actionable_mechanism": "Post-access behavior is treated as high-level administrative-tool abuse and persistence risk, not as a procedural guide.",
+      "candidate_fit": "Fits an edge candidate when the forecast emphasizes pre-positioning rather than immediate disruption.",
+      "confidence": "medium",
+      "confidence_score": 0.61,
+      "why_this_vector": "CISA's Volt Typhoon reporting describes long-term access and living-off-the-land behavior in critical-infrastructure environments.",
+      "defensive_implication": "Stage 3 can validate detections for anomalous administrative activity in a safe toy environment.",
+      "source_ref_ids": ["src_cisa_aa24_038a", "src_hist_8"]
+    }
+  ],
+  "summary": {
+    "one_line": "For an edge-appliance candidate, the strongest forecast is PRC-style pre-positioning around May 2026 diplomatic and Indo-Pacific defense windows.",
+    "recommended_demo_path": "Use a safe edge-service fixture and show how timing context prioritizes perimeter detection over payload generation.",
+    "stage3_priority": "Validate a defensive block and alert around perimeter-service access indicators in a local demo environment.",
+    "analyst_notes": [
+      "Confidence is medium because the window is diplomatically motivated, while the Volt Typhoon anchor shows access can remain dormant until a future crisis.",
+      "All vector descriptions are intentionally non-actionable and sector-level."
+    ]
+  },
+  "source_refs": [
+    {
+      "id": "src_calendar_trump_xi",
+      "label": "Calendar events: Trump-Xi bilateral summit",
+      "url": "world-side/data/calendar_events.md#master-chronological-table",
+      "date": "2026-05-02",
+      "supports": "May 14-15, 2026 US-PRC diplomatic summit is a high-value collection window"
+    },
+    {
+      "id": "src_calendar_shangri_la",
+      "label": "Calendar events: Shangri-La Dialogue",
+      "url": "world-side/data/calendar_events.md#master-chronological-table",
+      "date": "2026-05-02",
+      "supports": "May 29-31, 2026 Indo-Pacific defense forum is a defense-ministry collection window"
+    },
+    {
+      "id": "src_calendar_tiananmen",
+      "label": "Calendar events: Tiananmen anniversary",
+      "url": "world-side/data/calendar_events.md#master-chronological-table",
+      "date": "2026-05-02",
+      "supports": "June 4 anniversary creates PRC dissident and political-symbolism pressure"
+    },
+    {
+      "id": "src_hist_8",
+      "label": "Historical corpus: Volt Typhoon",
+      "url": "world-side/data/historical_pairings.md#8-volt-typhoon--taiwan-strait-pre-positioning-campaign",
+      "date": "2026-05-02",
+      "supports": "PRC-linked pre-positioning against US critical infrastructure can persist for years pending a crisis trigger"
+    },
+    {
+      "id": "src_hist_10",
+      "label": "Historical corpus: Ivanti Connect Secure",
+      "url": "world-side/data/historical_pairings.md#10-ivanti-connect-secure-unc5221--prc-ops-dec-2023jan-2024",
+      "date": "2026-05-02",
+      "supports": "PRC-nexus actors have targeted enterprise VPN and edge appliances"
+    },
+    {
+      "id": "src_cisa_aa24_038a",
+      "label": "CISA AA24-038A",
+      "url": "https://www.cisa.gov/news-events/cybersecurity-advisories/aa24-038a",
+      "date": "2024-02-07",
+      "supports": "PRC state-sponsored actors maintained persistent access to US critical infrastructure for possible future disruption"
+    }
+  ]
+}

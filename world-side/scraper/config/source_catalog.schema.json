@@ -1,0 +1,407 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://prophet.local/schemas/scraper-source-catalog.v0.1.json",
+  "title": "Prophet Scraper Source Catalog",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "catalog_id",
+    "opsec_defaults",
+    "lanes",
+    "sources"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "prophet.scraper.source_catalog.v0.1"
+    },
+    "catalog_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9_.-]+$"
+    },
+    "opsec_defaults": {
+      "$ref": "#/$defs/opsec_defaults"
+    },
+    "lanes": {
+      "type": "object",
+      "minProperties": 4,
+      "additionalProperties": {
+        "$ref": "#/$defs/lane"
+      }
+    },
+    "sources": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/source"
+      }
+    }
+  },
+  "$defs": {
+    "opsec_defaults": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "run_location",
+        "never_commit",
+        "prompt_boundary",
+        "network_rules"
+      ],
+      "properties": {
+        "run_location": {
+          "type": "string"
+        },
+        "never_commit": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "prompt_boundary": {
+          "type": "string"
+        },
+        "network_rules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "lane": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "description",
+        "collection_level",
+        "requires_isolated_host",
+        "allowed_fields",
+        "blocked_fields",
+        "raw_content_policy",
+        "prompt_policy",
+        "sanitized_output"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9_]+$"
+        },
+        "description": {
+          "type": "string"
+        },
+        "collection_level": {
+          "enum": [
+            "official_record",
+            "public_metadata",
+            "public_summary",
+            "metadata_only"
+          ]
+        },
+        "requires_isolated_host": {
+          "type": "boolean"
+        },
+        "allowed_fields": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string"
+          }
+        },
+        "blocked_fields": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "raw_content_policy": {
+          "enum": [
+            "cache_allowed",
+            "discard_after_parse",
+            "never_store"
+          ]
+        },
+        "prompt_policy": {
+          "enum": [
+            "allowed_with_citation",
+            "sanitized_summary_only",
+            "metadata_only",
+            "never_raw"
+          ]
+        },
+        "sanitized_output": {
+          "type": "string"
+        }
+      }
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "enabled",
+        "lane",
+        "source_type",
+        "display_name",
+        "collection",
+        "normalization",
+        "safety",
+        "relevance"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9_.-]+$"
+        },
+        "enabled": {
+          "type": "boolean"
+        },
+        "lane": {
+          "type": "string",
+          "pattern": "^[a-z0-9_]+$"
+        },
+        "source_type": {
+          "enum": [
+            "gov_feed",
+            "technical_index",
+            "technical_api",
+            "public_social",
+            "high_risk_metadata",
+            "vendor_advisory",
+            "osint_context"
+          ]
+        },
+        "display_name": {
+          "type": "string"
+        },
+        "collection": {
+          "$ref": "#/$defs/collection"
+        },
+        "normalization": {
+          "$ref": "#/$defs/normalization"
+        },
+        "safety": {
+          "$ref": "#/$defs/safety"
+        },
+        "relevance": {
+          "$ref": "#/$defs/relevance"
+        },
+        "options": {
+          "type": "object",
+          "additionalProperties": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    "collection": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "method",
+        "format",
+        "url",
+        "url_template",
+        "params",
+        "cadence_minutes",
+        "auth_method",
+        "respect_robots_txt",
+        "rate_limit_per_minute"
+      ],
+      "properties": {
+        "method": {
+          "enum": [
+            "api",
+            "http_get",
+            "rss",
+            "html_index",
+            "manual_metadata_export",
+            "placeholder_metadata_registry"
+          ]
+        },
+        "format": {
+          "enum": [
+            "json",
+            "rss",
+            "html",
+            "csv",
+            "metadata_jsonl",
+            "none"
+          ]
+        },
+        "url": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "uri"
+        },
+        "url_template": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "params": {
+          "type": "object",
+          "additionalProperties": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            ]
+          }
+        },
+        "cadence_minutes": {
+          "type": "integer",
+          "minimum": 15
+        },
+        "auth_method": {
+          "enum": [
+            "none",
+            "not_applicable",
+            "api_key_required",
+            "account_required",
+            "commercial_or_terms_review_required"
+          ]
+        },
+        "respect_robots_txt": {
+          "type": "boolean"
+        },
+        "rate_limit_per_minute": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "normalization": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "record_type",
+        "extract_fields",
+        "time_field_candidates",
+        "dedupe_keys"
+      ],
+      "properties": {
+        "record_type": {
+          "enum": [
+            "vulnerability",
+            "advisory",
+            "technical_signal",
+            "social_signal",
+            "high_risk_metadata_signal"
+          ]
+        },
+        "extract_fields": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string"
+          }
+        },
+        "time_field_candidates": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string"
+          }
+        },
+        "dedupe_keys": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "safety": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "store_raw",
+        "raw_retention_hours",
+        "max_text_chars",
+        "prompt_eligibility",
+        "drop_content",
+        "notes"
+      ],
+      "properties": {
+        "store_raw": {
+          "type": "boolean"
+        },
+        "raw_retention_hours": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "max_text_chars": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "prompt_eligibility": {
+          "enum": [
+            "allowed_with_citation",
+            "after_sanitization",
+            "metadata_only",
+            "never"
+          ]
+        },
+        "drop_content": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "notes": {
+          "type": "string"
+        }
+      }
+    },
+    "relevance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "stage2_use",
+        "default_weight",
+        "tags"
+      ],
+      "properties": {
+        "stage2_use": {
+          "enum": [
+            "timing_signal",
+            "exploit_context",
+            "background_context"
+          ]
+        },
+        "default_weight": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

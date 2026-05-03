@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Header } from './components/Header';
 import { TriageQueue } from './components/TriageQueue';
 import { PhaseProgress } from './components/PhaseProgress';
@@ -8,9 +8,23 @@ import { DefencePanel } from './components/DefencePanel';
 import { ApprovalGate } from './components/ApprovalGate';
 import { Landing } from './components/Landing';
 import { PerlinHero } from './components/PerlinHero';
+import { LabTopology } from './components/LabTopology';
+import { PreflightChecklist } from './components/PreflightChecklist';
+import { LiveFeedTicker } from './components/LiveFeedTicker';
+import { RunbookDrawer } from './components/RunbookDrawer';
+import { ForecastPanel } from './components/ForecastPanel';
+import { StrikeWindowTimeline } from './components/StrikeWindowTimeline';
 import { cves } from './data/cves';
 import { mockEvents } from './data/mockEvents';
-import type { AgentEvent, PatchDiffEvent, SigmaRuleEvent, ExploitStatusEvent } from './data/mockEvents';
+import type {
+  AgentEvent,
+  PatchDiffEvent,
+  SigmaRuleEvent,
+  ExploitStatusEvent,
+  ForecastSummaryEvent,
+} from './data/mockEvents';
+import { getForecastForCandidate } from './data/worldSide';
+import type { StrikeForecast } from './data/worldSide';
 import { startReplay } from './data/replayController';
 import type { ReplayHandle } from './data/replayController';
 import './index.css';
@@ -30,8 +44,21 @@ export default function App() {
   const [exploitExcerpt, setExploitExcerpt] = useState<string | undefined>(undefined);
   const [patchDiff, setPatchDiff] = useState<string | null>(null);
   const [sigmaRule, setSigmaRule] = useState<string | null>(null);
+  const [runReady, setRunReady] = useState(false);
+  const [runbookOpen, setRunbookOpen] = useState(false);
+  // runCycle increments each time the user resets, so PreflightChecklist re-runs
+  const [runCycle, setRunCycle] = useState(0);
+  const [activeForecast, setActiveForecast] = useState<StrikeForecast | null>(null);
 
   const replayRef = useRef<ReplayHandle | null>(null);
+
+  // Derive a default forecast from the currently selected CVE so the Mission
+  // Context strip shows context immediately, even before the demo runs.
+  useEffect(() => {
+    const cve = cves.find((c) => c.cveId === selectedCveId);
+    const candidateId = cve?.worldCandidateId ?? null;
+    setActiveForecast(candidateId ? getForecastForCandidate(candidateId) ?? null : null);
+  }, [selectedCveId]);
 
   const handleEvent = useCallback((event: AgentEvent) => {
     if (event.kind === 'phase') {
@@ -55,7 +82,11 @@ export default function App() {
       setPatchDiff((event as PatchDiffEvent).content);
     } else if (event.kind === 'sigma_rule') {
       setSigmaRule((event as SigmaRuleEvent).content);
+    } else if (event.kind === 'forecast_summary') {
+      setActiveForecast((event as ForecastSummaryEvent).forecast);
+      setStreamEvents((prev) => [...prev, event]);
     } else {
+      // historical_analogy, source_ref, etc. — render inline in the stream
       setStreamEvents((prev) => [...prev, event]);
     }
   }, []);
@@ -90,6 +121,7 @@ export default function App() {
     setGateOpen(false);
     replayRef.current?.reset();
     setIsRunning(false);
+    setRunCycle((c) => c + 1);
   };
 
   if (view === 'landing') {
@@ -103,7 +135,6 @@ export default function App() {
         pointer-events: none on all, so console interactions pass through.
         Mesh at opacity 0.12, segments 64 for console performance.
       */}
-      {/* segments=64 instead of 96 — cheaper on GPU while the agent stream animates */}
       <PerlinHero className="console-mesh" segments={64} />
       <div className="console-dither" aria-hidden />
       <div className="console-vignette" aria-hidden />
@@ -111,14 +142,32 @@ export default function App() {
 
       {/* Console shell — z-index 5 */}
       <div className="app">
-        <Header isRunning={isRunning} onRunClick={handleRun} />
+        <Header
+          isRunning={isRunning}
+          onRunClick={handleRun}
+          onRunbookClick={() => setRunbookOpen(true)}
+          runReady={runReady}
+        />
+
+        {/* Mission Context strip — World Side forecast + strike-window timeline */}
+        <div className="mission-context" aria-label="World Side forecast and strike windows">
+          <ForecastPanel forecast={activeForecast} />
+          <StrikeWindowTimeline forecast={activeForecast} />
+        </div>
 
         <div className="main-layout">
-          <TriageQueue
-            cves={cves}
-            selectedId={selectedCveId}
-            onSelect={setSelectedCveId}
-          />
+          {/* Left column: Preflight + Triage */}
+          <div className="left-column">
+            <PreflightChecklist
+              isRunning={runCycle}
+              onReady={setRunReady}
+            />
+            <TriageQueue
+              cves={cves}
+              selectedId={selectedCveId}
+              onSelect={setSelectedCveId}
+            />
+          </div>
 
           <main className="center-column">
             <PhaseProgress
@@ -129,15 +178,25 @@ export default function App() {
           </main>
 
           <aside className="right-column">
+            <LabTopology
+              currentPhase={currentPhase}
+              exploitStatus={exploitStatus}
+            />
             <ExploitPanel status={exploitStatus} responseExcerpt={exploitExcerpt} />
             <DefencePanel patchDiff={patchDiff} sigmaRule={sigmaRule} />
           </aside>
         </div>
 
+        {/* Live feed ticker — bottom bar */}
+        <LiveFeedTicker />
+
         {gateOpen && (
           <ApprovalGate onAuthorize={handleAuthorize} onHold={handleHold} />
         )}
       </div>
+
+      {/* Runbook drawer — outside .app so it overlays everything */}
+      <RunbookDrawer open={runbookOpen} onClose={() => setRunbookOpen(false)} />
     </>
   );
 }

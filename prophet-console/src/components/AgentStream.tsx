@@ -6,7 +6,11 @@ import type {
   PhaseEvent,
   PhaseCompleteEvent,
   ExploitStatusEvent,
+  HistoricalAnalogyEvent,
+  SourceRefEvent,
 } from '../data/mockEvents';
+import { HistoricalAnalogyCard } from './HistoricalAnalogyCard';
+import { SourceCitation } from './SourceCitation';
 
 // Typewriter component for text events
 function TypewriterText({ content }: { content: string }) {
@@ -181,7 +185,27 @@ export function AgentStream({ events, gateOpen }: AgentStreamProps) {
           if (event.kind === 'exploit_status') {
             return <ExploitStatusBadge key={key} event={event as ExploitStatusEvent} />;
           }
-          // patch_diff and sigma_rule shown in panels, not stream
+          if (event.kind === 'historical_analogy') {
+            const e = event as HistoricalAnalogyEvent;
+            return (
+              <div key={key} className="stream-item stream-analogy-wrapper">
+                <div className="stream-analogy-eyebrow">
+                  ◢ HISTORICAL ANALOGY · {e.windowId.toUpperCase()} ◣
+                </div>
+                <HistoricalAnalogyCard analogy={e.analogy} />
+              </div>
+            );
+          }
+          if (event.kind === 'source_ref') {
+            const e = event as SourceRefEvent;
+            return (
+              <div key={key} className="stream-item stream-source-wrapper">
+                <span className="stream-source-prefix">◢ SOURCE</span>
+                <SourceCitation source={e.ref} />
+              </div>
+            );
+          }
+          // patch_diff, sigma_rule, forecast_summary handled in panels, not stream
           return null;
         })}
 

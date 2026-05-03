@@ -1,0 +1,160 @@
+{
+  "forecast_id": "ws-golden-wiper-shutdown-001",
+  "generated_at": "2026-05-03T00:05:00Z",
+  "input_candidate_id": "cs-fixture-wiper-shutdown-001",
+  "schema_version": "world_forecast.v0.1",
+  "strategic_frame": {
+    "adversary_class": "Russia-GRU-disruption-class",
+    "target_scope": "government, defense-industrial, and critical-infrastructure availability surfaces",
+    "geographic_scope": "US, NATO, and Ukraine-aligned infrastructure",
+    "forecast_assumptions": [
+      "The Stage 1 candidate is a disruptive shutdown class rather than a payload description.",
+      "Forecasting remains sector-level and defensive.",
+      "Current context includes recent Russia sanctions pressure and upcoming NATO and symbolic-date windows."
+    ],
+    "excluded_uses": [
+      "No exploit payloads",
+      "No target-control instructions",
+      "No named live targets"
+    ]
+  },
+  "strike_windows": [
+    {
+      "window_id": "win_1",
+      "rank": 1,
+      "start_date": "2026-05-21",
+      "end_date": "2026-06-18",
+      "confidence": "medium",
+      "confidence_score": 0.68,
+      "why_this_window": "The sanctions snapshot says Russia destructive operations cluster 4-8 weeks after major sanctions packages, and the EU 20th Russia package landed on April 23, 2026. This window also includes Russia Day on June 12, which the calendar treats as a symbolic cyber-activation date.",
+      "trigger_signals": ["EU 20th Russia sanctions package", "4-8 week sanctions-response band", "Russia Day symbolic window"],
+      "historical_analogies": [
+        {
+          "case_id": "hist_1",
+          "case_name": "Sandworm / NotPetya",
+          "pattern_matched": "Sanctions and symbolic dates preceded destructive malware deployment in the Ukraine context.",
+          "time_to_burn": "4-6 weeks from sanctions extension and calendar symbolism to release",
+          "source_ref_ids": ["src_hist_1"]
+        },
+        {
+          "case_id": "hist_5",
+          "case_name": "WhisperGate / HermeticWiper",
+          "pattern_matched": "Wiper-class deployment aligned to crisis and military-timing windows.",
+          "time_to_burn": "hours to days around final crisis trigger",
+          "source_ref_ids": ["src_hist_5"]
+        }
+      ],
+      "source_ref_ids": ["src_sanctions_russia", "src_calendar_russia_day", "src_hist_1", "src_hist_5"]
+    },
+    {
+      "window_id": "win_2",
+      "rank": 2,
+      "start_date": "2026-07-05",
+      "end_date": "2026-07-10",
+      "confidence": "medium",
+      "confidence_score": 0.61,
+      "why_this_window": "The July 7-8 NATO Summit is a defense-policy event likely to draw Russian collection, signaling, and hacktivist-adjacent pressure. The historical wiper anchors support disruption as a plausible class only when paired with a separate sanctions, military, or symbolic trigger.",
+      "trigger_signals": ["NATO Summit", "defense-ministry attention window", "Russia sanctions background pressure"],
+      "historical_analogies": [
+        {
+          "case_id": "hist_5",
+          "case_name": "WhisperGate / HermeticWiper",
+          "pattern_matched": "Disruptive cyber effects can align with broader military and diplomatic pressure.",
+          "time_to_burn": "hours to days around final trigger",
+          "source_ref_ids": ["src_hist_5"]
+        }
+      ],
+      "source_ref_ids": ["src_calendar_nato", "src_sanctions_russia", "src_hist_5"]
+    }
+  ],
+  "strike_vectors": [
+    {
+      "vector_id": "vec_1",
+      "rank": 1,
+      "vector_class": "disruptive endpoint or service-availability shutdown",
+      "target_sector": "government services, defense-industrial support networks, and critical-infrastructure operators",
+      "likely_objective": "shutdown",
+      "non_actionable_mechanism": "The vector describes only the strategic effect: disruption of service availability after prior access. It omits access paths, lateral movement, payload details, and target names.",
+      "candidate_fit": "Directly matches the fixture candidate's shutdown effect and disruptive destructiveness label.",
+      "confidence": "medium",
+      "confidence_score": 0.7,
+      "why_this_vector": "NotPetya, WhisperGate, and HermeticWiper provide corpus anchors for Russian-linked destructive or disruptive operations around sanctions, symbolism, and crisis timing.",
+      "defensive_implication": "Prioritize recovery readiness, destructive-action detection, and safe simulation of availability-loss alerts.",
+      "source_ref_ids": ["src_hist_1", "src_hist_5", "src_cisa_aa22_057a"]
+    },
+    {
+      "vector_id": "vec_2",
+      "rank": 2,
+      "vector_class": "hacktivist-front disruption and deniable signaling",
+      "target_sector": "NATO-aligned public services and government-facing web infrastructure",
+      "likely_objective": "disruption",
+      "non_actionable_mechanism": "The vector remains at public-service disruption and information-signaling level without identifying systems or methods.",
+      "candidate_fit": "Fits a shutdown candidate when political signaling matters more than durable espionage.",
+      "confidence": "low",
+      "confidence_score": 0.49,
+      "why_this_vector": "The indictment and sanctions snapshots describe Russia-aligned criminal and hacktivist ecosystems, but this fixture does not include live chatter, so confidence stays low.",
+      "defensive_implication": "Use only as a secondary scenario for UI narrative unless current sanitized chatter raises confidence.",
+      "source_ref_ids": ["src_indictments_carr", "src_sanctions_russia"]
+    }
+  ],
+  "summary": {
+    "one_line": "For a wiper/shutdown candidate, the strongest forecast is a Russia-linked disruption window from late May to mid-June 2026, driven by recent sanctions and symbolic timing.",
+    "recommended_demo_path": "Use a local synthetic service and demonstrate detection, blocking, and recovery messaging for disruption without payload details.",
+    "stage3_priority": "Validate alerts and rollback controls for service-availability loss in a safe demo environment.",
+    "analyst_notes": [
+      "Confidence is medium because sanctions and calendar triggers align, but no sanitized chatter fixture is present.",
+      "The forecast is defensive and intentionally excludes any deployment mechanics."
+    ]
+  },
+  "source_refs": [
+    {
+      "id": "src_hist_1",
+      "label": "Historical corpus: NotPetya",
+      "url": "world-side/data/historical_pairings.md#1-sandworm--notpetya--ukraine-pre-anniversary-june-2017",
+      "date": "2026-05-02",
+      "supports": "destructive malware historically aligned with sanctions and symbolic dates"
+    },
+    {
+      "id": "src_hist_5",
+      "label": "Historical corpus: WhisperGate / HermeticWiper",
+      "url": "world-side/data/historical_pairings.md#5-whispergate--hermeticwiper--russian-invasion-of-ukraine-janfeb-2022",
+      "date": "2026-05-02",
+      "supports": "Russian-linked wiper deployment aligned with military crisis timing"
+    },
+    {
+      "id": "src_sanctions_russia",
+      "label": "Sanctions state: Russia cyber retaliation profile",
+      "url": "world-side/data/sanctions_state.md#41-russia",
+      "date": "2026-05-02",
+      "supports": "Russia destructive operations cluster within 4-8 weeks after major sanctions packages"
+    },
+    {
+      "id": "src_calendar_russia_day",
+      "label": "Calendar events: Russia Day",
+      "url": "world-side/data/calendar_events.md#master-chronological-table",
+      "date": "2026-05-02",
+      "supports": "June 12, 2026 Russia Day is a symbolic cyber-activity window"
+    },
+    {
+      "id": "src_calendar_nato",
+      "label": "Calendar events: NATO Summit Ankara",
+      "url": "world-side/data/calendar_events.md#master-chronological-table",
+      "date": "2026-05-02",
+      "supports": "July 7-8, 2026 NATO Summit is a high-value defense-policy event"
+    },
+    {
+      "id": "src_cisa_aa22_057a",
+      "label": "CISA AA22-057A",
+      "url": "https://www.cisa.gov/news-events/cybersecurity-advisories/aa22-057a",
+      "date": "2022-02-26",
+      "supports": "CISA documented destructive malware targeting Ukrainian organizations around the 2022 invasion"
+    },
+    {
+      "id": "src_indictments_carr",
+      "label": "Indictments state: CARR and NoName057(16)",
+      "url": "world-side/data/indictments_state.md#112-ukrainian-national-charged-for-carr-gru-directed-and-noname05716--9-dec-2025",
+      "date": "2026-05-02",
+      "supports": "Russia-linked hacktivist and CARR activity is tracked in recent prosecution context"
+    }
+  ]
+}

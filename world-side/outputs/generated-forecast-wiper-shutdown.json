@@ -1,0 +1,381 @@
+{
+  "forecast_id": "ws-20260502-a9df078c",
+  "generated_at": "2026-05-02T23:45:00Z",
+  "input_candidate_id": "cs-fixture-wiper-shutdown-001",
+  "schema_version": "world_forecast.v0.1",
+  "strategic_frame": {
+    "adversary_class": "Russia-linked-disruption-or-espionage-class",
+    "target_scope": "US government and defense-industrial technology environments",
+    "geographic_scope": "US federal / DIB infrastructure",
+    "forecast_assumptions": [
+      "Stage 1 candidate is treated as fixture_disruptive_shutdown_access for timing and vector matching.",
+      "Forecast uses sector-level targets only; no named live targets are produced.",
+      "Geopolitical confidence is computed separately from any Cyber Side technical priority score."
+    ],
+    "excluded_uses": [
+      "No exploit payloads",
+      "No target-control instructions",
+      "No named live targets"
+    ]
+  },
+  "strike_windows": [
+    {
+      "window_id": "win_1",
+      "rank": 1,
+      "start_date": "2026-05-07",
+      "end_date": "2026-05-14",
+      "confidence": "high",
+      "confidence_score": 0.82,
+      "why_this_window": "Trump\u2013Xi bilateral summit, Beijing is ranked because its DIPL timing overlaps the candidate's disruptive shutdown or wiper-capable access path profile. The nearest historical anchor is Triton / TRISIS / Saudi petrochemical / Iran-region tensions, 2017, where the corpus pattern matched State actor (Russia in this case, but the *target sector* is the signal) \u2192 Safety Instrumented Systems at critical petrochemical/refining/nuclear facilities; vector = bespoke ICS-aware malware against named SIS product family (Triconex, AB.",
+      "trigger_signals": [
+        "DIPL",
+        "diplomatic collection window",
+        "Russia-linked retaliation pressure",
+        "candidate objective is disruption/shutdown"
+      ],
+      "historical_analogies": [
+        {
+          "case_id": "hist_11",
+          "case_name": "Triton / TRISIS / Saudi petrochemical / Iran-region tensions, 2017",
+          "pattern_matched": "State actor (Russia in this case, but the *target sector* is the signal) \u2192 Safety Instrumented Systems at critical petrochemical/refining/nuclear facilities; vector = bespoke ICS-aware malware against named SIS product family (Triconex, AB.",
+          "time_to_burn": "From Qatar crisis / regional inflection (Jun 2017) to first observed deployment (Jun 2017): coincident, but causal link is weak \u2014 TsNIIKhM development cycle was likely independent.",
+          "source_ref_ids": [
+            "src_hist_11_corpus"
+          ]
+        },
+        {
+          "case_id": "hist_5",
+          "case_name": "WhisperGate + HermeticWiper / Russian invasion of Ukraine, Jan\u2013Feb 2022",
+          "pattern_matched": "Russia (GRU) \u2192 Ukraine + spillover to allied infrastructure (Viasat \u2192 European wind farms); vector = wipers timed to military operations; payload = destructive, not extortive; exploit-of-novel-CVE not the limiting factor \u2014 *access pre-posi.",
+          "time_to_burn": "From beginning of overt diplomatic-collapse signaling (early Jan 2022) to first wiper (WhisperGate 13 Jan): **~2 weeks**. From final pre-invasion diplomacy collapse (~21\u201322 Feb) t.",
+          "source_ref_ids": [
+            "src_hist_5_corpus"
+          ]
+        }
+      ],
+      "source_ref_ids": [
+        "src_ctx_cal_02",
+        "src_context_calendar",
+        "src_hist_11_corpus",
+        "src_hist_5_corpus"
+      ]
+    },
+    {
+      "window_id": "win_2",
+      "rank": 2,
+      "start_date": "2026-05-21",
+      "end_date": "2026-05-27",
+      "confidence": "high",
+      "confidence_score": 0.78,
+      "why_this_window": "Cypriot legislative election is ranked because its ELEC timing overlaps the candidate's disruptive shutdown or wiper-capable access path profile. The nearest historical anchor is Triton / TRISIS / Saudi petrochemical / Iran-region tensions, 2017, where the corpus pattern matched State actor (Russia in this case, but the *target sector* is the signal) \u2192 Safety Instrumented Systems at critical petrochemical/refining/nuclear facilities; vector = bespoke ICS-aware malware against named SIS product family (Triconex, AB.",
+      "trigger_signals": [
+        "ELEC",
+        "election-cycle pressure",
+        "Russia-linked retaliation pressure",
+        "candidate objective is disruption/shutdown"
+      ],
+      "historical_analogies": [
+        {
+          "case_id": "hist_11",
+          "case_name": "Triton / TRISIS / Saudi petrochemical / Iran-region tensions, 2017",
+          "pattern_matched": "State actor (Russia in this case, but the *target sector* is the signal) \u2192 Safety Instrumented Systems at critical petrochemical/refining/nuclear facilities; vector = bespoke ICS-aware malware against named SIS product family (Triconex, AB.",
+          "time_to_burn": "From Qatar crisis / regional inflection (Jun 2017) to first observed deployment (Jun 2017): coincident, but causal link is weak \u2014 TsNIIKhM development cycle was likely independent.",
+          "source_ref_ids": [
+            "src_hist_11_corpus"
+          ]
+        },
+        {
+          "case_id": "hist_5",
+          "case_name": "WhisperGate + HermeticWiper / Russian invasion of Ukraine, Jan\u2013Feb 2022",
+          "pattern_matched": "Russia (GRU) \u2192 Ukraine + spillover to allied infrastructure (Viasat \u2192 European wind farms); vector = wipers timed to military operations; payload = destructive, not extortive; exploit-of-novel-CVE not the limiting factor \u2014 *access pre-posi.",
+          "time_to_burn": "From beginning of overt diplomatic-collapse signaling (early Jan 2022) to first wiper (WhisperGate 13 Jan): **~2 weeks**. From final pre-invasion diplomacy collapse (~21\u201322 Feb) t.",
+          "source_ref_ids": [
+            "src_hist_5_corpus"
+          ]
+        }
+      ],
+      "source_ref_ids": [
+        "src_ctx_cal_04",
+        "src_context_calendar",
+        "src_hist_11_corpus",
+        "src_hist_5_corpus"
+      ]
+    },
+    {
+      "window_id": "win_3",
+      "rank": 3,
+      "start_date": "2026-05-28",
+      "end_date": "2026-06-03",
+      "confidence": "high",
+      "confidence_score": 0.78,
+      "why_this_window": "Colombian presidential election (1st round) is ranked because its ELEC timing overlaps the candidate's disruptive shutdown or wiper-capable access path profile. The nearest historical anchor is Triton / TRISIS / Saudi petrochemical / Iran-region tensions, 2017, where the corpus pattern matched State actor (Russia in this case, but the *target sector* is the signal) \u2192 Safety Instrumented Systems at critical petrochemical/refining/nuclear facilities; vector = bespoke ICS-aware malware against named SIS product family (Triconex, AB.",
+      "trigger_signals": [
+        "ELEC",
+        "election-cycle pressure",
+        "Russia-linked retaliation pressure",
+        "candidate objective is disruption/shutdown"
+      ],
+      "historical_analogies": [
+        {
+          "case_id": "hist_11",
+          "case_name": "Triton / TRISIS / Saudi petrochemical / Iran-region tensions, 2017",
+          "pattern_matched": "State actor (Russia in this case, but the *target sector* is the signal) \u2192 Safety Instrumented Systems at critical petrochemical/refining/nuclear facilities; vector = bespoke ICS-aware malware against named SIS product family (Triconex, AB.",
+          "time_to_burn": "From Qatar crisis / regional inflection (Jun 2017) to first observed deployment (Jun 2017): coincident, but causal link is weak \u2014 TsNIIKhM development cycle was likely independent.",
+          "source_ref_ids": [
+            "src_hist_11_corpus"
+          ]
+        },
+        {
+          "case_id": "hist_5",
+          "case_name": "WhisperGate + HermeticWiper / Russian invasion of Ukraine, Jan\u2013Feb 2022",
+          "pattern_matched": "Russia (GRU) \u2192 Ukraine + spillover to allied infrastructure (Viasat \u2192 European wind farms); vector = wipers timed to military operations; payload = destructive, not extortive; exploit-of-novel-CVE not the limiting factor \u2014 *access pre-posi.",
+          "time_to_burn": "From beginning of overt diplomatic-collapse signaling (early Jan 2022) to first wiper (WhisperGate 13 Jan): **~2 weeks**. From final pre-invasion diplomacy collapse (~21\u201322 Feb) t.",
+          "source_ref_ids": [
+            "src_hist_5_corpus"
+          ]
+        }
+      ],
+      "source_ref_ids": [
+        "src_ctx_cal_06",
+        "src_context_calendar",
+        "src_hist_11_corpus",
+        "src_hist_5_corpus"
+      ]
+    }
+  ],
+  "strike_vectors": [
+    {
+      "vector_id": "vec_1",
+      "rank": 1,
+      "vector_class": "critical-infrastructure disruption staging",
+      "target_sector": "US government-adjacent critical infrastructure and operational technology",
+      "likely_objective": "shutdown",
+      "non_actionable_mechanism": "The forecast treats shutdown effects as a defensive scenario for service disruption, not as instructions for affecting a live system.",
+      "candidate_fit": "Fits candidates whose intended effect is control, shutdown, or disruption rather than data theft.",
+      "confidence": "medium",
+      "confidence_score": 0.67,
+      "why_this_vector": "Wiper and OT cases show disruption tends to activate around crisis or symbolic windows after prior access is already in place.",
+      "defensive_implication": "Validate deny, detect, and rollback controls for safe sandbox services that represent the operational dependency.",
+      "source_ref_ids": [
+        "src_hist_11_corpus",
+        "src_hist_5_corpus",
+        "src_hist_7_corpus"
+      ]
+    },
+    {
+      "vector_id": "vec_2",
+      "rank": 2,
+      "vector_class": "wiper or destructive-malware readiness",
+      "target_sector": "government, critical-infrastructure, and crisis-adjacent enterprise networks",
+      "likely_objective": "shutdown",
+      "non_actionable_mechanism": "The vector is modeled as availability-risk readiness for defensive validation, not as a payload or deployment procedure.",
+      "candidate_fit": "Fits candidates whose intended effect is shutdown, disruption, or service denial.",
+      "confidence": "medium",
+      "confidence_score": 0.67,
+      "why_this_vector": "NotPetya, HermeticWiper, and Shamoon-style anchors show destructive or disruptive burns cluster around sanctions, holidays, anniversaries, or kinetic crisis windows.",
+      "defensive_implication": "Prioritize destructive-action detections, backup isolation, privileged-access review, and rapid rollback rehearsal.",
+      "source_ref_ids": [
+        "src_hist_11_corpus",
+        "src_hist_5_corpus",
+        "src_hist_7_corpus"
+      ]
+    },
+    {
+      "vector_id": "vec_3",
+      "rank": 3,
+      "vector_class": "living-off-the-land pre-positioning",
+      "target_sector": "US critical infrastructure and defense-support enterprise networks",
+      "likely_objective": "persistence",
+      "non_actionable_mechanism": "Adversary value comes from maintaining low-noise access with ordinary administration tooling until a separate strategic trigger raises activation risk.",
+      "candidate_fit": "Fits candidates whose effect is durable access, control, or pre-positioning rather than immediate destructive impact.",
+      "confidence": "medium",
+      "confidence_score": 0.64,
+      "why_this_vector": "Volt Typhoon and SolarWinds-style anchors show that access can sit dormant until a geopolitical trigger makes activation valuable.",
+      "defensive_implication": "Prioritize behavior-based detections for administrative-tool misuse, account hygiene, and suspicious egress from critical services.",
+      "source_ref_ids": [
+        "src_hist_11_corpus",
+        "src_hist_5_corpus",
+        "src_hist_7_corpus"
+      ]
+    }
+  ],
+  "summary": {
+    "one_line": "For disruptive shutdown or wiper-capable access path, rank critical-infrastructure disruption staging highest and treat 2026-05-07 to 2026-05-14 as the lead strike-window forecast.",
+    "recommended_demo_path": "Use vec_1 inside win_1 as context for a safe Stage 3 validation scenario.",
+    "stage3_priority": "Validate deny, detect, and rollback controls for safe sandbox services that represent the operational dependency.",
+    "analyst_notes": [
+      "Vector descriptions are intentionally non-actionable and sector-level.",
+      "Every ranked window and vector includes source_ref_ids for UI citation rendering."
+    ]
+  },
+  "source_refs": [
+    {
+      "id": "src_context_calendar",
+      "label": "World Side current context: calendar events",
+      "url": "world-side/data/calendar_events.md",
+      "date": "2026-05-02",
+      "supports": "scheduled geopolitical and infrastructure stress windows"
+    },
+    {
+      "id": "src_context_indictments",
+      "label": "World Side current context: indictments and prosecutions",
+      "url": "world-side/data/indictments_state.md",
+      "date": "2026-05-02",
+      "supports": "legal pressure indicators that can alter actor tempo"
+    },
+    {
+      "id": "src_context_sanctions",
+      "label": "World Side current context: sanctions state",
+      "url": "world-side/data/sanctions_state.md",
+      "date": "2026-05-02",
+      "supports": "sanctions pressure indicators used for motive scoring"
+    },
+    {
+      "id": "src_ctx_cal_02",
+      "label": "Calendar context: Trump\u2013Xi bilateral summit, Beijing",
+      "url": "https://www.cnbc.com/2026/03/25/trump-xi-beijing-china-summit.html",
+      "date": "2026-05-14",
+      "supports": "First US presidential visit to China since 2017. State and non-state actors (PRC MSS, DPRK RGB, Russian SVR) historically run intensive collection ops in 7-day pre-window against."
+    },
+    {
+      "id": "src_ctx_cal_04",
+      "label": "Calendar context: Cypriot legislative election",
+      "url": "https://en.wikipedia.org/wiki/2026_national_electoral_calendar",
+      "date": "2026-05-24",
+      "supports": "EU-member election; Cyprus historically attracts Turkish nationalist defacement crews (Maritime EEZ tensions) and Russian influence operations on Russian-speaking expat communitie."
+    },
+    {
+      "id": "src_ctx_cal_06",
+      "label": "Calendar context: Colombian presidential election (1st round)",
+      "url": "https://en.wikipedia.org/wiki/2026_Colombian_presidential_election",
+      "date": "2026-05-31",
+      "supports": "First round of presidential election. Runoff likely on 2026-06-21. Cartel-linked, Venezuelan-state and Russian influence networks historically active around Colombian polls."
+    },
+    {
+      "id": "src_hist_11_corpus",
+      "label": "Historical corpus: Triton / TRISIS / Saudi petrochemical / Iran-region tensions, 2017",
+      "url": "world-side/data/historical_pairings.md#11-triton-trisis-saudi-petrochemical-iran-region-tensions-2017",
+      "date": "2026-05-02",
+      "supports": "State actor (Russia in this case, but the *target sector* is the signal) \u2192 Safety Instrumented Systems at critical petrochemical/refining/nuclear facilities; vector = bespoke ICS-."
+    },
+    {
+      "id": "src_hist_11_corpus_web_1",
+      "label": "US Treasury OFAC \u2014 \"Treasury Sanctions Russian Government Research Institution Connected to the Triton Malware\" (23 Oct 2020)",
+      "url": "https://home.treasury.gov/news/press-releases/sm1162",
+      "date": "2026-05-02",
+      "supports": "external source for Triton / TRISIS / Saudi petrochemical / Iran-region tensions, 2017"
+    },
+    {
+      "id": "src_hist_11_corpus_web_2",
+      "label": "Mandiant / FireEye \u2014 \"TRITON Attribution: Russian Government-Owned Lab Most Likely Built Custom Intrusion Tools for TRITON Attackers\" (23 Oct 2018)",
+      "url": "https://cloud.google.com/blog/topics/threat-intelligence/triton-attribution-russian-government-owned-lab-most-likely-built-tools/",
+      "date": "2026-05-02",
+      "supports": "external source for Triton / TRISIS / Saudi petrochemical / Iran-region tensions, 2017"
+    },
+    {
+      "id": "src_hist_2_corpus",
+      "label": "Historical corpus: APT28 / DNC hack / 2016 US election cycle",
+      "url": "world-side/data/historical_pairings.md#2-apt28-dnc-hack-2016-us-election-cycle",
+      "date": "2026-05-02",
+      "supports": "Russia (GRU) \u2192 US political party / campaign infrastructure during election cycle; vector = credential phishing, not zero-day; payoff = curated leaks via cut-out persona/site (DCL."
+    },
+    {
+      "id": "src_hist_2_corpus_web_1",
+      "label": "US DoJ Indictment of 12 GRU Officers (Mueller, 13 Jul 2018)",
+      "url": "https://www.justice.gov/file/1080281/download",
+      "date": "2026-05-02",
+      "supports": "external source for APT28 / DNC hack / 2016 US election cycle"
+    },
+    {
+      "id": "src_hist_2_corpus_web_2",
+      "label": "ODNI ICA \u2014 \"Assessing Russian Activities and Intentions in Recent US Elections\" (Jan 2017)",
+      "url": "https://www.dni.gov/files/documents/ICA_2017_01.pdf",
+      "date": "2026-05-02",
+      "supports": "external source for APT28 / DNC hack / 2016 US election cycle"
+    },
+    {
+      "id": "src_hist_4_corpus",
+      "label": "Historical corpus: SolarWinds (SUNBURST) / APT29 / Trump\u2013Biden transition",
+      "url": "world-side/data/historical_pairings.md#4-solarwinds-sunburst-apt29-trump-biden-transition",
+      "date": "2026-05-02",
+      "supports": "Russia (SVR) \u2192 US/allied government and tech-supply-chain; vector = software supply-chain compromise of widely deployed enterprise software (Orion, then later Mimecast, JetBrains."
+    },
+    {
+      "id": "src_hist_4_corpus_web_1",
+      "label": "CISA Alert AA20-352A \u2014 \"Advanced Persistent Threat Compromise of Government Agencies, Critical Infrastructure, and Private Sector Organizations\"",
+      "url": "https://www.cisa.gov/news-events/cybersecurity-advisories/aa20-352a",
+      "date": "2026-05-02",
+      "supports": "external source for SolarWinds (SUNBURST) / APT29 / Trump\u2013Biden transition"
+    },
+    {
+      "id": "src_hist_4_corpus_web_2",
+      "label": "Mandiant / FireEye \u2014 \"Highly Evasive Attacker Leverages SolarWinds Supply Chain to Compromise Multiple Global Victims With SUNBURST Backdoor\" (13 Dec 2020)",
+      "url": "https://cloud.google.com/blog/topics/threat-intelligence/evasive-attacker-leverages-solarwinds-supply-chain-compromises-with-sunburst-backdoor/",
+      "date": "2026-05-02",
+      "supports": "external source for SolarWinds (SUNBURST) / APT29 / Trump\u2013Biden transition"
+    },
+    {
+      "id": "src_hist_5_corpus",
+      "label": "Historical corpus: WhisperGate + HermeticWiper / Russian invasion of Ukraine, Jan\u2013Feb 2022",
+      "url": "world-side/data/historical_pairings.md#5-whispergate-hermeticwiper-russian-invasion-of-ukraine-jan-feb-2022",
+      "date": "2026-05-02",
+      "supports": "Russia (GRU) \u2192 Ukraine + spillover to allied infrastructure (Viasat \u2192 European wind farms); vector = wipers timed to military operations; payload = destructive, not extortive; exp."
+    },
+    {
+      "id": "src_hist_5_corpus_web_1",
+      "label": "CISA AA22-057A \u2014 \"Destructive Malware Targeting Organizations in Ukraine\"",
+      "url": "https://www.cisa.gov/news-events/cybersecurity-advisories/aa22-057a",
+      "date": "2026-05-02",
+      "supports": "external source for WhisperGate + HermeticWiper / Russian invasion of Ukraine, Jan\u2013Feb 2022"
+    },
+    {
+      "id": "src_hist_5_corpus_web_2",
+      "label": "Microsoft MSTIC \u2014 \"Destructive malware targeting Ukrainian organizations\" (15 Jan 2022)",
+      "url": "https://www.microsoft.com/en-us/security/blog/2022/01/15/destructive-malware-targeting-ukrainian-organizations/",
+      "date": "2026-05-02",
+      "supports": "external source for WhisperGate + HermeticWiper / Russian invasion of Ukraine, Jan\u2013Feb 2022"
+    },
+    {
+      "id": "src_hist_7_corpus",
+      "label": "Historical corpus: Industroyer / Ukraine Kyiv grid attack, Dec 2016",
+      "url": "world-side/data/historical_pairings.md#7-industroyer-ukraine-kyiv-grid-attack-dec-2016",
+      "date": "2026-05-02",
+      "supports": "Russia (GRU) \u2192 Ukrainian electric infrastructure; vector = ICS-protocol-native malware framework, not a Windows CVE chain; payoff = brief but symbolic outage on holiday week. Targ."
+    },
+    {
+      "id": "src_hist_7_corpus_web_1",
+      "label": "Dragos \u2014 \"CRASHOVERRIDE: Analysis of the Threat to Electric Grid Operations\" (Jun 2017)",
+      "url": "https://www.dragos.com/wp-content/uploads/CrashOverride-01.pdf",
+      "date": "2026-05-02",
+      "supports": "external source for Industroyer / Ukraine Kyiv grid attack, Dec 2016"
+    },
+    {
+      "id": "src_hist_7_corpus_web_2",
+      "label": "ESET \u2014 \"WIN32/INDUSTROYER: A new threat for industrial control systems\" (Cherepanov, 12 Jun 2017)",
+      "url": "https://www.welivesecurity.com/wp-content/uploads/2017/06/Win32_Industroyer.pdf",
+      "date": "2026-05-02",
+      "supports": "external source for Industroyer / Ukraine Kyiv grid attack, Dec 2016"
+    },
+    {
+      "id": "src_stage1_1",
+      "label": "Historical corpus: WhisperGate and HermeticWiper",
+      "url": "world-side/data/historical_pairings.md#5-whispergate--hermeticwiper--russian-invasion-of-ukraine-janfeb-2022",
+      "date": "2026-05-02",
+      "supports": "Russian GRU-linked wiper activity has been timed to imminent military and diplomatic crisis windows"
+    },
+    {
+      "id": "src_stage1_2",
+      "label": "Historical corpus: NotPetya",
+      "url": "world-side/data/historical_pairings.md#1-sandworm--notpetya--ukraine-pre-anniversary-june-2017",
+      "date": "2026-05-02",
+      "supports": "destructive malware has historically clustered around sanctions and symbolic dates"
+    },
+    {
+      "id": "src_stage1_3",
+      "label": "CISA AA22-057A",
+      "url": "https://www.cisa.gov/news-events/cybersecurity-advisories/aa22-057a",
+      "date": "2026-05-02",
+      "supports": "CISA documented destructive malware targeting Ukrainian organizations around the 2022 invasion"
+    }
+  ]
+}

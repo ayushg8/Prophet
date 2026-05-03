@@ -1,0 +1,361 @@
+{
+  "forecast_id": "ws-20260502-d973bef5",
+  "generated_at": "2026-05-02T23:56:00Z",
+  "input_candidate_id": "cs-alex-sim-20260502-001",
+  "schema_version": "world_forecast.v0.1",
+  "strategic_frame": {
+    "adversary_class": "PRC-prepositioning-class",
+    "target_scope": "US federal and defense-industrial edge infrastructure",
+    "geographic_scope": "US federal / DIB infrastructure",
+    "forecast_assumptions": [
+      "Stage 1 candidate is treated as exploit_1 for timing and vector matching.",
+      "Forecast uses sector-level targets only; no named live targets are produced.",
+      "Geopolitical confidence is computed separately from any Cyber Side technical priority score."
+    ],
+    "excluded_uses": [
+      "No exploit payloads",
+      "No target-control instructions",
+      "No named live targets"
+    ]
+  },
+  "strike_windows": [
+    {
+      "window_id": "win_1",
+      "rank": 1,
+      "start_date": "2026-05-07",
+      "end_date": "2026-05-14",
+      "confidence": "high",
+      "confidence_score": 0.82,
+      "why_this_window": "Trump\u2013Xi bilateral summit, Beijing is ranked because its DIPL timing overlaps the candidate's edge-device auth bypass enabling administrative control profile. The nearest historical anchor is Ivanti Connect Secure (UNC5221) / PRC ops, Dec 2023\u2013Jan 2024, where the corpus pattern matched PRC-nexus \u2192 enterprise edge/perimeter appliances (VPN, NetScaler, Fortigate, SonicWall, Citrix) at scale; vector = chained 0-days in security appliances themselves (the ironic targets); objective = broad initial access for downstream selec.",
+      "trigger_signals": [
+        "DIPL",
+        "diplomatic collection window",
+        "PRC strategic context"
+      ],
+      "historical_analogies": [
+        {
+          "case_id": "hist_10",
+          "case_name": "Ivanti Connect Secure (UNC5221) / PRC ops, Dec 2023\u2013Jan 2024",
+          "pattern_matched": "PRC-nexus \u2192 enterprise edge/perimeter appliances (VPN, NetScaler, Fortigate, SonicWall, Citrix) at scale; vector = chained 0-days in security appliances themselves (the ironic targets); objective = broad initial access for downstream selec.",
+          "time_to_burn": "From access (3 Dec 2023) to public disclosure (10 Jan 2024): ~38 days of stealth exploitation. From Taiwan election (13 Jan 2024) to expanded burn (CVE-2024-21893 in-the-wild ~31.",
+          "source_ref_ids": [
+            "src_hist_10_corpus"
+          ]
+        },
+        {
+          "case_id": "hist_8",
+          "case_name": "Volt Typhoon / Taiwan Strait pre-positioning campaign",
+          "pattern_matched": "PRC \u2192 US/allied critical infrastructure (water, power, comms, transport) in geographies *adjacent to a likely Taiwan-conflict supply line* (Guam, Hawaii observed); vector = LotL + edge-device CVEs, deliberately low custom-malware footprint.",
+          "time_to_burn": "No burn yet. Anchor's value is the *gap*: access established 2021+, no destructive deployment as of May 2026 (compilation date). Indicates patient pre-positioning for a future tri.",
+          "source_ref_ids": [
+            "src_hist_8_corpus"
+          ]
+        }
+      ],
+      "source_ref_ids": [
+        "src_ctx_cal_02",
+        "src_context_calendar",
+        "src_hist_10_corpus",
+        "src_hist_8_corpus"
+      ]
+    },
+    {
+      "window_id": "win_2",
+      "rank": 2,
+      "start_date": "2026-05-01",
+      "end_date": "2026-05-08",
+      "confidence": "high",
+      "confidence_score": 0.79,
+      "why_this_window": "48th ASEAN Leaders' Summit & Related Summits is ranked because its DIPL timing overlaps the candidate's edge-device auth bypass enabling administrative control profile. The nearest historical anchor is Ivanti Connect Secure (UNC5221) / PRC ops, Dec 2023\u2013Jan 2024, where the corpus pattern matched PRC-nexus \u2192 enterprise edge/perimeter appliances (VPN, NetScaler, Fortigate, SonicWall, Citrix) at scale; vector = chained 0-days in security appliances themselves (the ironic targets); objective = broad initial access for downstream selec.",
+      "trigger_signals": [
+        "DIPL",
+        "diplomatic collection window",
+        "PRC strategic context"
+      ],
+      "historical_analogies": [
+        {
+          "case_id": "hist_10",
+          "case_name": "Ivanti Connect Secure (UNC5221) / PRC ops, Dec 2023\u2013Jan 2024",
+          "pattern_matched": "PRC-nexus \u2192 enterprise edge/perimeter appliances (VPN, NetScaler, Fortigate, SonicWall, Citrix) at scale; vector = chained 0-days in security appliances themselves (the ironic targets); objective = broad initial access for downstream selec.",
+          "time_to_burn": "From access (3 Dec 2023) to public disclosure (10 Jan 2024): ~38 days of stealth exploitation. From Taiwan election (13 Jan 2024) to expanded burn (CVE-2024-21893 in-the-wild ~31.",
+          "source_ref_ids": [
+            "src_hist_10_corpus"
+          ]
+        },
+        {
+          "case_id": "hist_8",
+          "case_name": "Volt Typhoon / Taiwan Strait pre-positioning campaign",
+          "pattern_matched": "PRC \u2192 US/allied critical infrastructure (water, power, comms, transport) in geographies *adjacent to a likely Taiwan-conflict supply line* (Guam, Hawaii observed); vector = LotL + edge-device CVEs, deliberately low custom-malware footprint.",
+          "time_to_burn": "No burn yet. Anchor's value is the *gap*: access established 2021+, no destructive deployment as of May 2026 (compilation date). Indicates patient pre-positioning for a future tri.",
+          "source_ref_ids": [
+            "src_hist_8_corpus"
+          ]
+        }
+      ],
+      "source_ref_ids": [
+        "src_ctx_cal_01",
+        "src_context_calendar",
+        "src_hist_10_corpus",
+        "src_hist_8_corpus"
+      ]
+    },
+    {
+      "window_id": "win_3",
+      "rank": 3,
+      "start_date": "2026-05-22",
+      "end_date": "2026-05-29",
+      "confidence": "high",
+      "confidence_score": 0.79,
+      "why_this_window": "IISS Shangri-La Dialogue (23rd Asia Security Summit) is ranked because its DIPL timing overlaps the candidate's edge-device auth bypass enabling administrative control profile. The nearest historical anchor is Ivanti Connect Secure (UNC5221) / PRC ops, Dec 2023\u2013Jan 2024, where the corpus pattern matched PRC-nexus \u2192 enterprise edge/perimeter appliances (VPN, NetScaler, Fortigate, SonicWall, Citrix) at scale; vector = chained 0-days in security appliances themselves (the ironic targets); objective = broad initial access for downstream selec.",
+      "trigger_signals": [
+        "DIPL",
+        "diplomatic collection window",
+        "defense-ministry attention window",
+        "PRC strategic context"
+      ],
+      "historical_analogies": [
+        {
+          "case_id": "hist_10",
+          "case_name": "Ivanti Connect Secure (UNC5221) / PRC ops, Dec 2023\u2013Jan 2024",
+          "pattern_matched": "PRC-nexus \u2192 enterprise edge/perimeter appliances (VPN, NetScaler, Fortigate, SonicWall, Citrix) at scale; vector = chained 0-days in security appliances themselves (the ironic targets); objective = broad initial access for downstream selec.",
+          "time_to_burn": "From access (3 Dec 2023) to public disclosure (10 Jan 2024): ~38 days of stealth exploitation. From Taiwan election (13 Jan 2024) to expanded burn (CVE-2024-21893 in-the-wild ~31.",
+          "source_ref_ids": [
+            "src_hist_10_corpus"
+          ]
+        },
+        {
+          "case_id": "hist_8",
+          "case_name": "Volt Typhoon / Taiwan Strait pre-positioning campaign",
+          "pattern_matched": "PRC \u2192 US/allied critical infrastructure (water, power, comms, transport) in geographies *adjacent to a likely Taiwan-conflict supply line* (Guam, Hawaii observed); vector = LotL + edge-device CVEs, deliberately low custom-malware footprint.",
+          "time_to_burn": "No burn yet. Anchor's value is the *gap*: access established 2021+, no destructive deployment as of May 2026 (compilation date). Indicates patient pre-positioning for a future tri.",
+          "source_ref_ids": [
+            "src_hist_8_corpus"
+          ]
+        }
+      ],
+      "source_ref_ids": [
+        "src_ctx_cal_05",
+        "src_context_calendar",
+        "src_hist_10_corpus",
+        "src_hist_8_corpus"
+      ]
+    }
+  ],
+  "strike_vectors": [
+    {
+      "vector_id": "vec_1",
+      "rank": 1,
+      "vector_class": "edge-appliance initial access and pre-positioning",
+      "target_sector": "US federal and defense-industrial perimeter services",
+      "likely_objective": "control",
+      "non_actionable_mechanism": "Adversary interest centers on exposed perimeter infrastructure as an access and staging layer; details remain at sector and technique-class level.",
+      "candidate_fit": "Matches a Stage 1 candidate framed around edge-device, VPN, gateway, or perimeter-control behavior.",
+      "confidence": "high",
+      "confidence_score": 0.72,
+      "why_this_vector": "Perimeter appliance cases in the corpus, especially Volt Typhoon and Ivanti, make this the strongest fit.",
+      "defensive_implication": "Prioritize detection and blocking for perimeter-device access patterns, configuration drift, and suspicious administrative sessions.",
+      "source_ref_ids": [
+        "src_hist_10_corpus",
+        "src_hist_8_corpus",
+        "src_hist_9_corpus"
+      ]
+    },
+    {
+      "vector_id": "vec_2",
+      "rank": 2,
+      "vector_class": "living-off-the-land pre-positioning",
+      "target_sector": "US critical infrastructure and defense-support enterprise networks",
+      "likely_objective": "persistence",
+      "non_actionable_mechanism": "Adversary value comes from maintaining low-noise access with ordinary administration tooling until a separate strategic trigger raises activation risk.",
+      "candidate_fit": "Fits candidates whose effect is durable access, control, or pre-positioning rather than immediate destructive impact.",
+      "confidence": "high",
+      "confidence_score": 0.72,
+      "why_this_vector": "Volt Typhoon and SolarWinds-style anchors show that access can sit dormant until a geopolitical trigger makes activation valuable.",
+      "defensive_implication": "Prioritize behavior-based detections for administrative-tool misuse, account hygiene, and suspicious egress from critical services.",
+      "source_ref_ids": [
+        "src_hist_10_corpus",
+        "src_hist_8_corpus",
+        "src_hist_11_corpus"
+      ]
+    }
+  ],
+  "summary": {
+    "one_line": "For edge-device auth bypass enabling administrative control, rank edge-appliance initial access and pre-positioning highest and treat 2026-05-07 to 2026-05-14 as the lead strike-window forecast.",
+    "recommended_demo_path": "Use vec_1 inside win_1 as context for a safe Stage 3 validation scenario.",
+    "stage3_priority": "Prioritize detection and blocking for perimeter-device access patterns, configuration drift, and suspicious administrative sessions.",
+    "analyst_notes": [
+      "Vector descriptions are intentionally non-actionable and sector-level.",
+      "Every ranked window and vector includes source_ref_ids for UI citation rendering."
+    ]
+  },
+  "source_refs": [
+    {
+      "id": "src_context_calendar",
+      "label": "World Side current context: calendar events",
+      "url": "world-side/data/calendar_events.md",
+      "date": "2026-05-02",
+      "supports": "scheduled geopolitical and infrastructure stress windows"
+    },
+    {
+      "id": "src_context_indictments",
+      "label": "World Side current context: indictments and prosecutions",
+      "url": "world-side/data/indictments_state.md",
+      "date": "2026-05-02",
+      "supports": "legal pressure indicators that can alter actor tempo"
+    },
+    {
+      "id": "src_context_sanctions",
+      "label": "World Side current context: sanctions state",
+      "url": "world-side/data/sanctions_state.md",
+      "date": "2026-05-02",
+      "supports": "sanctions pressure indicators used for motive scoring"
+    },
+    {
+      "id": "src_ctx_cal_01",
+      "label": "Calendar context: 48th ASEAN Leaders' Summit & Related Summits",
+      "url": "https://asean2026.gov.ph/",
+      "date": "2026-05-08",
+      "supports": "First ASEAN leaders' summit of 2026 PH chairship; high-value target for PRC, DPRK reconnaissance against ministry mail; historically tied to spear-phishing waves against MFAs of a."
+    },
+    {
+      "id": "src_ctx_cal_02",
+      "label": "Calendar context: Trump\u2013Xi bilateral summit, Beijing",
+      "url": "https://www.cnbc.com/2026/03/25/trump-xi-beijing-china-summit.html",
+      "date": "2026-05-14",
+      "supports": "First US presidential visit to China since 2017. State and non-state actors (PRC MSS, DPRK RGB, Russian SVR) historically run intensive collection ops in 7-day pre-window against."
+    },
+    {
+      "id": "src_ctx_cal_05",
+      "label": "Calendar context: IISS Shangri-La Dialogue (23rd Asia Security Summit)",
+      "url": "https://www.iiss.org/events/shangri-la-dialogue/shangri-la-dialogue-2026/",
+      "date": "2026-05-29",
+      "supports": "Premier Indo-Pacific defense forum. Espionage waves against attendee delegations and hotel networks have been documented every recent year; PRC actor focus on US INDOPACOM and Fiv."
+    },
+    {
+      "id": "src_hist_10_corpus",
+      "label": "Historical corpus: Ivanti Connect Secure (UNC5221) / PRC ops, Dec 2023\u2013Jan 2024",
+      "url": "world-side/data/historical_pairings.md#10-ivanti-connect-secure-unc5221-prc-ops-dec-2023-jan-2024",
+      "date": "2026-05-02",
+      "supports": "PRC-nexus \u2192 enterprise edge/perimeter appliances (VPN, NetScaler, Fortigate, SonicWall, Citrix) at scale; vector = chained 0-days in security appliances themselves (the ironic tar."
+    },
+    {
+      "id": "src_hist_10_corpus_web_1",
+      "label": "Mandiant \u2014 \"Cutting Edge: Suspected APT Targets Ivanti Connect Secure VPN in New Zero-Day Exploitation\" (12 Jan 2024)",
+      "url": "https://cloud.google.com/blog/topics/threat-intelligence/ivanti-connect-secure-vpn-zero-day",
+      "date": "2026-05-02",
+      "supports": "external source for Ivanti Connect Secure (UNC5221) / PRC ops, Dec 2023\u2013Jan 2024"
+    },
+    {
+      "id": "src_hist_10_corpus_web_2",
+      "label": "Volexity \u2014 \"Active Exploitation of Two Zero-Day Vulnerabilities in Ivanti Connect Secure VPN\" (10 Jan 2024)",
+      "url": "https://www.volexity.com/blog/2024/01/10/active-exploitation-of-two-zero-day-vulnerabilities-in-ivanti-connect-secure-vpn/",
+      "date": "2026-05-02",
+      "supports": "external source for Ivanti Connect Secure (UNC5221) / PRC ops, Dec 2023\u2013Jan 2024"
+    },
+    {
+      "id": "src_hist_11_corpus",
+      "label": "Historical corpus: Triton / TRISIS / Saudi petrochemical / Iran-region tensions, 2017",
+      "url": "world-side/data/historical_pairings.md#11-triton-trisis-saudi-petrochemical-iran-region-tensions-2017",
+      "date": "2026-05-02",
+      "supports": "State actor (Russia in this case, but the *target sector* is the signal) \u2192 Safety Instrumented Systems at critical petrochemical/refining/nuclear facilities; vector = bespoke ICS-."
+    },
+    {
+      "id": "src_hist_11_corpus_web_1",
+      "label": "US Treasury OFAC \u2014 \"Treasury Sanctions Russian Government Research Institution Connected to the Triton Malware\" (23 Oct 2020)",
+      "url": "https://home.treasury.gov/news/press-releases/sm1162",
+      "date": "2026-05-02",
+      "supports": "external source for Triton / TRISIS / Saudi petrochemical / Iran-region tensions, 2017"
+    },
+    {
+      "id": "src_hist_11_corpus_web_2",
+      "label": "Mandiant / FireEye \u2014 \"TRITON Attribution: Russian Government-Owned Lab Most Likely Built Custom Intrusion Tools for TRITON Attackers\" (23 Oct 2018)",
+      "url": "https://cloud.google.com/blog/topics/threat-intelligence/triton-attribution-russian-government-owned-lab-most-likely-built-tools/",
+      "date": "2026-05-02",
+      "supports": "external source for Triton / TRISIS / Saudi petrochemical / Iran-region tensions, 2017"
+    },
+    {
+      "id": "src_hist_2_corpus",
+      "label": "Historical corpus: APT28 / DNC hack / 2016 US election cycle",
+      "url": "world-side/data/historical_pairings.md#2-apt28-dnc-hack-2016-us-election-cycle",
+      "date": "2026-05-02",
+      "supports": "Russia (GRU) \u2192 US political party / campaign infrastructure during election cycle; vector = credential phishing, not zero-day; payoff = curated leaks via cut-out persona/site (DCL."
+    },
+    {
+      "id": "src_hist_2_corpus_web_1",
+      "label": "US DoJ Indictment of 12 GRU Officers (Mueller, 13 Jul 2018)",
+      "url": "https://www.justice.gov/file/1080281/download",
+      "date": "2026-05-02",
+      "supports": "external source for APT28 / DNC hack / 2016 US election cycle"
+    },
+    {
+      "id": "src_hist_2_corpus_web_2",
+      "label": "ODNI ICA \u2014 \"Assessing Russian Activities and Intentions in Recent US Elections\" (Jan 2017)",
+      "url": "https://www.dni.gov/files/documents/ICA_2017_01.pdf",
+      "date": "2026-05-02",
+      "supports": "external source for APT28 / DNC hack / 2016 US election cycle"
+    },
+    {
+      "id": "src_hist_8_corpus",
+      "label": "Historical corpus: Volt Typhoon / Taiwan Strait pre-positioning campaign",
+      "url": "world-side/data/historical_pairings.md#8-volt-typhoon-taiwan-strait-pre-positioning-campaign",
+      "date": "2026-05-02",
+      "supports": "PRC \u2192 US/allied critical infrastructure (water, power, comms, transport) in geographies *adjacent to a likely Taiwan-conflict supply line* (Guam, Hawaii observed); vector = LotL +."
+    },
+    {
+      "id": "src_hist_8_corpus_web_1",
+      "label": "CISA AA24-038A \u2014 \"PRC State-Sponsored Actors Compromise and Maintain Persistent Access to U.S. Critical Infrastructure\" (7 Feb 2024)",
+      "url": "https://www.cisa.gov/news-events/cybersecurity-advisories/aa24-038a",
+      "date": "2026-05-02",
+      "supports": "external source for Volt Typhoon / Taiwan Strait pre-positioning campaign"
+    },
+    {
+      "id": "src_hist_8_corpus_web_2",
+      "label": "CISA AA23-144A \u2014 \"PRC State-Sponsored Cyber Actor Living off the Land to Evade Detection\" (24 May 2023)",
+      "url": "https://www.cisa.gov/news-events/cybersecurity-advisories/aa23-144a",
+      "date": "2026-05-02",
+      "supports": "external source for Volt Typhoon / Taiwan Strait pre-positioning campaign"
+    },
+    {
+      "id": "src_hist_9_corpus",
+      "label": "Historical corpus: MOVEit / Cl0p / Russia-aligned summer 2023",
+      "url": "world-side/data/historical_pairings.md#9-moveit-cl0p-russia-aligned-summer-2023",
+      "date": "2026-05-02",
+      "supports": "Russia-tolerated criminal \u2192 Western enterprise SaaS / managed file-transfer appliances; vector = pre-stockpiled n-day or 0-day in widely-deployed B2B appliances; timing = aligned."
+    },
+    {
+      "id": "src_hist_9_corpus_web_1",
+      "label": "CISA AA23-158A \u2014 \"#StopRansomware: CL0P Ransomware Gang Exploits CVE-2023-34362 MOVEit Vulnerability\"",
+      "url": "https://www.cisa.gov/news-events/cybersecurity-advisories/aa23-158a",
+      "date": "2026-05-02",
+      "supports": "external source for MOVEit / Cl0p / Russia-aligned summer 2023"
+    },
+    {
+      "id": "src_hist_9_corpus_web_2",
+      "label": "Mandiant \u2014 \"Zero-Day Vulnerability in MOVEit Transfer Exploited for Data Theft\" (1 Jun 2023)",
+      "url": "https://cloud.google.com/blog/topics/threat-intelligence/zero-day-moveit-data-theft/",
+      "date": "2026-05-02",
+      "supports": "external source for MOVEit / Cl0p / Russia-aligned summer 2023"
+    },
+    {
+      "id": "src_stage1_1",
+      "label": "Historical corpus: Volt Typhoon pre-positioning",
+      "url": "world-side/data/historical_pairings.md#8-volt-typhoon--taiwan-strait-pre-positioning-campaign",
+      "date": "2026-05-02",
+      "supports": "edge and SOHO infrastructure can be used for long-dwell pre-positioning against US critical infrastructure"
+    },
+    {
+      "id": "src_stage1_2",
+      "label": "Historical corpus: Ivanti Connect Secure PRC-nexus operations",
+      "url": "world-side/data/historical_pairings.md#10-ivanti-connect-secure-unc5221--prc-ops-dec-2023jan-2024",
+      "date": "2026-05-02",
+      "supports": "enterprise VPN and security appliances are recurring state-linked initial-access targets"
+    },
+    {
+      "id": "src_stage1_3",
+      "label": "CISA AA24-038A",
+      "url": "https://www.cisa.gov/news-events/cybersecurity-advisories/aa24-038a",
+      "date": "2026-05-02",
+      "supports": "PRC state-sponsored actors maintained access to US critical infrastructure for possible future disruption"
+    }
+  ]
+}
