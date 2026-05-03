@@ -4,6 +4,7 @@ import importlib
 import importlib.util
 import inspect
 import json
+import subprocess
 import sys
 import tempfile
 import unittest
@@ -157,9 +158,16 @@ class ScraperChatterSafetyTests(unittest.TestCase):
             "state_travel_advisories_rss",
             "doj_cyber_press_releases_api",
             "federal_register_sanctions_api",
+            "ofac_sanctions_list_service",
             "noaa_nhc_atlantic_rss",
+            "cisa_cybersecurity_advisories",
+            "cisa_ics_advisories",
+            "github_advisory_database",
+            "nuclei_templates_cve_commits",
+            "openwall_oss_security_index",
             "fortinet_psirt_rss",
             "ivanti_security_advisory_rss",
+            "reddit_security_public_new",
             "shodan_context_api",
             "exa_osint_search_api",
             "aishub_ais_api",
@@ -177,14 +185,18 @@ class ScraperChatterSafetyTests(unittest.TestCase):
             "marinecadastre_vessel_traffic_data",
             "kaggle_ais_dataset_reference",
             "flightradar24_context_reference",
+            "mastodon_public_security_tags",
             "telegram_public_channel_metadata",
             "onion_public_landing_metadata",
-            "ofac_sanctions_list_service",
             "microsoft_msrc_cvrf_api",
         ):
             self.assertFalse(by_name[disabled].enabled, f"{disabled} must not run by default")
 
         ready_defaults = {entry.name for entry in filter_catalog(entries, names=None)}
+        self.assertIn("ofac_sanctions_list_service", ready_defaults)
+        self.assertIn("cisa_cybersecurity_advisories", ready_defaults)
+        self.assertIn("github_advisory_database", ready_defaults)
+        self.assertIn("reddit_security_public_new", ready_defaults)
         self.assertIn("first_epss_api", ready_defaults)
         self.assertIn("state_travel_advisories_rss", ready_defaults)
         self.assertIn("fortinet_psirt_rss", ready_defaults)
@@ -194,7 +206,22 @@ class ScraperChatterSafetyTests(unittest.TestCase):
     def test_catalog_has_no_enabled_auth_gated_sources(self) -> None:
         catalog_path = SCRAPER_ROOT / "config" / "source_catalog.json"
         catalog = json.loads(catalog_path.read_text(encoding="utf-8"))
+        self.assertEqual(catalog["schema_version"], "prophet.scraper.source_catalog.v0.1")
+        for required_top_level in ("opsec_defaults", "lanes", "sources"):
+            self.assertIn(required_top_level, catalog)
         for source in catalog["sources"]:
+            for required in (
+                "id",
+                "enabled",
+                "lane",
+                "source_type",
+                "display_name",
+                "collection",
+                "normalization",
+                "safety",
+                "relevance",
+            ):
+                self.assertIn(required, source)
             auth_method = source["collection"]["auth_method"]
             if auth_method in {
                 "api_key_required",
@@ -211,7 +238,13 @@ class ScraperChatterSafetyTests(unittest.TestCase):
             collect_doj_press_releases,
             collect_federal_register_documents,
             collect_first_epss,
+            collect_github_advisories,
+            collect_github_commits,
+            collect_html_link_index,
+            collect_ofac_sdn_csv,
             collect_official_rss,
+            collect_reddit_listing,
+            collect_sanitized_json,
         )
 
         epss_records = collect_first_epss(
@@ -291,10 +324,194 @@ class ScraperChatterSafetyTests(unittest.TestCase):
                 url="https://www.federalregister.gov/api/v1/documents.json",
             ),
         )
+        ofac_records = collect_ofac_sdn_csv(
+            "1,Example Name,Entity,CYBER2,,,,,,,,\n2,Example Person,Individual,RUSSIA-EO14024,,,,,,,,\n",
+            CatalogEntry(
+                name="ofac_sanctions_list_service",
+                collector="ofac_sdn_csv",
+                source_type="official_government",
+                collection_tier="official_signal",
+                url="https://sanctionslistservice.ofac.treas.gov/api/PublicationPreview/exports/SDN.CSV",
+            ),
+        )
+        github_advisory_records = collect_github_advisories(
+            [
+                {
+                    "ghsa_id": "GHSA-abcd-1234-wxyz",
+                    "summary": "Fixture package advisory",
+                    "severity": "high",
+                    "published_at": "2026-05-02T12:00:00Z",
+                    "html_url": "https://github.com/advisories/GHSA-abcd-1234-wxyz",
+                    "identifiers": [{"type": "CVE", "value": "CVE-2026-12345"}],
+                    "vulnerabilities": [{"package": {"ecosystem": "pip"}}],
+                }
+            ],
+            CatalogEntry(
+                name="github_advisory_database",
+                collector="github_advisories",
+                source_type="threat_intel_feed",
+                collection_tier="technical_chatter",
+                url="https://api.github.com/advisories",
+            ),
+        )
+        github_commit_records = collect_github_commits(
+            [
+                {
+                    "sha": "abcdef1234567890",
+                    "html_url": "https://github.com/projectdiscovery/nuclei-templates/commit/abcdef1234567890",
+                    "commit": {
+                        "message": "Add CVE-2026-12345 metadata",
+                        "author": {"date": "2026-05-02T12:00:00Z"},
+                    },
+                }
+            ],
+            CatalogEntry(
+                name="nuclei_templates_cve_commits",
+                collector="github_commits",
+                source_type="threat_intel_feed",
+                collection_tier="technical_chatter",
+                url="https://api.github.com/repos/projectdiscovery/nuclei-templates/commits",
+            ),
+        )
+        reddit_records = collect_reddit_listing(
+            {
+                "data": {
+                    "children": [
+                        {
+                            "data": {
+                                "id": "abc123",
+                                "title": "Public defender discussion about CVE-2026-12345",
+                                "permalink": "/r/netsec/comments/abc123/public_defender_discussion/",
+                                "created_utc": 1777723200,
+                            }
+                        }
+                    ]
+                }
+            },
+            CatalogEntry(
+                name="reddit_security_public_new",
+                collector="reddit_listing",
+                source_type="public_social",
+                collection_tier="public_chatter",
+                url="https://www.reddit.com/r/netsec+blueteamsec+cybersecurity/new.json?limit=50",
+            ),
+        )
+        html_records = collect_html_link_index(
+            """
+            <html><body>
+              <a href="/news-events/cybersecurity-advisories/aa26-122a">CISA advisory headline</a>
+            </body></html>
+            """,
+            CatalogEntry(
+                name="cisa_cybersecurity_advisories",
+                collector="html_link_index",
+                source_type="official_government",
+                collection_tier="official_signal",
+                url="https://www.cisa.gov/news-events/cybersecurity-advisories",
+            ),
+        )
+        metadata_records = collect_sanitized_json(
+            json.dumps(
+                {
+                    **SAFE_RECORD,
+                    "record_id": "telegram_presanitized_fixture",
+                    "source_ref": {
+                        **SAFE_RECORD["source_ref"],
+                        "id": "src_telegram_presanitized_fixture",
+                        "url": "sanitized://scraper-record/telegram_presanitized_fixture",
+                    },
+                }
+            )
+            + "\n"
+        )
 
-        for record in [*epss_records, *rss_records, *doj_records, *federal_records]:
+        for record in [
+            *epss_records,
+            *rss_records,
+            *doj_records,
+            *federal_records,
+            *ofac_records,
+            *github_advisory_records,
+            *github_commit_records,
+            *reddit_records,
+            *html_records,
+            *metadata_records,
+        ]:
             accepted = self.api.validate(record.to_dict())
             self.assert_no_unsafe_surface(_as_mapping(accepted, fallback=record.to_dict()))
+
+    def test_enabled_catalog_sources_are_runnable_or_disabled(self) -> None:
+        from scraper_side.catalog import READY_COLLECTORS, load_source_catalog
+
+        catalog_path = SCRAPER_ROOT / "config" / "source_catalog.json"
+        entries = load_source_catalog(catalog_path)
+        for entry in entries:
+            if not entry.enabled:
+                continue
+            self.assertIn(entry.collector, READY_COLLECTORS | {"sanitized_json"})
+            self.assertTrue(entry.url or entry.local_path, f"{entry.name} needs a URL or local path")
+
+    def test_run_boundary_scripts_emit_manifest_and_sanitized_jsonl(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            tmp = Path(tmpdir)
+            catalog_path = tmp / "catalog.json"
+            state_dir = tmp / "state"
+            output_dir = tmp / "output"
+            fixture_path = FIXTURES / "sanitized-chatter-sample.jsonl"
+            catalog_path.write_text(
+                json.dumps(
+                    {
+                        "sources": [
+                            {
+                                "id": "telegram_public_channel_metadata",
+                                "enabled": True,
+                                "lane": "public_social_chatter",
+                                "source_type": "public_social",
+                                "collection_tier": "public_chatter",
+                                "local_path": str(fixture_path),
+                                "collection": {"format": "metadata_jsonl", "url": ""},
+                            }
+                        ]
+                    }
+                ),
+                encoding="utf-8",
+            )
+            env = {
+                "PYTHONPATH": str(SCRAPER_ROOT),
+                "SCRAPER_APP_DIR": str(SCRAPER_ROOT),
+                "SCRAPER_STATE_DIR": str(state_dir),
+                "SCRAPER_OUTPUT_DIR": str(output_dir),
+                "SCRAPER_CATALOG": str(catalog_path),
+                "SCRAPER_RUN_ID": "unit-test",
+                "SCRAPER_LIVE": "0",
+                "SCRAPER_LIMIT": "10",
+            }
+            collect_proc = subprocess.run(
+                [sys.executable, str(SCRAPER_ROOT / "bin" / "collect-once.py")],
+                cwd=ROOT,
+                env=env,
+                text=True,
+                capture_output=True,
+                check=False,
+            )
+            self.assertEqual(collect_proc.returncode, 0, collect_proc.stderr)
+            sanitize_proc = subprocess.run(
+                [sys.executable, str(SCRAPER_ROOT / "bin" / "sanitize-once.py")],
+                cwd=ROOT,
+                env=env,
+                text=True,
+                capture_output=True,
+                check=False,
+            )
+            self.assertEqual(sanitize_proc.returncode, 0, sanitize_proc.stderr)
+
+            output_path = output_dir / "sanitized-unit-test.jsonl"
+            collection_manifest = state_dir / "collection-manifest-unit-test.json"
+            sanitization_manifest = output_dir / "sanitization-manifest-unit-test.json"
+            self.assertTrue(output_path.exists())
+            self.assertTrue(collection_manifest.exists())
+            self.assertTrue(sanitization_manifest.exists())
+            self.assertEqual(len(_read_jsonl(output_path)), 3)
 
     def assert_rejected(self, record: dict[str, Any]) -> None:
         try:

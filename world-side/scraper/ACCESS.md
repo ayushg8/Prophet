@@ -56,6 +56,14 @@ PYTHONPATH=world-side/scraper python3 -m scraper_side.cli \
   --out /srv/scraper/output/cisa-kev.jsonl
 ```
 
+On the isolated host, the full run wrapper now uses the checked-in
+`bin/collect-once.py` and `bin/sanitize-once.py` boundary scripts. It writes a
+collection manifest, a sanitization manifest, and sanitized JSONL only:
+
+```bash
+SCRAPER_LIVE=1 SCRAPER_LIMIT=50 /srv/scraper/app/bin/run-once.sh
+```
+
 The source inventory lives in `world-side/scraper/config/source_catalog.json`. Only implemented official collectors run by default; high-risk, auth-gated, commercial, movement-tracking, and target-enumeration lanes are disabled until a human explicitly approves the collection plan.
 
 Current collector-ready low-risk feeds:
@@ -66,18 +74,38 @@ Current collector-ready low-risk feeds:
 - State Department travel-advisory RSS
 - DOJ cyber-filtered press-release metadata
 - Federal Register sanctions/export-control metadata
+- OFAC SDN aggregate program/type metadata
 - NOAA/NHC Atlantic and Eastern Pacific RSS
+- CISA cybersecurity and ICS advisory index metadata
+- GitHub Advisory Database metadata
+- ProjectDiscovery Nuclei Templates commit metadata, without file bodies or diffs
+- Openwall oss-security index metadata
 - Fortinet PSIRT RSS headline metadata
 - Ivanti security-advisory RSS headline metadata
+- Reddit public security-community listing metadata, without authors, comments, or bodies
 
 Cataloged but disabled by default:
 
-- OFAC Sanctions List Service until an aggregate-only CSV collector exists
 - Shodan and Exa until API-key handling and aggregate-only query review exist
 - Telegram public-channel metadata until VM-only collection is approved
 - Onion landing/leak/forum/paste metadata until VM-only collection is approved
 - AIS/shipping and flight sources until terms, auth, and aggregate-only privacy rules are reviewed
+- Mastodon hashtag RSS until a concrete instance/tag expansion plan is reviewed
 - Kepler.gl, deck.gl, Wokwi, OSINT Framework, and DEFCON inspiration references as tools/references, not scrape targets
+
+For Linux scheduling, copy `bin/prophet-scraper.service` and
+`bin/prophet-scraper.timer` into `/etc/systemd/system/` on the isolated host,
+review the environment values, then enable the timer:
+
+```bash
+sudo cp /srv/scraper/app/bin/prophet-scraper.service /etc/systemd/system/
+sudo cp /srv/scraper/app/bin/prophet-scraper.timer /etc/systemd/system/
+sudo systemctl daemon-reload
+sudo systemctl enable --now prophet-scraper.timer
+```
+
+For Windows, use `run-once-windows.ps1 -AllEnabled -Live` from Task Scheduler.
+The one-source form remains better for smoke tests.
 
 ## Collection lanes
 
@@ -93,6 +121,13 @@ The scraper machine can collect from six lanes. Each lane must output the same s
 | Analysis tooling references | Kepler.gl, deck.gl, Wokwi, OSINT Framework | Tool name, public URL, intended use case | Private exports, secrets, target lists, exploit material |
 
 For demo reliability, prefer official/public feeds first and use high-risk metadata only as a supporting signal. Tor/onion collection is optional and must stay metadata-only.
+
+Telegram/onion/high-risk sources are represented as **manual sanitized JSONL import
+lanes**, not as auto-enabled scrapers. The VM-side operator may generate a
+local `*.sanitized.jsonl` file with the record shape below and point a temporary
+catalog entry at that file. The checked-in catalog keeps these entries disabled
+and contains no channel names, invite links, onion addresses, forum endpoints,
+or target/victim lists.
 
 ## Sanitized record contract
 
@@ -195,6 +230,12 @@ scp /tmp/prophet-scraper-deploy.tgz prophet-scraper:C:/srv/scraper/prophet-scrap
 ssh prophet-scraper "powershell -NoProfile -ExecutionPolicy Bypass -Command \"Remove-Item -Recurse -Force C:\srv\scraper\app\* -ErrorAction SilentlyContinue; tar -xzf C:\srv\scraper\prophet-scraper-deploy.tgz -C C:\srv\scraper\app; C:\srv\scraper\app\bin\bootstrap-scraper-windows.ps1\""
 
 ssh prophet-scraper "powershell -NoProfile -ExecutionPolicy Bypass -File C:\srv\scraper\app\bin\run-once-windows.ps1 -Live -Collector cisa-kev -Limit 5 -Out C:\srv\scraper\output\cisa-kev-smoke.jsonl"
+```
+
+Run all enabled safe sources with manifests:
+
+```bash
+ssh prophet-scraper "powershell -NoProfile -ExecutionPolicy Bypass -File C:\srv\scraper\app\bin\run-once-windows.ps1 -AllEnabled -Live -Limit 50"
 ```
 
 Pull only sanitized output back:

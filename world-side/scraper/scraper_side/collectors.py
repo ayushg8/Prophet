@@ -2,19 +2,22 @@
 
 from __future__ import annotations
 
+import csv
 from datetime import date, datetime, timezone
 from email.utils import parsedate_to_datetime
 import html
+from html.parser import HTMLParser
+import io
 import json
 from pathlib import Path
 import re
 from typing import Any, Iterable, Mapping
-from urllib.parse import urlparse
+from urllib.parse import urljoin, urlparse
 from urllib.request import Request, urlopen
 import xml.etree.ElementTree as ET
 
 from .catalog import CatalogEntry, DEFAULT_CISA_KEV_URL, normalize_collector
-from .records import SanitizedRecord, make_source_ref, stable_id, utc_now
+from .records import RecordValidationError, SanitizedRecord, make_source_ref, stable_id, utc_now
 
 
 ALLOWED_LIVE_HOSTS = {
@@ -33,6 +36,11 @@ ALLOWED_LIVE_HOSTS = {
     "www.ivanti.com",
     "services.nvd.nist.gov",
     "nvd.nist.gov",
+    "sanctionslistservice.ofac.treas.gov",
+    "api.github.com",
+    "www.openwall.com",
+    "www.reddit.com",
+    "reddit.com",
 }
 
 JSON_COLLECTORS = {
@@ -41,11 +49,16 @@ JSON_COLLECTORS = {
     "first_epss",
     "doj_press_releases",
     "federal_register_documents",
+    "github_advisories",
+    "github_commits",
+    "reddit_listing",
     "sanitized_json",
 }
 
 TEXT_COLLECTORS = {
     "official_rss",
+    "ofac_sdn_csv",
+    "html_link_index",
 }
 
 
@@ -97,6 +110,16 @@ def collect_entry(
         records = collect_doj_press_releases(data, entry)
     elif collector == "federal_register_documents":
         records = collect_federal_register_documents(data, entry)
+    elif collector == "ofac_sdn_csv":
+        records = collect_ofac_sdn_csv(data, entry)
+    elif collector == "github_advisories":
+        records = collect_github_advisories(data, entry)
+    elif collector == "github_commits":
+        records = collect_github_commits(data, entry)
+    elif collector == "reddit_listing":
+        records = collect_reddit_listing(data, entry)
+    elif collector == "html_link_index":
+        records = collect_html_link_index(data, entry)
     elif collector == "sanitized_json":
         records = collect_sanitized_json(data)
     else:
@@ -428,10 +451,276 @@ def collect_federal_register_documents(data: Any, entry: CatalogEntry) -> list[S
     return records
 
 
+def collect_ofac_sdn_csv(data: Any, entry: CatalogEntry) -> list[SanitizedRecord]:
+    """Collect aggregate-only OFAC sanctions metadata from the public SDN CSV."""
+
+    if not isinstance(data, str):
+        raise ValueError(f"{entry.name}: OFAC CSV payload must be text")
+
+    counts: dict[tuple[str, str], int] = {}
+    for row in _csv_records(data):
+        program = _safe_label(row.get("program"), fallback="unspecified sanctions program")
+        entity_type = _safe_label(row.get("entity_type"), fallback="listed entity")
+        key = (program, entity_type)
+        counts[key] = counts.get(key, 0) + 1
+
+    date_value = _today()
+    records: list[SanitizedRecord] = []
+    for (program, entity_type), count in sorted(
+        counts.items(),
+        key=lambda item: (-item[1], item[0][0], item[0][1]),
+    ):
+        summary = (
+            f"OFAC SDN public sanctions metadata includes {count} {entity_type} "
+            f"record(s) under {program} as of {date_value}. Individual names, "
+            "addresses, identifiers, and raw CSV rows are omitted."
+        )
+        _append_record(
+            records,
+            {
+                "record_id": stable_id("ofac_sdn", program, entity_type, date_value),
+                "observed_at": f"{date_value}T00:00:00Z",
+                "source_type": entry.source_type,
+                "collection_tier": entry.collection_tier,
+                "actor_hint": "sanctions-linked actors",
+                "region_hint": "US / global",
+                "target_sector": "sanctions, export-control, and cyber-policy watchers",
+                "vector_class": "sanctions-pressure timing signal",
+                "motive_hint": "sanctions or legal-pressure context",
+                "confidence": "medium",
+                "summary": summary,
+                "source_ref": make_source_ref(
+                    label="OFAC Sanctions List Service",
+                    url=entry.url,
+                    date_value=date_value,
+                    supports=f"aggregate OFAC SDN program/type count for {program}",
+                ),
+                "tags": _record_tags(["ofac", "sanctions", "legal_pressure", program, entity_type]),
+            },
+            source_name=f"{entry.name}:{program}:{entity_type}",
+        )
+    return records
+
+
+def collect_github_advisories(data: Any, entry: CatalogEntry) -> list[SanitizedRecord]:
+    """Collect safe metadata from the public GitHub Advisory Database API."""
+
+    values = _json_items(data, entry.name, "GitHub advisories")
+    records: list[SanitizedRecord] = []
+    for item in values:
+        if not isinstance(item, Mapping):
+            continue
+        ghsa_id = _safe_label(item.get("ghsa_id"), fallback="GitHub advisory")
+        published = _date_string(item.get("published_at")) or _date_string(item.get("updated_at")) or _today()
+        severity = _safe_label(item.get("severity"), fallback="unknown severity")
+        title = _safe_label(item.get("summary"), fallback="public advisory metadata")
+        cve_ids = _github_cve_ids(item)
+        ecosystem = _github_ecosystem(item)
+        link = _safe_url(item.get("html_url")) or _safe_url(item.get("url")) or entry.url
+        cve_phrase = f" linked to {', '.join(cve_ids[:3])}" if cve_ids else ""
+        ecosystem_phrase = f" in {ecosystem}" if ecosystem else ""
+        summary = (
+            f"GitHub Advisory Database metadata: {ghsa_id}{cve_phrase}, "
+            f"{severity} severity{ecosystem_phrase}, published {published}. "
+            "Descriptions, affected-version ranges, and exploit details are omitted."
+        )
+        vector_class = _vector_from_terms(" ".join([title, severity, ecosystem, *cve_ids]))
+        _append_record(
+            records,
+            {
+                "record_id": stable_id("github_advisory", ghsa_id, published),
+                "observed_at": f"{published}T00:00:00Z",
+                "source_type": entry.source_type,
+                "collection_tier": entry.collection_tier,
+                "actor_hint": "unknown actors",
+                "region_hint": "global",
+                "target_sector": ecosystem or "open-source package consumers",
+                "vector_class": vector_class,
+                "motive_hint": "public vulnerability disclosure timing context",
+                "confidence": "medium",
+                "summary": summary,
+                "source_ref": make_source_ref(
+                    label="GitHub Advisory Database",
+                    url=link,
+                    date_value=published,
+                    supports=f"public advisory metadata for {ghsa_id}",
+                ),
+                "tags": _record_tags(["github", "advisory", severity, ecosystem, *cve_ids, *_keyword_tags(vector_class)]),
+            },
+            source_name=f"{entry.name}:{ghsa_id}",
+        )
+    return records
+
+
+def collect_github_commits(data: Any, entry: CatalogEntry) -> list[SanitizedRecord]:
+    """Collect commit metadata only; never fetch repository file contents or diffs."""
+
+    values = _json_items(data, entry.name, "GitHub commits")
+    label = _option(entry, "display_label") or _safe_label(entry.name.replace("_", " "), fallback="GitHub repository")
+    records: list[SanitizedRecord] = []
+    for item in values:
+        if not isinstance(item, Mapping):
+            continue
+        commit = item.get("commit", {})
+        if not isinstance(commit, Mapping):
+            continue
+        commit_id = _safe_label(str(item.get("sha", ""))[:12], fallback="commit")
+        headline = _safe_label(str(commit.get("message", "")).splitlines()[0], fallback="public repository update")
+        published = _nested_date(commit, ("author", "date")) or _nested_date(commit, ("committer", "date")) or _today()
+        link = _safe_url(item.get("html_url")) or entry.url
+        vector_class = _vector_from_terms(headline)
+        summary = (
+            f"{label} public commit metadata: {headline}; dated {published}. "
+            "Only commit headline, date, and source link are retained; diffs, files, "
+            "template bodies, and payloads are omitted."
+        )
+        _append_record(
+            records,
+            {
+                "record_id": stable_id("github_commit", entry.name, commit_id, published),
+                "observed_at": f"{published}T00:00:00Z",
+                "source_type": entry.source_type,
+                "collection_tier": entry.collection_tier,
+                "actor_hint": "unknown actors",
+                "region_hint": "global",
+                "target_sector": "defenders tracking public detection-template metadata",
+                "vector_class": vector_class,
+                "motive_hint": "public detection/disclosure timing context",
+                "confidence": "low",
+                "summary": summary,
+                "source_ref": make_source_ref(
+                    label=label,
+                    url=link,
+                    date_value=published,
+                    supports=f"public commit metadata for {commit_id}",
+                ),
+                "tags": _record_tags([entry.name, "github", "commit_metadata", *_keyword_tags(headline)]),
+            },
+            source_name=f"{entry.name}:{commit_id}",
+        )
+    return records
+
+
+def collect_reddit_listing(data: Any, entry: CatalogEntry) -> list[SanitizedRecord]:
+    """Collect public Reddit listing metadata without authors, comments, or bodies."""
+
+    if not isinstance(data, Mapping):
+        raise ValueError(f"{entry.name}: Reddit listing JSON must be an object")
+    listing = data.get("data", {})
+    if not isinstance(listing, Mapping):
+        raise ValueError(f"{entry.name}: Reddit listing data must be an object")
+    children = listing.get("children", [])
+    if not isinstance(children, list):
+        raise ValueError(f"{entry.name}: Reddit listing children must be a list")
+
+    records: list[SanitizedRecord] = []
+    for child in children:
+        if not isinstance(child, Mapping):
+            continue
+        item = child.get("data", {})
+        if not isinstance(item, Mapping):
+            continue
+        post_id = _safe_label(item.get("id"), fallback=stable_id("reddit", str(item.get("permalink", ""))))
+        title = _safe_label(item.get("title"), fallback="public security-community post")
+        published = _epoch_or_date(item.get("created_utc")) or _today()
+        permalink = item.get("permalink")
+        link = ""
+        if isinstance(permalink, str) and permalink.startswith("/"):
+            link = _safe_url(urljoin("https://www.reddit.com", permalink))
+        link = link or _safe_url(item.get("url")) or entry.url
+        vector_class = _vector_from_terms(title)
+        summary = (
+            f"Reddit public security-community listing metadata: {title}; posted {published}. "
+            "Only title, public link, and timestamp are retained; authors, comments, "
+            "self text, and raw thread exports are omitted."
+        )
+        _append_record(
+            records,
+            {
+                "record_id": stable_id("reddit_public", post_id, published),
+                "observed_at": f"{published}T00:00:00Z",
+                "source_type": entry.source_type,
+                "collection_tier": entry.collection_tier,
+                "actor_hint": "unknown actors",
+                "region_hint": "global",
+                "target_sector": "public-sector and enterprise defenders",
+                "vector_class": vector_class,
+                "motive_hint": "public community chatter timing context",
+                "confidence": "low",
+                "summary": summary,
+                "source_ref": make_source_ref(
+                    label="Reddit public security-community listing",
+                    url=link,
+                    date_value=published,
+                    supports=f"public listing metadata for post {post_id}",
+                ),
+                "tags": _record_tags(["reddit", "public_chatter", *_keyword_tags(title), *_option_tags(entry)]),
+            },
+            source_name=f"{entry.name}:{post_id}",
+        )
+    return records
+
+
+def collect_html_link_index(data: Any, entry: CatalogEntry) -> list[SanitizedRecord]:
+    """Collect headline/link metadata from a public HTML index page."""
+
+    if not isinstance(data, str):
+        raise ValueError(f"{entry.name}: HTML index payload must be text")
+    parser = _LinkIndexParser()
+    parser.feed(data)
+    label = _option(entry, "display_label") or _safe_label(entry.name.replace("_", " "), fallback="Public HTML index")
+
+    records: list[SanitizedRecord] = []
+    seen: set[str] = set()
+    for href, text in parser.links:
+        link = _safe_url(urljoin(entry.url, href))
+        if not link or link in seen or link == entry.url:
+            continue
+        if not _link_matches_entry(entry, link):
+            continue
+        seen.add(link)
+        title = _safe_label(text, fallback=f"{label} item")
+        if len(title) < 4:
+            continue
+        date_value = _date_from_url(link) or _today()
+        vector_class = _vector_from_terms(title)
+        summary = (
+            f"{label} public index metadata: {title}. Only headline, link, and "
+            "derived/public date are retained; page body and raw HTML are omitted."
+        )
+        _append_record(
+            records,
+            {
+                "record_id": stable_id("html_index", entry.name, link, title),
+                "observed_at": f"{date_value}T00:00:00Z",
+                "source_type": entry.source_type,
+                "collection_tier": entry.collection_tier,
+                "actor_hint": _option(entry, "actor_hint") or "unknown actors",
+                "region_hint": _option(entry, "region_hint") or "global",
+                "target_sector": _option(entry, "target_sector") or "public-sector and enterprise defenders",
+                "vector_class": _option(entry, "vector_class") or vector_class,
+                "motive_hint": _option(entry, "motive_hint") or "public advisory or research timing context",
+                "confidence": _option(entry, "confidence") or "medium",
+                "summary": summary,
+                "source_ref": make_source_ref(
+                    label=label,
+                    url=link,
+                    date_value=date_value,
+                    supports=f"public index metadata for {title}",
+                ),
+                "tags": _record_tags([entry.name, *_keyword_tags(title), *_option_tags(entry)]),
+            },
+            source_name=f"{entry.name}:{title}",
+        )
+    return records
+
+
 def collect_sanitized_json(data: Any) -> list[SanitizedRecord]:
     """Validate pre-sanitized JSON or JSONL-like arrays as SanitizedRecord."""
 
-    if isinstance(data, Mapping) and isinstance(data.get("records"), list):
+    if isinstance(data, str):
+        values = _jsonl_values(data)
+    elif isinstance(data, Mapping) and isinstance(data.get("records"), list):
         values = data["records"]
     elif isinstance(data, list):
         values = data
@@ -442,6 +731,148 @@ def collect_sanitized_json(data: Any) -> list[SanitizedRecord]:
         for idx, value in enumerate(values, start=1)
         if isinstance(value, Mapping)
     ]
+
+
+class _LinkIndexParser(HTMLParser):
+    def __init__(self) -> None:
+        super().__init__(convert_charrefs=True)
+        self.links: list[tuple[str, str]] = []
+        self._href: str = ""
+        self._parts: list[str] = []
+
+    def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+        if tag.lower() != "a":
+            return
+        href = ""
+        for key, value in attrs:
+            if key.lower() == "href" and value:
+                href = value
+                break
+        self._href = href
+        self._parts = []
+
+    def handle_data(self, data: str) -> None:
+        if self._href:
+            self._parts.append(data)
+
+    def handle_endtag(self, tag: str) -> None:
+        if tag.lower() != "a" or not self._href:
+            return
+        text = re.sub(r"\s+", " ", " ".join(self._parts)).strip()
+        self.links.append((self._href, html.unescape(text)))
+        self._href = ""
+        self._parts = []
+
+
+def _append_record(
+    records: list[SanitizedRecord],
+    payload: Mapping[str, Any],
+    *,
+    source_name: str,
+) -> None:
+    try:
+        records.append(SanitizedRecord.from_mapping(payload, source_name=source_name))
+    except RecordValidationError:
+        return
+
+
+def _csv_records(data: str) -> Iterable[dict[str, str]]:
+    reader = csv.reader(io.StringIO(data))
+    for row in reader:
+        if not row or all(not cell.strip() for cell in row):
+            continue
+        first = row[0].strip().lower()
+        if first in {"ent_num", "uid", "id"}:
+            continue
+        yield {
+            "entity_type": row[2].strip() if len(row) > 2 else "",
+            "program": row[3].strip() if len(row) > 3 else "",
+        }
+
+
+def _json_items(data: Any, source_name: str, label: str) -> list[Any]:
+    if isinstance(data, list):
+        return data
+    if isinstance(data, Mapping):
+        for key in ("items", "results", "data", "advisories"):
+            values = data.get(key)
+            if isinstance(values, list):
+                return values
+    raise ValueError(f"{source_name}: {label} JSON must be an array or object with item list")
+
+
+def _jsonl_values(data: str) -> list[Any]:
+    values: list[Any] = []
+    for line_no, raw_line in enumerate(data.splitlines(), start=1):
+        line = raw_line.strip()
+        if not line:
+            continue
+        try:
+            values.append(json.loads(line))
+        except json.JSONDecodeError as exc:
+            raise ValueError(f"metadata JSONL line {line_no} is not valid JSON") from exc
+    return values
+
+
+def _github_cve_ids(item: Mapping[str, Any]) -> list[str]:
+    cve_ids: list[str] = []
+    cve = _clean_cve(item.get("cve_id"))
+    if cve:
+        cve_ids.append(cve)
+    identifiers = item.get("identifiers", [])
+    if isinstance(identifiers, list):
+        for identifier in identifiers:
+            if not isinstance(identifier, Mapping):
+                continue
+            value = _clean_cve(identifier.get("value"))
+            if value and value not in cve_ids:
+                cve_ids.append(value)
+    return cve_ids[:5]
+
+
+def _github_ecosystem(item: Mapping[str, Any]) -> str:
+    ecosystems: list[str] = []
+    values = item.get("vulnerabilities", [])
+    if isinstance(values, list):
+        for vulnerability in values:
+            if not isinstance(vulnerability, Mapping):
+                continue
+            package = vulnerability.get("package", {})
+            if not isinstance(package, Mapping):
+                continue
+            ecosystem = _safe_label(package.get("ecosystem"), fallback="")
+            if ecosystem and ecosystem not in ecosystems:
+                ecosystems.append(ecosystem)
+    if not ecosystems:
+        return ""
+    return " / ".join(ecosystems[:3])
+
+
+def _nested_date(value: Mapping[str, Any], path: tuple[str, str]) -> str:
+    parent = value.get(path[0])
+    if not isinstance(parent, Mapping):
+        return ""
+    return _date_string(parent.get(path[1]))
+
+
+def _link_matches_entry(entry: CatalogEntry, link: str) -> bool:
+    parsed = urlparse(link)
+    path = parsed.path
+    if entry.name == "cisa_cybersecurity_advisories":
+        return "/news-events/cybersecurity-advisories/" in path
+    if entry.name == "cisa_ics_advisories":
+        return "/news-events/ics-advisories/" in path
+    if entry.name == "openwall_oss_security_index":
+        return "/lists/oss-security/" in path and bool(re.search(r"/20\d{2}/", path))
+    return parsed.netloc == (urlparse(entry.url).netloc if entry.url else parsed.netloc)
+
+
+def _date_from_url(link: str) -> str:
+    path = urlparse(link).path
+    match = re.search(r"/(20\d{2})/(\d{2})/(\d{2})(?:/|$)", path)
+    if match:
+        return f"{match.group(1)}-{match.group(2)}-{match.group(3)}"
+    return ""
 
 
 def load_json_path(path: Path) -> Any:
@@ -487,7 +918,11 @@ def _load_entry_payload(
     if entry.local_path is not None:
         if not entry.local_path.exists():
             raise FileNotFoundError(f"{entry.name}: local JSON not found: {entry.local_path}")
-        if collector in TEXT_COLLECTORS or entry.format in {"rss", "xml", "csv", "html"}:
+        if (
+            collector in TEXT_COLLECTORS
+            or entry.format in {"rss", "xml", "csv", "html", "metadata_jsonl"}
+            or entry.local_path.suffix.lower() == ".jsonl"
+        ):
             return entry.local_path.read_text(encoding="utf-8")
         return load_json_path(entry.local_path)
     if live:

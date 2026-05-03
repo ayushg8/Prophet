@@ -1,5 +1,5 @@
 # Runtime Python dependencies for isolated scraper collectors/sanitizers.
 #
 # Keep this public-safe: package names and versions only, no credentialed index
-# URLs or private package locations. The file is intentionally empty until
-# scraper code lands.
+# URLs or private package locations. The current scraper package is stdlib-only,
+# so this stays empty on purpose.

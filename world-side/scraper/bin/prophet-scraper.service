@@ -1,0 +1,20 @@
+[Unit]
+Description=Prophet isolated scraper sanitized collection pass
+Documentation=file:/srv/scraper/app/ACCESS.md
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=oneshot
+Environment=SCRAPER_BASE_DIR=/srv/scraper
+Environment=SCRAPER_APP_DIR=/srv/scraper/app
+Environment=SCRAPER_VENV_DIR=/srv/scraper/venv
+Environment=SCRAPER_OUTPUT_DIR=/srv/scraper/output
+Environment=SCRAPER_STATE_DIR=/srv/scraper/state
+Environment=SCRAPER_LOG_DIR=/srv/scraper/logs
+Environment=SCRAPER_LIVE=1
+Environment=SCRAPER_LIMIT=50
+ExecStart=/srv/scraper/app/bin/run-once.sh
+Nice=5
+NoNewPrivileges=true
+PrivateTmp=true

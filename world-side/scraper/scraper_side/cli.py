@@ -74,7 +74,13 @@ def _build_parser() -> argparse.ArgumentParser:
             "official-rss",
             "doj-press-releases",
             "federal-register-documents",
+            "ofac-sdn-csv",
+            "github-advisories",
+            "github-commits",
+            "reddit-listing",
+            "html-link-index",
             "sanitized-json",
+            "metadata-jsonl",
         ),
         help="Collector to run without a catalog entry.",
     )
@@ -142,12 +148,16 @@ def _entry_from_direct_args(args: argparse.Namespace) -> CatalogEntry:
 
     source_type = (
         "official_government"
-        if collector in {"cisa_kev", "nvd_cve", "doj_press_releases", "federal_register_documents"}
+        if collector in {"cisa_kev", "nvd_cve", "doj_press_releases", "federal_register_documents", "ofac_sdn_csv"}
+        else "public_social"
+        if collector == "reddit_listing"
         else "threat_intel_feed"
     )
     collection_tier = (
         "official_signal"
-        if collector in {"cisa_kev", "nvd_cve", "doj_press_releases", "federal_register_documents"}
+        if collector in {"cisa_kev", "nvd_cve", "doj_press_releases", "federal_register_documents", "ofac_sdn_csv"}
+        else "public_chatter"
+        if collector == "reddit_listing"
         else "technical_chatter"
     )
     url = args.feed_url or ""
@@ -157,7 +167,16 @@ def _entry_from_direct_args(args: argparse.Namespace) -> CatalogEntry:
         url = DEFAULT_CISA_KEV_URL
     if collector == "first_epss" and args.live and not url:
         url = "https://api.first.org/data/v1/epss?limit=100&order=!epss"
-    feed_format = "rss" if collector == "official_rss" else "json"
+    if collector == "official_rss":
+        feed_format = "rss"
+    elif collector == "ofac_sdn_csv":
+        feed_format = "csv"
+    elif collector == "html_link_index":
+        feed_format = "html"
+    elif collector == "sanitized_json":
+        feed_format = "metadata_jsonl" if args.input and args.input.suffix == ".jsonl" else "json"
+    else:
+        feed_format = "json"
 
     return CatalogEntry(
         name=collector,
