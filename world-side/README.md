@@ -113,4 +113,12 @@ is running locally. The workflow uses SSH key auth only, pulls back sanitized
 JSONL and the sanitization manifest, then writes a runtime forecast under
 `world-side/outputs/runtime/` for the browser session.
 
+Check live VM readiness before the demo:
+
+```bash
+world-side/scripts/check-scraper-vm.sh
+```
+
+Set `PROPHET_CHECK_RUN_SMOKE=1` to add a safe CISA KEV metadata smoke test.
+
 See `scraper/ACCESS.md` and `scraper/TEAMMATE_SETUP.md` for OPSEC, SSH, and deployment details.

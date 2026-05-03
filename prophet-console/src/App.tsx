@@ -162,6 +162,42 @@ export default function App() {
     }
   }, []);
 
+  const handleDemoRefresh = useCallback(async () => {
+    setScraperRunState('running');
+    setScraperStatusMessage('Refreshing forecast from sanitized demo chatter...');
+
+    try {
+      const response = await fetch('http://127.0.0.1:8787/api/scraper/demo-refresh', {
+        method: 'POST',
+        headers: {
+          'x-prophet-control': 'local-console',
+        },
+      });
+      const payload = (await response.json()) as ScraperRunResponse;
+
+      if (!response.ok || !payload.ok) {
+        setScraperRunState('error');
+        setScraperStatusMessage(
+          payload.message ||
+            'Demo refresh failed. Check the control server terminal.',
+        );
+        return;
+      }
+
+      if (payload.forecast) {
+        setActiveForecast(payload.forecast);
+      }
+
+      setScraperRunState('ok');
+      setScraperStatusMessage(payload.message || 'Demo forecast refreshed.');
+    } catch {
+      setScraperRunState('error');
+      setScraperStatusMessage(
+        'Local control server offline. Run npm run dev:control in prophet-console.',
+      );
+    }
+  }, []);
+
   const handleAuthorize = () => {
     setGateOpen(false);
     replayRef.current?.authorize();
@@ -204,6 +240,7 @@ export default function App() {
           <ForecastPanel
             forecast={activeForecast}
             onScraperRun={handleScraperRun}
+            onDemoRefresh={handleDemoRefresh}
             scraperRunState={scraperRunState}
             scraperStatusMessage={scraperStatusMessage}
           />

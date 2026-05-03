@@ -63,6 +63,7 @@ export interface ForecastPanelData {
 interface ForecastPanelProps {
   forecast?: ForecastPanelData | null;
   onScraperRun?: () => void;
+  onDemoRefresh?: () => void;
   scraperRunState?: 'idle' | 'running' | 'ok' | 'error';
   scraperStatusMessage?: string;
 }
@@ -143,6 +144,7 @@ function formatWindow(window: StrikeWindowProps | null): string {
 export function ForecastPanel({
   forecast,
   onScraperRun,
+  onDemoRefresh,
   scraperRunState = 'idle',
   scraperStatusMessage,
 }: ForecastPanelProps) {
@@ -201,19 +203,37 @@ export function ForecastPanel({
           WORLD SIDE FORECAST
           <span className="fp-eyebrow-chevron" aria-hidden>◣</span>
         </span>
-        {onScraperRun && (
-          <button
-            className="fp-action-btn"
-            type="button"
-            onClick={onScraperRun}
-            disabled={scraperRunState === 'running'}
-            aria-label="Run isolated scraper VM workflow"
-            title="Runs local control server -> SSH scraper VM -> sanitized JSONL -> forecast"
-          >
-            <span className="fp-action-bracket">[</span>
-            {scraperRunState === 'running' ? 'SCRAPER VM RUNNING' : 'RUN SCRAPER VM'}
-            <span className="fp-action-bracket">]</span>
-          </button>
+        {(onScraperRun || onDemoRefresh) && (
+          <div className="fp-action-group">
+            {onDemoRefresh && (
+              <button
+                className="fp-action-btn fp-action-btn--secondary"
+                type="button"
+                onClick={onDemoRefresh}
+                disabled={scraperRunState === 'running'}
+                aria-label="Refresh forecast from sanitized demo fixture"
+                title="Uses the tracked sanitized chatter fixture and forecaster locally"
+              >
+                <span className="fp-action-bracket">[</span>
+                DEMO REFRESH
+                <span className="fp-action-bracket">]</span>
+              </button>
+            )}
+            {onScraperRun && (
+              <button
+                className="fp-action-btn"
+                type="button"
+                onClick={onScraperRun}
+                disabled={scraperRunState === 'running'}
+                aria-label="Run isolated scraper VM workflow"
+                title="Runs local control server -> SSH scraper VM -> sanitized JSONL -> forecast"
+              >
+                <span className="fp-action-bracket">[</span>
+                {scraperRunState === 'running' ? 'RUNNING' : 'RUN SCRAPER VM'}
+                <span className="fp-action-bracket">]</span>
+              </button>
+            )}
+          </div>
         )}
       </div>
 

@@ -8,9 +8,22 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(__dirname, '..');
 const port = Number(process.env.PROPHET_CONTROL_PORT || 8787);
 const workflowScript = path.join(repoRoot, 'world-side/scripts/run-scraper-vm-workflow.sh');
+const worldSideDir = path.join(repoRoot, 'world-side');
+const candidateFile = path.join(
+  repoRoot,
+  'world-side/fixtures/exploit-candidate-edge-appliance.json',
+);
+const demoChatterFile = path.join(
+  repoRoot,
+  'world-side/fixtures/sanitized-chatter-sample.jsonl',
+);
 const forecastOut = path.join(
   repoRoot,
   'world-side/outputs/runtime/live-scraper-forecast-edge-appliance.json',
+);
+const demoForecastOut = path.join(
+  repoRoot,
+  'world-side/outputs/runtime/demo-scraper-forecast-edge-appliance.json',
 );
 const incomingDir = path.join(repoRoot, 'world-side/data/chatter/incoming/console');
 
@@ -37,12 +50,8 @@ const server = createServer(async (req, res) => {
   }
 
   if (req.method === 'POST' && req.url === '/api/scraper/run') {
-    if (!allowedOrigin || req.headers['x-prophet-control'] !== 'local-console') {
-      writeJson(res, 403, {
-        ok: false,
-        status: 'forbidden',
-        message: 'Prophet control endpoint only accepts explicit localhost console requests.',
-      });
+    if (!isConsoleRequest(req, allowedOrigin)) {
+      writeForbidden(res);
       return;
     }
 
@@ -56,6 +65,34 @@ const server = createServer(async (req, res) => {
     }
 
     activeRun = runWorkflow();
+    const result = await activeRun;
+    activeRun = null;
+    lastResult = {
+      ok: result.ok,
+      status: result.status,
+      finishedAt: result.finishedAt,
+      message: result.message,
+    };
+    writeJson(res, result.ok ? 200 : 500, result);
+    return;
+  }
+
+  if (req.method === 'POST' && req.url === '/api/scraper/demo-refresh') {
+    if (!isConsoleRequest(req, allowedOrigin)) {
+      writeForbidden(res);
+      return;
+    }
+
+    if (activeRun) {
+      writeJson(res, 409, {
+        ok: false,
+        status: 'busy',
+        message: 'A Prophet control workflow is already running.',
+      });
+      return;
+    }
+
+    activeRun = runDemoRefresh();
     const result = await activeRun;
     activeRun = null;
     lastResult = {
@@ -152,6 +189,96 @@ async function runWorkflow() {
   }
 }
 
+async function runDemoRefresh() {
+  const startedAt = new Date().toISOString();
+  const env = {
+    ...process.env,
+    PYTHONPATH: [worldSideDir, process.env.PYTHONPATH].filter(Boolean).join(path.delimiter),
+  };
+
+  const child = spawn(
+    'python3',
+    [
+      '-m',
+      'forecaster.cli',
+      '--candidate',
+      candidateFile,
+      '--chatter',
+      demoChatterFile,
+      '--out',
+      demoForecastOut,
+    ],
+    {
+      cwd: repoRoot,
+      env,
+      stdio: ['ignore', 'pipe', 'pipe'],
+    },
+  );
+
+  const result = await collectChild(child);
+  const finishedAt = new Date().toISOString();
+
+  if (result.exitCode !== 0) {
+    return {
+      ok: false,
+      status: 'demo_refresh_failed',
+      startedAt,
+      finishedAt,
+      exitCode: result.exitCode,
+      message: 'Demo forecast refresh failed. Check the control server terminal.',
+      stdoutTail: tail(result.stdout),
+      stderrTail: tail(result.stderr),
+    };
+  }
+
+  try {
+    const forecast = JSON.parse(await readFile(demoForecastOut, 'utf8'));
+    return {
+      ok: true,
+      status: 'demo_refreshed',
+      startedAt,
+      finishedAt,
+      exitCode: result.exitCode,
+      message: 'Demo forecast refreshed from sanitized fixture chatter.',
+      forecast,
+      stdoutTail: tail(result.stdout),
+      stderrTail: tail(result.stderr),
+    };
+  } catch (error) {
+    return {
+      ok: false,
+      status: 'demo_forecast_unreadable',
+      startedAt,
+      finishedAt,
+      exitCode: result.exitCode,
+      message: `Demo refresh finished, but the forecast file could not be read: ${error.message}`,
+      stdoutTail: tail(result.stdout),
+      stderrTail: tail(result.stderr),
+    };
+  }
+}
+
+function collectChild(child) {
+  let stdout = '';
+  let stderr = '';
+
+  child.stdout.on('data', (chunk) => {
+    stdout += chunk.toString();
+  });
+  child.stderr.on('data', (chunk) => {
+    stderr += chunk.toString();
+  });
+
+  return new Promise((resolve) => {
+    child.on('close', (exitCode) => {
+      resolve({ exitCode, stdout, stderr });
+    });
+    child.on('error', (error) => {
+      resolve({ exitCode: 1, stdout, stderr: `${stderr}\n${error.message}` });
+    });
+  });
+}
+
 function setCors(req, res) {
   const origin = req.headers.origin;
   const allowedOrigin =
@@ -171,6 +298,18 @@ function setCors(req, res) {
 function writeJson(res, status, payload) {
   res.writeHead(status, { 'content-type': 'application/json' });
   res.end(JSON.stringify(payload, null, 2));
+}
+
+function isConsoleRequest(req, allowedOrigin) {
+  return allowedOrigin && req.headers['x-prophet-control'] === 'local-console';
+}
+
+function writeForbidden(res) {
+  writeJson(res, 403, {
+    ok: false,
+    status: 'forbidden',
+    message: 'Prophet control endpoint only accepts explicit localhost console requests.',
+  });
 }
 
 function tail(text, max = 4000) {
