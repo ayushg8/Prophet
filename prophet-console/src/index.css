@@ -289,17 +289,31 @@ body {
 
 /* ── Mission Context strip (World-Side forecast above main layout) ─────── */
 .mission-context {
-  display: grid;
-  grid-template-columns: minmax(360px, 0.9fr) minmax(0, 1.4fr);
-  gap: 1px;
-  background: rgba(245, 158, 11, 0.1);
-  border-bottom: 1px solid var(--border, #21262d);
+  display: block;
+  padding: 12px;
+  background: rgba(10, 13, 18, 0.72);
+  border-bottom: 1px solid rgba(125, 133, 144, 0.2);
   flex-shrink: 0;
+  max-height: min(360px, 44vh);
+  overflow-y: auto;
 }
 
 .mission-context > * {
-  background: var(--bg, #0a0d12);
+  background: transparent;
   min-width: 0;
+}
+
+.mission-context::-webkit-scrollbar {
+  width: 6px;
+}
+
+.mission-context::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.mission-context::-webkit-scrollbar-thumb {
+  background: rgba(125, 133, 144, 0.28);
+  border-radius: 999px;
 }
 
 /* ── Main layout ─────────────────────────────────────────────────────────── */

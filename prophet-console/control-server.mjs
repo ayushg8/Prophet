@@ -21,6 +21,10 @@ const cyberArtifactFile = path.join(
   repoRoot,
   'cyber-side/fixtures/exploit-engine-output-edge-appliance.json',
 );
+const cyberPortfolioFile = path.join(
+  repoRoot,
+  'cyber-side/fixtures/predicted-exploit-portfolio-edge-appliance.json',
+);
 const forecastOut = path.join(
   repoRoot,
   'world-side/outputs/runtime/live-scraper-forecast-edge-appliance.json',
@@ -128,6 +132,30 @@ const server = createServer(async (req, res) => {
         ok: false,
         status: 'cyber_artifact_unreadable',
         message: `Cyber fixture could not be read: ${error.message}`,
+      });
+    }
+    return;
+  }
+
+  if (req.method === 'POST' && req.url === '/api/cyber/prediction-portfolio') {
+    if (!isConsoleRequest(req, allowedOrigin)) {
+      writeForbidden(res);
+      return;
+    }
+
+    try {
+      const portfolio = JSON.parse(await readFile(cyberPortfolioFile, 'utf8'));
+      writeJson(res, 200, {
+        ok: true,
+        status: 'prediction_portfolio_loaded',
+        message: 'Exploit prediction portfolio loaded from cyber-side/fixtures.',
+        portfolio,
+      });
+    } catch (error) {
+      writeJson(res, 500, {
+        ok: false,
+        status: 'prediction_portfolio_unreadable',
+        message: `Prediction portfolio could not be read: ${error.message}`,
       });
     }
     return;

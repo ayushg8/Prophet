@@ -52,7 +52,11 @@ Prophet flips the timing. Three components, one loop.
 
 The **Forecaster** ingests geopolitical signals — diplomatic calendars, conflict indicators, sanctions activity, official advisories — and fuses them with a historical campaign corpus of how state-class adversaries have behaved in similar windows. It outputs two things: a **strike window** with a date range and a confidence score, and a **strike vector class** describing the adversary's most likely tradecraft for that window. Sector-level only. Never named live targets.
 
+Every forecast has to answer three linked questions, not one: **why this exploit, why now, why this adversary.** A state actor only burns a high-value exploit when the geopolitical payoff justifies the burn. Prophet triangulates all three.
+
 The **Exploit Engine** takes a CVE candidate and the forecast, predicts the **exploit class** the adversary would reach for, and validates against a vulnerable-by-design sandbox image — Vulhub, on localhost. Same agent run, it generates a **zero-day defense**: a patch primitive and a Sigma detection rule. The agent never writes a novel exploit. It orchestrates published Nuclei templates against published vulnerable images.
+
+The defense lands in two places. The system gets the patch and the rule. The defender team gets an early alert — "this is the vector to watch in this window." Even when the patch can't be applied immediately for operational reasons, the SOC posture has already shifted.
 
 The **Console** is where the loop becomes legible. Strike window on a timeline, strike vector ranked alongside historical analogies, the agent's reasoning streamed live, and the defense artifacts at the end.
 
@@ -135,3 +139,4 @@ That's Prophet.
 - *"How is this different from XBOW or NodeZero?"* — "They find and validate. They don't predict ahead of KEV listing, and they don't co-generate the patch in the same loop. Prophet does both."
 - *"What about a CVE not in your demo?"* — "We can run `check_nuclei_template` live for any CVE. Vulhub coverage is the honest constraint — the loop generalizes; the sandbox catalog is what we replay."
 - *"How do you not leak when scraping?"* — "Isolated machine, sanitization at the boundary, allowlist validator. Open feeds first, high-risk lanes off by default and gated on human review."
+- *"Give me a non-cyber example of why timing matters."* — "Strait of Hormuz. An adversary disables naval communications infrastructure right before targeting an isolated ship — comms down, no help inbound, dead in the water. The exploit is only worth burning when the geopolitical window makes the target reachable and isolated. That's the same logic Prophet applies to perimeter infrastructure during diplomatic windows."

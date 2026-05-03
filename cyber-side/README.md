@@ -18,9 +18,37 @@ a sandbox validation result. The Console renders that artifact in `ExploitPanel`
 | Forecaster (Direction B) | `world-side/` | Yes. Goldens in `world-side/outputs/`. |
 | Console | `prophet-console/` | Yes. Reads goldens by default. |
 | Exploit Engine artifact | `cyber-side/fixtures/` | **Yes — fixture path works without Dell.** |
+| Exploit prediction portfolio | `cyber-side/predictor.py` | **Yes — deterministic, no API keys.** |
 
 The demo therefore has two operating modes. The fixture mode is the one the
 Console reads today; the live mode is what runs once Dell access is restored.
+
+## Alex action item — exploit prediction portfolio
+
+Alex asked for a Python path that consumes geopolitical context and produces:
+
+- 5 hypothesized zero-day exploit classes.
+- 5 known one-day / KEV replay classes.
+- 2-3 supporting sources per prediction.
+- A one-sentence defensive rationale and defense primitive per prediction.
+
+That path is now:
+
+```bash
+PYTHONPATH=cyber-side python3 -m predictor \
+  --forecast world-side/outputs/generated-forecast-edge-appliance-with-chatter.json \
+  --candidate world-side/fixtures/exploit-candidate-edge-appliance.json \
+  --out cyber-side/fixtures/predicted-exploit-portfolio-edge-appliance.json
+```
+
+The predictor is deterministic and fixture-safe. It does **not** call OpenAI,
+does **not** generate exploit payloads, and does **not** target live systems.
+It maps the Forecaster's strike vector/window into class-level exploit
+predictions plus defensive patch/detection focus so the demo can show
+"why this exploit, why now, why this adversary" without needing API keys.
+The local Console control server exposes it at
+`POST /api/cyber/prediction-portfolio`, and the Console summarizes the loaded
+5+5 portfolio in the AgentStream after the defense fixture is loaded.
 
 ## Two operating modes
 
@@ -30,6 +58,8 @@ The Console can render the full pipeline using only:
 
 - `world-side/outputs/golden-forecast-edge-appliance.json` (Direction B)
 - `cyber-side/fixtures/exploit-engine-output-edge-appliance.json` (Direction C)
+- `cyber-side/fixtures/predicted-exploit-portfolio-edge-appliance.json`
+  (safe prediction portfolio for Alex's 5+5 request)
 
 This is the path used for stage rehearsals, screen-recording the demo, and any
 contingency where the Dell is unavailable at submission time.
@@ -39,6 +69,9 @@ How to verify:
 ```bash
 PYTHONPATH=cyber-side python3 -m unittest discover -s cyber-side/tests
 PYTHONPATH=world-side:world-side/scraper python3 -m unittest discover -s world-side/tests
+PYTHONPATH=cyber-side python3 -m predictor \
+  --validate-only \
+  --forecast cyber-side/fixtures/predicted-exploit-portfolio-edge-appliance.json
 ```
 
 How to view in the Console (separate workstream — reads Direction C as JSON):
@@ -161,11 +194,14 @@ cyber-side/
 ├── README.md                         ← this file
 ├── INTERFACE.md                      ← Direction C contract
 ├── INTEGRATIONS.md                   ← what Idan must provide from Palantir/Danti
+├── predictor.py                      ← safe 5 zero-day + 5 one-day portfolio generator
 ├── validator.py                      ← stdlib-only contract checker
 ├── fixtures/
-│   └── exploit-engine-output-edge-appliance.json  ← Mode A artifact
+│   ├── exploit-engine-output-edge-appliance.json  ← Mode A artifact
+│   └── predicted-exploit-portfolio-edge-appliance.json
 └── tests/
-    └── test_exploit_engine_artifact.py            ← unittest, runs against the fixture
+    ├── test_exploit_engine_artifact.py            ← Direction C fixture tests
+    └── test_predictor_portfolio.py                ← prediction portfolio tests
 ```
 
 ## Test commands

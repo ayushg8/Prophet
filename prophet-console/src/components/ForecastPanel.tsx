@@ -1,8 +1,5 @@
-// ForecastPanel: compact summary card surfacing strategic_frame, top strike_vector,
-// and summary fields from a World Side forecast.
-// Uses useState for confidence bar animation mount trigger — 'use client' pattern.
+// ForecastPanel: analyst-readable forecast brief for the mission context strip.
 
-import { useEffect, useState } from 'react';
 import type { SourceRefProps } from './SourceCitation';
 import './forecast.css';
 
@@ -53,6 +50,7 @@ export interface ForecastSummaryProps {
 export interface ForecastPanelData {
   forecast_id: string;
   generated_at: string;
+  input_candidate_id?: string;
   strategic_frame: StrategicFrameProps;
   strike_windows?: StrikeWindowProps[];
   strike_vectors: StrikeVectorProps[];
@@ -60,12 +58,30 @@ export interface ForecastPanelData {
   source_refs?: SourceRefProps[];
 }
 
+interface CandidateRailProps {
+  cveId: string;
+  vendor: string;
+  product: string;
+  cvss: number;
+  cvssLabel: string;
+  epss: number;
+  attackTechnique: string;
+  vulnClass: string;
+  kevDateAdded: string;
+}
+
 interface ForecastPanelProps {
   forecast?: ForecastPanelData | null;
+  candidate?: CandidateRailProps;
   onScraperRun?: () => void;
   onDemoRefresh?: () => void;
   scraperRunState?: 'idle' | 'running' | 'ok' | 'error';
   scraperStatusMessage?: string;
+}
+
+interface SourceRail {
+  label: string;
+  refs: SourceRefProps[];
 }
 
 // ── Default fallback data (edge-appliance golden fixture) ─────────────────
@@ -126,209 +142,252 @@ const DEFAULT_FORECAST: ForecastPanelData = {
   },
 };
 
+const RAIL_ORDER = [
+  'Official signals',
+  'Geopolitical calendar',
+  'Historical analogies',
+  'Public chatter',
+  'Vendor intelligence',
+  'OSINT context',
+];
+
 // ── Helpers ───────────────────────────────────────────────────────────────
 
 function confidenceLabel(score: number): string {
-  if (score >= 0.7) return 'HIGH';
-  if (score >= 0.45) return 'MEDIUM';
-  return 'LOW';
+  if (score >= 0.7) return 'High';
+  if (score >= 0.45) return 'Medium';
+  return 'Low';
+}
+
+function formatPercent(value: number): string {
+  return `${Math.round(value * 100)}%`;
+}
+
+function parseDate(value: string): Date {
+  const [year, month, day] = value.split('-').map(Number);
+  return new Date(Date.UTC(year, month - 1, day, 12));
+}
+
+function formatDate(value: string): string {
+  const date = parseDate(value);
+  return new Intl.DateTimeFormat('en-US', {
+    month: 'short',
+    day: 'numeric',
+    timeZone: 'UTC',
+  }).format(date);
 }
 
 function formatWindow(window: StrikeWindowProps | null): string {
-  if (!window) return 'NO WINDOW AVAILABLE';
-  return `${window.start_date} -> ${window.end_date}`;
+  if (!window) return 'No window available';
+  const start = formatDate(window.start_date);
+  const end = formatDate(window.end_date);
+  const year = parseDate(window.end_date).getUTCFullYear();
+  return `${start} - ${end}, ${year}`;
+}
+
+function daysInWindow(window: StrikeWindowProps | null): string {
+  if (!window) return 'Waiting for forecast output';
+  const start = parseDate(window.start_date);
+  const end = parseDate(window.end_date);
+  const days = Math.max(1, Math.round((end.getTime() - start.getTime()) / 86_400_000) + 1);
+  return `${days} day window, rank ${window.rank}, ${confidenceLabel(window.confidence_score)} confidence`;
+}
+
+function readable(value: string | undefined): string {
+  if (!value) return 'Not available';
+  return value
+    .replace(/_/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function classifySource(ref: SourceRefProps): string {
+  const text = `${ref.id} ${ref.label} ${ref.url} ${ref.supports}`.toLowerCase();
+  if (/(cisa|kev|nvd|epss|ofac|state|travel|federal register|doj|noaa|mitre|attack)/.test(text)) {
+    return 'Official signals';
+  }
+  if (/(calendar|summit|dialogue|anniversary|sanctions|fomc|nato|shangri|tiananmen|travel)/.test(text)) {
+    return 'Geopolitical calendar';
+  }
+  if (/(historical|hist_|volt|ivanti|sandworm|lazarus|typhoon|moveit|viasat)/.test(text)) {
+    return 'Historical analogies';
+  }
+  if (/(chatter|telegram|reddit|onion|darkweb|public channel|social)/.test(text)) {
+    return 'Public chatter';
+  }
+  if (/(vendor|mandiant|volexity|crowdstrike|unit 42|talos|palo alto|eset|fortinet|microsoft|google)/.test(text)) {
+    return 'Vendor intelligence';
+  }
+  return 'OSINT context';
+}
+
+function buildSourceRails(refs: SourceRefProps[] | undefined): SourceRail[] {
+  if (!refs?.length) return [];
+  const buckets = new Map<string, SourceRefProps[]>();
+  for (const ref of refs) {
+    const label = classifySource(ref);
+    buckets.set(label, [...(buckets.get(label) ?? []), ref]);
+  }
+  return RAIL_ORDER
+    .map((label) => ({ label, refs: buckets.get(label) ?? [] }))
+    .filter((rail) => rail.refs.length > 0);
+}
+
+function sourcePreview(refs: SourceRefProps[]): string {
+  return refs[0]?.supports || refs[0]?.label || 'Source context available';
 }
 
 // ── Component ─────────────────────────────────────────────────────────────
 
 export function ForecastPanel({
   forecast,
+  candidate,
   onScraperRun,
   onDemoRefresh,
   scraperRunState = 'idle',
   scraperStatusMessage,
 }: ForecastPanelProps) {
-  const [fillWidth, setFillWidth] = useState(0);
-
   const data = forecast ?? DEFAULT_FORECAST;
   const topVector = data.strike_vectors?.[0] ?? null;
   const topWindow = data.strike_windows?.[0] ?? null;
   const frame = data.strategic_frame;
   const summary = data.summary;
-
-  const confidenceWidth = topVector ? topVector.confidence_score * 100 : 0;
-
-  // Reset and refill on a frame boundary so React 19 hook lint stays happy.
-  useEffect(() => {
-    let fillFrame: number | undefined;
-    const resetFrame = window.requestAnimationFrame(() => {
-      setFillWidth(0);
-      fillFrame = window.requestAnimationFrame(() => {
-        setFillWidth(confidenceWidth);
-      });
-    });
-    return () => {
-      window.cancelAnimationFrame(resetFrame);
-      if (fillFrame !== undefined) window.cancelAnimationFrame(fillFrame);
-    };
-  }, [data.forecast_id, confidenceWidth]);
+  const sourceRails = buildSourceRails(data.source_refs);
+  const triggerSignals = topWindow?.trigger_signals?.slice(0, 4) ?? [];
+  const confidenceScore = topVector?.confidence_score ?? topWindow?.confidence_score ?? 0;
 
   if (!data || !frame) {
     return (
-      <div className="fp-card" aria-label="Forecast panel">
-        <div className="fp-header">
-          <span className="fp-eyebrow">
-            <span className="fp-eyebrow-chevron" aria-hidden>◢</span>
-            WORLD SIDE FORECAST
-            <span className="fp-eyebrow-chevron" aria-hidden>◣</span>
-          </span>
-        </div>
-        <div className="fp-null-state">NO FORECAST AVAILABLE</div>
+      <div className="fp-card fp-brief-card" aria-label="Forecast panel">
+        <div className="fp-null-state">No forecast available</div>
       </div>
     );
   }
 
   return (
-    <div className="fp-card" aria-label="World Side forecast panel">
-      {/* ── Header ──────────────────────────────────────────────────── */}
-      <div className="fp-header">
-        <span className="fp-eyebrow">
-          <span className="fp-eyebrow-chevron" aria-hidden>◢</span>
-          WORLD SIDE FORECAST
-          <span className="fp-eyebrow-chevron" aria-hidden>◣</span>
-        </span>
+    <section className="fp-card fp-brief-card" aria-label="Forecast brief">
+      <div className="fp-brief-header">
+        <div className="fp-title-block">
+          <span className="fp-kicker">Prophet brief</span>
+          <h2>{readable(topVector?.vector_class)}</h2>
+          <p>{summary.one_line}</p>
+        </div>
+
         {(onScraperRun || onDemoRefresh) && (
-          <div className="fp-action-group">
+          <div className="fp-action-group fp-action-group--brief">
             {onDemoRefresh && (
               <button
-                className="fp-action-btn fp-action-btn--secondary"
+                className="fp-action-button fp-action-button--quiet"
                 type="button"
                 onClick={onDemoRefresh}
                 disabled={scraperRunState === 'running'}
                 aria-label="Refresh forecast from sanitized demo fixture"
                 title="Uses the tracked sanitized chatter fixture and forecaster locally"
               >
-                <span className="fp-action-bracket">[</span>
-                DEMO REFRESH
-                <span className="fp-action-bracket">]</span>
+                Refresh demo
               </button>
             )}
             {onScraperRun && (
               <button
-                className="fp-action-btn"
+                className="fp-action-button"
                 type="button"
                 onClick={onScraperRun}
                 disabled={scraperRunState === 'running'}
                 aria-label="Run isolated scraper VM workflow"
                 title="Runs local control server -> SSH scraper VM -> sanitized JSONL -> forecast"
               >
-                <span className="fp-action-bracket">[</span>
-                {scraperRunState === 'running' ? 'RUNNING' : 'RUN SCRAPER VM'}
-                <span className="fp-action-bracket">]</span>
+                {scraperRunState === 'running' ? 'Running VM' : 'Run scraper VM'}
               </button>
+            )}
+            {scraperStatusMessage && scraperRunState !== 'idle' && (
+              <span className={`fp-control-status fp-control-status--${scraperRunState}`}>
+                {scraperStatusMessage}
+              </span>
             )}
           </div>
         )}
       </div>
 
-      {/* ── Two-column body ─────────────────────────────────────────── */}
-      <div className="fp-body">
-        {scraperStatusMessage && (
-          <div className={`fp-control-status fp-control-status--${scraperRunState}`}>
-            {scraperStatusMessage}
-          </div>
-        )}
+      <div className="fp-brief-grid">
+        <article className="fp-primary-card">
+          <span className="fp-card-label">Most likely method</span>
+          <strong>{readable(topVector?.vector_class)}</strong>
+          <p>{topVector?.target_sector ?? 'Waiting for forecast output'}</p>
+        </article>
 
-        <div className="fp-deliverables" aria-label="Forecast deliverables">
-          <div className="fp-deliverable">
-            <span className="fp-deliverable-label">ATTACK METHOD / STRIKE VECTOR</span>
-            <span className="fp-deliverable-value">
-              {topVector?.vector_class ?? 'NO VECTOR AVAILABLE'}
-            </span>
-            <span className="fp-deliverable-note">
-              {topVector?.target_sector ?? 'Waiting for forecast output'}
-            </span>
-          </div>
+        <article className="fp-primary-card">
+          <span className="fp-card-label">Expected window</span>
+          <strong>{formatWindow(topWindow)}</strong>
+          <p>{daysInWindow(topWindow)}</p>
+        </article>
 
-          <div className="fp-deliverable">
-            <span className="fp-deliverable-label">TIMEFRAME / STRIKE WINDOW</span>
-            <span className="fp-deliverable-value">{formatWindow(topWindow)}</span>
-            <span className="fp-deliverable-note">
-              {topWindow
-                ? `Rank ${topWindow.rank} · ${topWindow.confidence.toUpperCase()} confidence`
-                : 'Waiting for forecast output'}
-            </span>
+        <article className="fp-primary-card fp-primary-card--candidate">
+          <span className="fp-card-label">Candidate rail</span>
+          <strong>{candidate?.cveId ?? data.input_candidate_id ?? 'Representative class'}</strong>
+          <div className="fp-mini-metrics" aria-label="Candidate metrics">
+            <span>{candidate ? `${candidate.vendor} ${candidate.product}` : readable(frame.target_scope)}</span>
+            {candidate && <span>{candidate.cvssLabel} CVSS {candidate.cvss.toFixed(1)}</span>}
+            {candidate && <span>EPSS {formatPercent(candidate.epss)}</span>}
+            {candidate && <span>{candidate.vulnClass}</span>}
+            {candidate && <span>{candidate.attackTechnique}</span>}
+            {candidate && <span>KEV {formatDate(candidate.kevDateAdded)}</span>}
           </div>
-        </div>
+        </article>
+      </div>
 
-        {/* Left column */}
-        <div className="fp-col">
-          <div className="fp-field">
-            <span className="fp-field-label">ADVERSARY CLASS</span>
-            <span className="fp-field-value">{frame.adversary_class}</span>
+      <div className="fp-support-grid">
+        <section className="fp-brief-panel fp-brief-panel--wide">
+          <div className="fp-panel-heading">
+            <h3>Why now</h3>
+            <span>{confidenceLabel(confidenceScore)} confidence</span>
           </div>
-          <div className="fp-field">
-            <span className="fp-field-label">TARGET SCOPE</span>
-            <span className="fp-field-value--small">{frame.target_scope}</span>
-          </div>
-          <div className="fp-field">
-            <span className="fp-field-label">GEOGRAPHIC SCOPE</span>
-            <span className="fp-field-value--small">{frame.geographic_scope}</span>
-          </div>
-        </div>
-
-        {/* Right column */}
-        <div className="fp-col">
-          {topVector ? (
-            <>
-              <div className="fp-field">
-                <span className="fp-field-label">TOP STRIKE VECTOR</span>
-                <span className="fp-field-value">{topVector.vector_class}</span>
-              </div>
-              <div className="fp-field">
-                <span className="fp-field-label">LIKELY OBJECTIVE</span>
-                <span className="fp-field-value">{topVector.likely_objective.toUpperCase()}</span>
-              </div>
-              <div className="fp-field">
-                <span className="fp-field-label">CONFIDENCE</span>
-                <div className="fp-confidence-row" aria-label={`Confidence: ${confidenceLabel(topVector.confidence_score)}`}>
-                  <div className="fp-confidence-track" aria-hidden>
-                    <div
-                      className="fp-confidence-fill"
-                      style={{ width: `${fillWidth}%` }}
-                    />
-                  </div>
-                  <span className="fp-confidence-label">
-                    {confidenceLabel(topVector.confidence_score)}
-                  </span>
-                </div>
-              </div>
-            </>
-          ) : (
-            <div className="fp-field">
-              <span className="fp-field-label">TOP STRIKE VECTOR</span>
-              <span className="fp-field-value--small">—</span>
+          <p>{topWindow?.why_this_window ?? topVector?.why_this_vector ?? summary.recommended_demo_path}</p>
+          {triggerSignals.length > 0 && (
+            <div className="fp-trigger-row" aria-label="Trigger signals">
+              {triggerSignals.map((signal) => (
+                <span key={signal}>{signal}</span>
+              ))}
             </div>
           )}
-        </div>
-      </div>
+        </section>
 
-      {/* ── Footer ──────────────────────────────────────────────────── */}
-      <div className="fp-footer">
-        <div className="fp-footer-row">
-          <span className="fp-footer-key">ONE LINE</span>
-          <span className="fp-footer-val">{summary.one_line}</span>
-        </div>
-        <div className="fp-footer-row">
-          <span className="fp-footer-key">DEMO PATH</span>
-          <span className="fp-footer-val fp-footer-val--mono">
-            {summary.recommended_demo_path}
-          </span>
-        </div>
-        <div className="fp-disclaimer" aria-label="Disclaimer">
-          DEFENSIVE FORECAST — NON-ACTIONABLE
-        </div>
+        <section className="fp-brief-panel">
+          <div className="fp-panel-heading">
+            <h3>Defense focus</h3>
+            <span>{readable(topVector?.likely_objective)}</span>
+          </div>
+          <p>{topVector?.defensive_implication ?? summary.stage3_priority ?? summary.recommended_demo_path}</p>
+          <div className="fp-confidence-row" aria-label={`Forecast confidence: ${confidenceLabel(confidenceScore)}`}>
+            <div className="fp-confidence-track" aria-hidden>
+              <div className="fp-confidence-fill" style={{ width: `${Math.round(confidenceScore * 100)}%` }} />
+            </div>
+            <span className="fp-confidence-label">{formatPercent(confidenceScore)}</span>
+          </div>
+        </section>
+
+        <section className="fp-brief-panel fp-source-rail">
+          <div className="fp-panel-heading">
+            <h3>Source rail</h3>
+            <span>{data.source_refs?.length ?? 0} refs</span>
+          </div>
+          <div className="fp-rail-list" aria-label="Grouped source rails">
+            {sourceRails.length > 0 ? (
+              sourceRails.map((rail) => (
+                <div
+                  key={rail.label}
+                  className="fp-rail-item"
+                  title={sourcePreview(rail.refs)}
+                >
+                  <strong>{rail.refs.length}</strong>
+                  <span>{rail.label}</span>
+                </div>
+              ))
+            ) : (
+              <div className="fp-rail-empty">No source rail attached</div>
+            )}
+          </div>
+        </section>
       </div>
-    </div>
+    </section>
   );
 }

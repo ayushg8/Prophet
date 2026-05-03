@@ -13,7 +13,6 @@ import { PreflightChecklist } from './components/PreflightChecklist';
 import { LiveFeedTicker } from './components/LiveFeedTicker';
 import { RunbookDrawer } from './components/RunbookDrawer';
 import { ForecastPanel } from './components/ForecastPanel';
-import { StrikeWindowTimeline } from './components/StrikeWindowTimeline';
 import { cves } from './data/cves';
 import { mockEvents } from './data/mockEvents';
 import type {
@@ -68,6 +67,21 @@ interface CyberDemoArtifactResponse {
   };
 }
 
+interface CyberPredictionPortfolioResponse {
+  ok: boolean;
+  status: string;
+  message?: string;
+  portfolio?: {
+    zero_day_predictions?: Array<{
+      exploit_class_label?: string;
+    }>;
+    one_day_predictions?: Array<{
+      exploit_class_label?: string;
+      known_cve_ids?: string[];
+    }>;
+  };
+}
+
 function forecastForCveId(cveId: string): StrikeForecast | null {
   const cve = cves.find((item) => item.cveId === cveId);
   const candidateId = cve?.worldCandidateId ?? null;
@@ -100,6 +114,7 @@ export default function App() {
   );
 
   const replayRef = useRef<ReplayHandle | null>(null);
+  const selectedCve = cves.find((item) => item.cveId === selectedCveId) ?? cves[0];
 
   const handleEvent = useCallback((event: AgentEvent) => {
     if (event.kind === 'phase') {
@@ -269,6 +284,35 @@ export default function App() {
           },
         ]);
       }
+
+      try {
+        const portfolioResponse = await fetch('http://127.0.0.1:8787/api/cyber/prediction-portfolio', {
+          method: 'POST',
+          headers: {
+            'x-prophet-control': 'local-console',
+          },
+        });
+        const portfolioPayload = (await portfolioResponse.json()) as CyberPredictionPortfolioResponse;
+        const portfolio = portfolioPayload.portfolio;
+        const zeroDays = portfolio?.zero_day_predictions ?? [];
+        const oneDays = portfolio?.one_day_predictions ?? [];
+        const topZeroDay = zeroDays[0]?.exploit_class_label;
+        const topOneDay = oneDays[0]?.exploit_class_label;
+
+        if (portfolioResponse.ok && portfolioPayload.ok && topZeroDay && topOneDay) {
+          setStreamEvents((prev) => [
+            ...prev,
+            {
+              kind: 'text',
+              content: sanitize(
+                `Prediction portfolio loaded: ${zeroDays.length} hypothesized zero-day classes and ${oneDays.length} one-day replay classes. Top zero-day class: ${topZeroDay}. Top one-day class: ${topOneDay}.`,
+              ),
+            },
+          ]);
+        }
+      } catch {
+        // Portfolio visibility is a demo enhancement; the Direction C artifact still drives defence rendering.
+      }
     } catch {
       setExploitStatus('idle');
       setExploitExcerpt(
@@ -321,16 +365,16 @@ export default function App() {
           runReady={runReady}
         />
 
-        {/* Mission Context strip — World Side forecast + strike-window timeline */}
+        {/* Mission Context brief — forecast, timing, candidate, and source rails */}
         <div className="mission-context" aria-label="World Side forecast and strike windows">
           <ForecastPanel
             forecast={activeForecast}
+            candidate={selectedCve}
             onScraperRun={handleScraperRun}
             onDemoRefresh={handleDemoRefresh}
             scraperRunState={scraperRunState}
             scraperStatusMessage={scraperStatusMessage}
           />
-          <StrikeWindowTimeline forecast={activeForecast} />
         </div>
 
         <div className="main-layout">
