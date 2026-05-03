@@ -46,8 +46,8 @@ export function Landing({ onEnter }: Props) {
       </div>
 
       <div className="landing__sidebar landing__sidebar--right">
-        <span>ANTHROPIC API · ONLINE</span>
-        <span>CVP · AUTHORIZED</span>
+        <span>CODEX TERMINAL · READY</span>
+        <span>FIXTURE MODE · ARMED</span>
         <span>SANDBOX · ISOLATED</span>
       </div>
 
@@ -59,9 +59,9 @@ export function Landing({ onEnter }: Props) {
           PREDICT &nbsp;·&nbsp; EXPLOIT &nbsp;·&nbsp; DEFEND
         </div>
         <p className="landing__lede">
-          A Claude-orchestrated agent loop that grounds on the CISA KEV catalog
-          to forecast the next class of weaponized vulnerability, validates the
-          exploit in an isolated sandbox, and co-generates the patch in the
+          An operator-in-the-loop agent workflow that grounds on the CISA KEV
+          catalog to forecast the next class of weaponized vulnerability,
+          validates the exploit class in an isolated sandbox, and co-generates the patch in the
           same run.
         </p>
 

@@ -23,43 +23,43 @@ function getEdgeStates(
 
   if (phase === 'INTEL') {
     return {
-      'api-qwen': 'active',
+      'api-engine': 'active',
       'operator-api': 'active',
     };
   }
   if (phase === 'PLAN') {
     return {
       'operator-api': 'active',
-      'api-qwen': 'active',
-      'qwen-target': 'active',
+      'api-engine': 'active',
+      'engine-target': 'active',
     };
   }
   if (phase === 'EXECUTE') {
     if (exploitStatus === 'vulnerable') {
       return {
-        'api-qwen': 'active',
-        'qwen-target': 'compromised',
-        'qwen-ssh': 'compromised',
+        'api-engine': 'active',
+        'engine-target': 'compromised',
+        'engine-sandbox': 'compromised',
       };
     }
     return {
-      'api-qwen': 'active',
-      'qwen-target': 'active',
-      'qwen-ssh': 'active',
+      'api-engine': 'active',
+      'engine-target': 'active',
+      'engine-sandbox': 'active',
     };
   }
   if (phase === 'DEFEND') {
     if (exploitStatus === 'blocked') {
       return {
         'operator-api': 'patched',
-        'api-qwen': 'patched',
-        'qwen-target': 'patched',
-        'qwen-ssh': 'patched',
+        'api-engine': 'patched',
+        'engine-target': 'patched',
+        'engine-sandbox': 'patched',
       };
     }
     return {
-      'api-qwen': 'active',
-      'qwen-target': 'active',
+      'api-engine': 'active',
+      'engine-target': 'active',
     };
   }
   return {};
@@ -274,7 +274,7 @@ export function LabTopology({ currentPhase, exploitStatus }: LabTopologyProps) {
   // Node positions — 280x260 SVG canvas
   const OPERATOR  = { x: 44,  y: 38  };
   const API       = { x: 140, y: 38  };
-  const QWEN      = { x: 140, y: 130 };
+  const ENGINE    = { x: 140, y: 130 };
   const TARGET    = { x: 236, y: 200 };
   // Sub-nodes under TARGET
   const VULN_APP  = { x: 196, y: 238 };
@@ -312,7 +312,7 @@ export function LabTopology({ currentPhase, exploitStatus }: LabTopologyProps) {
 
           {/* ── Edges ────────────────────────────────────────────────── */}
 
-          {/* Operator → Claude API */}
+          {/* Operator → Codex loop */}
           <Edge
             id="operator-api"
             d={`M ${OPERATOR.x + 14} ${OPERATOR.y} L ${API.x - 14} ${API.y}`}
@@ -322,34 +322,34 @@ export function LabTopology({ currentPhase, exploitStatus }: LabTopologyProps) {
             labelY={OPERATOR.y - 8}
           />
 
-          {/* Claude API → Qwen */}
+          {/* Codex loop → fixture runner */}
           <Edge
-            id="api-qwen"
-            d={`M ${API.x} ${API.y + 14} L ${QWEN.x} ${QWEN.y - 14}`}
-            state={getEdge('api-qwen')}
+            id="api-engine"
+            d={`M ${API.x} ${API.y + 14} L ${ENGINE.x} ${ENGINE.y - 14}`}
+            state={getEdge('api-engine')}
             label="TASK"
             labelX={API.x + 18}
-            labelY={(API.y + QWEN.y) / 2}
+            labelY={(API.y + ENGINE.y) / 2}
           />
 
-          {/* Qwen → Target (curved) */}
+          {/* Fixture runner → Target (curved) */}
           <Edge
-            id="qwen-target"
-            d={`M ${QWEN.x + 14} ${QWEN.y + 8} C ${QWEN.x + 60} ${QWEN.y + 40} ${TARGET.x - 30} ${TARGET.y - 40} ${TARGET.x - 14} ${TARGET.y}`}
-            state={getEdge('qwen-target')}
-            label="NUCLEI"
-            labelX={QWEN.x + 62}
-            labelY={QWEN.y + 50}
+            id="engine-target"
+            d={`M ${ENGINE.x + 14} ${ENGINE.y + 8} C ${ENGINE.x + 60} ${ENGINE.y + 40} ${TARGET.x - 30} ${TARGET.y - 40} ${TARGET.x - 14} ${TARGET.y}`}
+            state={getEdge('engine-target')}
+            label="VALIDATE"
+            labelX={ENGINE.x + 62}
+            labelY={ENGINE.y + 50}
           />
 
-          {/* Qwen → Target via SSH (dashed secondary path) */}
+          {/* Fixture runner → Target via sandbox control path */}
           <Edge
-            id="qwen-ssh"
-            d={`M ${QWEN.x + 10} ${QWEN.y + 12} C ${QWEN.x + 80} ${QWEN.y + 70} ${TARGET.x - 20} ${TARGET.y - 20} ${TARGET.x} ${TARGET.y + 14}`}
-            state={getEdge('qwen-ssh')}
-            label="SSH"
-            labelX={QWEN.x + 88}
-            labelY={QWEN.y + 85}
+            id="engine-sandbox"
+            d={`M ${ENGINE.x + 10} ${ENGINE.y + 12} C ${ENGINE.x + 80} ${ENGINE.y + 70} ${TARGET.x - 20} ${TARGET.y - 20} ${TARGET.x} ${TARGET.y + 14}`}
+            state={getEdge('engine-sandbox')}
+            label="SANDBOX"
+            labelX={ENGINE.x + 88}
+            labelY={ENGINE.y + 85}
           />
 
           {/* Target → sub-nodes */}
@@ -386,24 +386,24 @@ export function LabTopology({ currentPhase, exploitStatus }: LabTopologyProps) {
             size={26}
           />
 
-          {/* Claude API */}
+          {/* Codex loop */}
           <Node
             x={API.x}
             y={API.y}
-            label="CLAUDE API"
-            sublabel="orchestrator"
+            label="CODEX LOOP"
+            sublabel="operator-in-loop"
             color={isPhaseActive('INTEL') || isPhaseActive('PLAN') || isPhaseActive('EXECUTE') || isPhaseActive('DEFEND')
               ? '#f59e0b' : '#484f58'}
             active={currentPhase !== null}
             size={28}
           />
 
-          {/* Qwen executor */}
+          {/* Fixture executor */}
           <Node
-            x={QWEN.x}
-            y={QWEN.y}
-            label="QWEN 3.5 35B"
-            sublabel="executor · [LLM-HOST]:1234"
+            x={ENGINE.x}
+            y={ENGINE.y}
+            label="FIXTURE RUNNER"
+            sublabel="cyber artifact loader"
             color={isPhaseActive('EXECUTE') || isPhaseActive('PLAN') || isPhaseActive('DEFEND')
               ? '#58a6ff' : '#484f58'}
             active={

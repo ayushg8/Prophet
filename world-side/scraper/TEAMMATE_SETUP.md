@@ -59,7 +59,7 @@ rsync -avz --remove-source-files \
   ./world-side/data/chatter/incoming/
 ```
 
-`world-side/data/chatter/incoming/` is gitignored. Sanitized records get processed locally before they reach the analogy engine — never paste raw scrape output into a Claude prompt.
+`world-side/data/chatter/incoming/` is gitignored. Sanitized records get processed locally before they reach the analogy engine — never paste raw scrape output into an agent prompt.
 
 ## Troubleshooting
 
@@ -76,7 +76,7 @@ rsync -avz --remove-source-files \
 - **Never commit `.env.local`.** It is gitignored, but always check `git status` before pushing.
 - **Never share your private key.** Send only the `.pub` file.
 - **Don't run scrapers on your laptop.** Only on the scraper machine itself.
-- **Don't paste raw scrape output into Claude.** Sanitize first via the on-host pipeline.
+- **Don't paste raw scrape output into any agent.** Sanitize first via the on-host pipeline.
 
 ## What lives where (recap)
 

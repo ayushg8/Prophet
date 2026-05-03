@@ -34,7 +34,7 @@ export function ApprovalGate({ onAuthorize, onHold }: ApprovalGateProps) {
             </div>
             <div className="gate-detail-row">
               <span className="gate-detail-key">CLASS</span>
-              <span className="gate-detail-val">JNDI Injection / Remote Code Execution</span>
+              <span className="gate-detail-val">JNDI lookup exploit class</span>
             </div>
             <div className="gate-detail-row">
               <span className="gate-detail-key">TEMPLATE</span>
@@ -42,19 +42,19 @@ export function ApprovalGate({ onAuthorize, onHold }: ApprovalGateProps) {
             </div>
             <div className="gate-detail-row">
               <span className="gate-detail-key">EXECUTOR</span>
-              <span className="gate-detail-val mono">Qwen 3.5 35B · [LLM-HOST]:1234</span>
+              <span className="gate-detail-val mono">Codex terminal · operator approved</span>
             </div>
             <div className="gate-detail-row">
               <span className="gate-detail-key">PLAN</span>
-              <span className="gate-detail-val">Inject JNDI lookup via User-Agent header · sandbox-isolated · payload class spawns benign filesystem evidence · rollback on patch</span>
+              <span className="gate-detail-val">Run fixture-scoped validation against the localhost sandbox · render defense artifact · keep rollback sandbox-only</span>
             </div>
             <div className="gate-detail-row">
               <span className="gate-detail-key">ACTION</span>
-              <span className="gate-detail-val">Nuclei OOB probe — controlled callback only · no shell spawn · no persistence</span>
+              <span className="gate-detail-val">Public validation template · detection and patch validation only</span>
             </div>
             <div className="gate-detail-row">
               <span className="gate-detail-key">SCOPE</span>
-              <span className="gate-detail-val">Sandbox-isolated lab target · sandbox containment enforced · CVP authorized</span>
+              <span className="gate-detail-val">Sandbox-isolated lab target · fixture fallback available · no live infrastructure</span>
             </div>
           </div>
 

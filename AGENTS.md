@@ -103,7 +103,7 @@ Prophet/
 
 - **Never commit** `.env.local`, SSH keys (`*_ed25519`, `*.pem`, `*.key`), session files (`*.session`), or raw scrape output.
 - **Scraping runs only on the isolated scraper machine** — never on dev boxes or the demo machine.
-- **Sanitize before any Claude prompt** — never paste raw scrape output.
+- **Sanitize before any agent prompt** — never paste raw scrape output.
 - Verify with `git check-ignore -v <file>` before pushing anything from the lab environment.
 
 ## Code discipline

@@ -48,7 +48,7 @@
 |---|---|
 | Public repo on submission | `github.com/Ayush1298567/Prophet` is public |
 | New work only | All code written Sat 11:45 PT → Sun 12:00 PT. `research/` and `world-side/data/` are pre-event artifacts, marked clearly |
-| Tooling open and accessible | Standard Anthropic API, public Vulhub images, public Nuclei templates, public CISA/NVD/EPSS feeds |
+| Tooling open and accessible | Operator-in-the-loop Codex terminal workflow, deterministic fixtures, public Vulhub images, public Nuclei template metadata, public CISA/NVD/EPSS feeds |
 | Fits PS4 primary | Confirmed |
 
 **No novel exploit generation.** The exploit engine orchestrates existing Nuclei templates against Vulhub containers. Agent scope is locked to `localhost / 127.0.0.1`. Targets are vulnerable-by-design images only.
@@ -68,7 +68,7 @@
 2. **0:20–0:50 — Wedge.** "Prophet inverts KEV from rear-view to forward-looking. Geopolitical signals tell us *when* and *how*. One agent loop predicts the exploit class, validates it in a sandbox, and ships the patch + Sigma rule — before the campaign runs."
 3. **0:50–2:20 — Demo.** Open Console → strike window + strike vector from forecaster → click CVE → approve → watch reasoning stream → "VULNERABLE" → patch generated → applied → re-run → "BLOCKED" → Sigma rule shown.
 4. **2:20–2:45 — Impact.** BOD 22-01 mandate, DoD/DIB exposure, CASK edge-kit fit.
-5. **2:45–3:00 — Ask.** "Prophet runs on standard Claude API today. Production extends under Anthropic's Cyber Verification Program."
+5. **2:45–3:00 — Ask.** "Prophet runs today as an operator-in-the-loop Codex terminal workflow with deterministic fixtures. Production can swap in approved private integrations without changing the contract."
 
 ## Three judge challenges to drill
 

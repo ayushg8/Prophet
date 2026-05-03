@@ -10,7 +10,7 @@ Three risks we contain by isolation:
 
 1. **Network exposure.** Tor misconfiguration can leak the real client IP. A dedicated machine means a leak cannot deanonymize the team's primary laptop or the demo box.
 2. **Content liability.** Some sources host content that is illegal to fetch — never mind store. Raw artifacts stay on the isolated box. Only sanitized, source-attributed records cross to the main dev box.
-3. **AUP exposure.** Raw scraped text can trip Anthropic's policy if it ends up in a Claude prompt verbatim. We sanitize *before* anything reaches the agent loop.
+3. **AUP exposure.** Raw scraped text can trip agent/provider policy if it ends up in a prompt verbatim. We sanitize *before* anything reaches the agent loop.
 
 ## What lives where
 

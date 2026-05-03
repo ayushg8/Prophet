@@ -97,9 +97,6 @@ export type AgentEvent =
   | HistoricalAnalogyEvent
   | SourceRefEvent;
 
-// ── Dollar-sign escape to prevent template interpolation ────────────────────
-const D = '$';
-
 // ── Real Log4j patch diff ────────────────────────────────────────────────────
 const PATCH_DIFF = `--- a/VulnerableApp/run.bat
 +++ b/VulnerableApp/run.bat
@@ -133,21 +130,18 @@ const PATCH_DIFF = `--- a/VulnerableApp/run.bat
 +zip -q -d log4j-core-2.14.0.jar \\
 +  org/apache/logging/log4j/core/lookup/JndiLookup.class`;
 
-// ── Real Sigma rule — JNDI strings in HTTP headers and app logs ─────────────
-const SIGMA_RULE = `title: Log4Shell JNDI Injection — HTTP Header and App Log Detection
+// ── Detection-only Sigma rule rendered as a defensive artifact ───────────────
+const SIGMA_RULE = `title: Log4Shell JNDI Lookup Detection
 id: b7e4f2a1-9c83-4d56-a0e7-12f3456789ab
 status: stable
 description: >
-  Detects Log4Shell (CVE-2021-44228) exploitation attempts via JNDI lookup
-  strings injected through HTTP request headers (User-Agent, X-Forwarded-For,
-  Referer) or captured in Java application logs. Covers all known obfuscation
-  variants including nested lookup bypass patterns.
+  Detects suspicious JNDI lookup markers in web and application logs for
+  CVE-2021-44228. Detection-only; no response action or exploit procedure is
+  encoded in this rule.
 references:
   - https://www.cisa.gov/known-exploited-vulnerabilities-catalog
   - https://nvd.nist.gov/vuln/detail/CVE-2021-44228
-  - https://github.com/projectdiscovery/nuclei-templates/blob/main/http/cves/2021/CVE-2021-44228.yaml
-  - https://github.com/YfryTchsGD/Log4jAttackSurface
-author: Prophet Agent Loop — Phase IV Defence Co-gen
+author: Prophet Agent Loop — Defence fixture
 date: 2026/05/02
 modified: 2026/05/02
 tags:
@@ -159,20 +153,15 @@ tags:
 logsource:
   category: webserver
 detection:
-  http_headers:
+  lookup_markers:
     cs-user-agent|contains:
-      - '${D}{jndi:'
-      - '${D}{${D}{lower:j}ndi:'
-      - '${D}{${D}{upper:j}ndi:'
-      - '${D}{${D}{::-j}${D}{::-n}${D}{::-d}${D}{::-i}:'
+      - 'jndi:'
       - 'jndi%3A'
-      - '%24%7Bjndi'
-      - '${D}{j${D}{::-n}di:'
     cs-referer|contains:
-      - '${D}{jndi:'
+      - 'jndi:'
       - 'jndi%3A'
     cs-x-forwarded-for|contains:
-      - '${D}{jndi:'
+      - 'jndi:'
   app_log_jndi:
     EventID: 4688
     CommandLine|contains:
@@ -180,16 +169,14 @@ detection:
       - 'jndi:rmi'
       - 'jndi:dns'
       - 'jndi:iiop'
-  condition: http_headers or app_log_jndi
+  condition: lookup_markers or app_log_jndi
 fields:
   - cs-user-agent
   - cs-referer
   - cs-x-forwarded-for
-  - cs-uri-query
   - CommandLine
 falsepositives:
-  - Authorized security scans using Log4Shell detection scripts
-  - Internal blue-team validation using nuclei/log4j-scan
+  - Authorized blue-team validation traffic
 level: critical
 `;
 
@@ -249,7 +236,7 @@ export const mockEvents: AgentEvent[] = [
   {
     kind: 'text',
     content: sanitize(
-      'EPSS v4 score for CVE-2021-44228: 0.97 — 99.9th percentile of exploitation probability. This is among the highest EPSS scores in the entire CVE corpus. The combination of a trivially exploitable attack vector (single HTTP header), widespread deployment (Log4j is a dependency in millions of Java applications), and confirmed in-the-wild exploitation drives this score.'
+      'EPSS v4 score for CVE-2021-44228: 0.97 — 99.9th percentile of exploitation probability. This is among the highest EPSS scores in the CVE corpus. Widespread deployment, weak input-handling patterns in logging paths, and confirmed in-the-wild exploitation drive this score.'
     ),
   },
 
@@ -260,13 +247,13 @@ export const mockEvents: AgentEvent[] = [
     args: { host: '[LAB-HOST]', port: 8080 },
     durationMs: 890,
     result:
-      'HTTP 200 · Server: Java/1.8.0 · X-App: VulnerableApp · Log4j 2.14.0 · HTTPServer context: /',
+      'localhost fixture reachable · Java sandbox profile · vulnerable dependency detected',
   },
 
   {
     kind: 'text',
     content: sanitize(
-      'Lab target confirmed: Java 8 runtime with Log4j 2.14.0 serving an HTTP endpoint at port 8080. VulnerableApp.java is running as a Windows service with LocalSystem privileges — the highest privilege level on Windows. The server logs the User-Agent header directly into Log4j without any sanitization. This matches the canonical Log4Shell attack surface.\n\nWorld-Side candidate classification: enterprise VPN and secure edge appliance family · cve_class_label: edge-device auth bypass · CWE-287 / CWE-306.'
+      'Lab fixture confirmed: Java 8 runtime with Log4j 2.14.0 inside a vulnerable-by-design localhost sandbox. The fixture models a logging-path exposure for defensive validation only; no live infrastructure or raw exploit material is loaded.\n\nForecaster candidate classification: enterprise VPN and secure edge appliance family · cve_class_label: edge-device auth bypass · CWE-287 / CWE-306.'
     ),
   },
 
@@ -277,7 +264,7 @@ export const mockEvents: AgentEvent[] = [
     args: { cve: 'CVE-2021-44228' },
     durationMs: 45,
     result:
-      'http/cves/2021/CVE-2021-44228.yaml · confirmed active · matcher: dns-oob callback',
+      'public validation template metadata available · fixture-safe path selected',
   },
 
   {
@@ -287,7 +274,7 @@ export const mockEvents: AgentEvent[] = [
     args: { cve: 'CVE-2021-44228' },
     durationMs: 88,
     result:
-      'EDB-ID: 51183 · EDB-ID: 51214 · 2 entries · type: webapps · platform: java',
+      'public exploit-index metadata present · raw entries not loaded',
   },
 
   {
@@ -297,7 +284,7 @@ export const mockEvents: AgentEvent[] = [
     args: { cve: 'CVE-2021-44228' },
     durationMs: 62,
     result:
-      'T1190 — Exploit Public-Facing Application · confirmed · privilege outcome: LOCAL_SYSTEM',
+      'T1190 — Exploit Public-Facing Application · technique family mapped · no procedure loaded',
   },
 
   // World-Side: query_world_side returns the strike-window forecast
@@ -325,7 +312,7 @@ export const mockEvents: AgentEvent[] = [
   {
     kind: 'text',
     content: sanitize(
-      'Signal summary for CVE-2021-44228: KEV rank #4, EPSS 0.97 (99.9th percentile), Nuclei template confirmed at http/cves/2021/CVE-2021-44228.yaml, two Exploit-DB entries (EDB-51183, EDB-51214), ATT&CK T1190 mapped. Lab target running Log4j 2.14.0 — within the affected range (2.0-beta9 through 2.14.1). Designating CVE-2021-44228 as primary target. Proceeding to Phase II planning.'
+      'Signal summary for CVE-2021-44228: KEV rank #4, EPSS 0.97 (99.9th percentile), public validation metadata available, exploit-index metadata counted without loading raw entries, and ATT&CK T1190 mapped. The localhost fixture uses an affected Log4j profile. Designating CVE-2021-44228 as the representative exploit class for the demo. Proceeding to Phase II planning.'
     ),
   },
 
@@ -337,7 +324,7 @@ export const mockEvents: AgentEvent[] = [
   { kind: 'phase_complete', phase: 'INTEL' },
 
   // ── Phase II: Plan ─────────────────────────────────────────────────────────
-  { kind: 'phase', phase: 'PLAN', label: 'Phase II — Exploit Plan' },
+  { kind: 'phase', phase: 'PLAN', label: 'Phase II — Defense Plan' },
 
   {
     kind: 'tool_call',
@@ -346,7 +333,7 @@ export const mockEvents: AgentEvent[] = [
     args: { path: 'http/cves/2021/CVE-2021-44228.yaml' },
     durationMs: 38,
     result:
-      'Template loaded · attack: http · matchers: dns-callback · vector: User-Agent header',
+      'Template metadata loaded · public validation profile · no raw request material displayed',
   },
 
   {
@@ -359,13 +346,13 @@ export const mockEvents: AgentEvent[] = [
     },
     durationMs: 210,
     result:
-      'HTTP 200 · endpoint: / · logs User-Agent via logger.info() · no input sanitization',
+      'fixture response observed · vulnerable logging-path profile · localhost only',
   },
 
   {
     kind: 'text',
     content: sanitize(
-      `Exploitation plan for CVE-2021-44228 on lab target:\n\nAttack chain (abstract): inject JNDI lookup string via User-Agent header → Log4j 2.14.0 processes the lookup without sanitization → LDAP referral received → remote class loaded → static initializer executes as LocalSystem.\n\nPayload structure (sanitized): User-Agent: ${D}{jndi:ldap://[REDACTED]/Exploit}\n\nThe Nuclei template will validate exploitability via a controlled out-of-band DNS/LDAP callback — this confirms the lookup fires without requiring class execution. The controlled callback indicator is recorded; no shell is spawned during validation. Service runs as LocalSystem on the lab target.`
+      'Validation plan for CVE-2021-44228 on the localhost fixture:\n\nUse the public validation template as a bounded, operator-approved check against a vulnerable-by-design sandbox. The console records only class-level pre/post-patch status, defense output, and citations. It does not display payload syntax, request material, target-control steps, or live indicators.'
     ),
   },
 
@@ -393,14 +380,14 @@ export const mockEvents: AgentEvent[] = [
   {
     kind: 'text',
     content: sanitize(
-      `Plan summary for operator authorization: Inject JNDI lookup via User-Agent header · sandbox-isolated lab target · payload class spawns benign filesystem evidence only · rollback via Log4j patch (log4j2.formatMsgNoLookups=true + JndiLookup.class removal). Escalation path: [GUEST] (low-priv) → LocalSystem via service context. World-Side strike vector: ${topVector?.vector_class ?? 'edge-appliance initial access'}. Forwarding execution plan for human authorization gate.`
+      `Plan summary for operator authorization: run fixture-scoped validation against the localhost sandbox · render the Log4j defense artifact · keep rollback sandbox-only. Forecaster strike vector: ${topVector?.vector_class ?? 'edge-appliance initial access'}. Forwarding validation plan for human authorization gate.`
     ),
   },
 
   { kind: 'human_gate' },
 
   // ── Phase III: Execute ─────────────────────────────────────────────────────
-  { kind: 'phase', phase: 'EXECUTE', label: 'Phase III — Execute' },
+  { kind: 'phase', phase: 'EXECUTE', label: 'Phase III — Validate' },
 
   { kind: 'exploit_status', status: 'running' },
 
@@ -410,28 +397,28 @@ export const mockEvents: AgentEvent[] = [
     tool: 'run_nuclei',
     args: {
       template: 'http/cves/2021/CVE-2021-44228.yaml',
-      target: 'http://[LAB-HOST]:8080',
-      header: 'User-Agent',
+      target: '[LAB-HOST]:8080',
+      scope: 'localhost fixture',
     },
     durationMs: 2840,
     result:
-      '[CVE-2021-44228] [http] [critical] http://[LAB-HOST]:8080 · JNDI callback received · VULNERABLE',
+      '[CVE-2021-44228] [fixture] pre-patch validation · VULNERABLE',
   },
 
   {
     kind: 'tool_call',
     id: 'tc-011',
     tool: 'inspect_response',
-    args: { target: 'http://[LAB-HOST]:8080', method: 'GET' },
+    args: { target: '[LAB-HOST]:8080', method: 'GET' },
     durationMs: 420,
     result:
-      'HTTP 200 · body: "Request logged successfully" · JNDI lookup confirmed via User-Agent header',
+      'fixture response observed · validation evidence recorded · no request material displayed',
   },
 
   {
     kind: 'text',
     content: sanitize(
-      `Nuclei template execution complete. JNDI lookup confirmed via User-Agent header: the VulnerableApp instance issued an outbound LDAP callback on receipt of the crafted request. Log4j 2.14.0 performed the lookup without sanitization.\n\nStatus: JNDI lookup confirmed via User-Agent header · class loader initialized as LocalSystem · sandbox containment OK.\n\nWorld-Side vector match: ${topVector?.vector_class ?? 'edge-appliance initial access'} — perimeter-appliance access class validated in isolated sandbox environment. The controlled-callback indicator was received. Container/service state is unchanged; Nuclei exited after recording the DNS/LDAP callback. Exploitation of CVE-2021-44228 is fully reproducible on this target. Proceeding to Phase IV — Defence Co-generation.`
+      `Validation template complete. The vulnerable-by-design sandbox returns the expected pre-patch class-level status without displaying request material or target-control steps.\n\nStatus: representative exploit class confirmed in localhost fixture · sandbox containment OK.\n\nForecaster vector match: ${topVector?.vector_class ?? 'edge-appliance initial access'} — perimeter-appliance access class validated in an isolated environment. Proceeding to Phase IV — Defence Co-generation.`
     ),
   },
 
@@ -439,7 +426,7 @@ export const mockEvents: AgentEvent[] = [
     kind: 'exploit_status',
     status: 'vulnerable',
     responseExcerpt: sanitize(
-      'JNDI lookup confirmed via User-Agent header\nclass loader initialized as LocalSystem\nnuclei: [critical] http://[LAB-HOST]:8080 · VULNERABLE\nsandbox containment OK'
+      'pre_patch_status: vulnerable\nscope: localhost fixture\nno payloads or live indicators displayed\nsandbox containment OK'
     ),
   },
 
@@ -484,11 +471,11 @@ export const mockEvents: AgentEvent[] = [
     tool: 'generate_sigma',
     args: {
       cve: 'CVE-2021-44228',
-      vectors: ['User-Agent', 'X-Forwarded-For', 'Referer', 'app-log'],
+      log_fields: ['web headers', 'application logs'],
     },
     durationMs: 920,
     result:
-      'Sigma rule generated · status: stable · level: critical · 4 detection fields',
+      'Sigma rule generated · status: stable · level: critical · detection-only fields',
   },
 
   {
@@ -507,25 +494,25 @@ export const mockEvents: AgentEvent[] = [
     tool: 'verify_blocked',
     args: {
       template: 'http/cves/2021/CVE-2021-44228.yaml',
-      target: 'http://[LAB-HOST]:8080',
+      target: '[LAB-HOST]:8080',
     },
     durationMs: 2610,
     result:
-      '[CVE-2021-44228] [http] [critical] http://[LAB-HOST]:8080 · NOT VULNERABLE · no callback',
+      '[CVE-2021-44228] [fixture] post-patch validation · NOT VULNERABLE',
   },
 
   {
     kind: 'exploit_status',
     status: 'blocked',
     responseExcerpt: sanitize(
-      'JNDI lookup suppressed by formatMsgNoLookups=true\nnuclei: http://[LAB-HOST]:8080 · NOT VULNERABLE\npatch validated · block confirmed'
+      'post_patch_status: blocked\nfixture validation: NOT VULNERABLE\npatch validated · block confirmed'
     ),
   },
 
   {
     kind: 'text',
     content: sanitize(
-      'Validation complete. The patched VulnerableApp instance does not execute JNDI lookups — the Nuclei template receives no callback and returns NOT VULNERABLE. The -Dlog4j2.formatMsgNoLookups=true JVM property successfully mitigates CVE-2021-44228 on Log4j 2.14.0. Sigma rule is syntactically valid and ready for SIEM deployment. Emitting signed audit record.'
+      'Validation complete. The patched fixture returns NOT VULNERABLE, the Log4j mitigation primitive is represented in the defense artifact, and the Sigma rule is syntactically valid for SIEM deployment. Emitting signed audit record.'
     ),
   },
 
@@ -538,7 +525,7 @@ export const mockEvents: AgentEvent[] = [
     tool: 'emit_maven_fusion_object',
     args: {
       cve: 'CVE-2021-44228',
-      exploit_class: 'JNDI Injection / RCE → LocalSystem',
+      exploit_class: 'JNDI lookup exploit class',
       sandbox_result: 'BLOCKED',
       patch_applied: true,
       kev_rank: 4,

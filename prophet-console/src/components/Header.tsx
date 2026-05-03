@@ -57,7 +57,7 @@ export function Header({ isRunning, onRunClick, onRunbookClick, runReady }: Head
           <StatusPill dotColor="var(--success)" label="KEV FEED · LIVE" />
           <StatusPill dotColor="var(--success)" label="NVD STREAMING" />
           <StatusPill dotColor="var(--success)" label="CODEX TERMINAL · READY" />
-          <StatusPill dotColor="var(--info)" label="CVP · AUTHORIZED" />
+          <StatusPill dotColor="var(--info)" label="FIXTURE MODE · ARMED" />
           <StatusPill dotColor="var(--success)" label="SANDBOX · ISOLATED" />
 
           <button
