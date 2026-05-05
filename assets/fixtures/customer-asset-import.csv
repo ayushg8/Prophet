@@ -1,0 +1,3 @@
+asset_id,product_family,exposure_class,owner_group,environment,business_criticality,sbom_components,known_cve_overlaps,compensating_controls
+asset-edge-csv-001,secure edge appliance family,edge_appliance,Edge Platform Security,mission partner enclave,high,log4j-core@2.x legacy:java-library|appliance-auth-module@family-2024:appliance-component,CVE-2021-44228,centralized web log collection|restricted management-plane access policy
+asset-edge-csv-002,enterprise VPN appliance family,edge_appliance,Remote Access Security,supplier access enclave,high,federation-validator@family-2025:identity-component|web-request-parser@family-2023:appliance-component,CVE-2023-46805|CVE-2024-21887,central identity telemetry|configuration integrity review

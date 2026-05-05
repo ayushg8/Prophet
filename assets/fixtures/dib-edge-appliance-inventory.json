@@ -1,0 +1,94 @@
+{
+  "schema_version": "asset_inventory.v0.1",
+  "inventory_id": "asset-fixture-dib-edge-001",
+  "generated_at": "2026-05-04T19:30:00Z",
+  "fixture": true,
+  "scope": "Fictional defense-industrial edge appliance inventory. Sector and product-family level only; no live targets are named.",
+  "assets": [
+    {
+      "asset_id": "asset-edge-001",
+      "product_family": "secure edge appliance family",
+      "exposure_class": "edge_appliance",
+      "owner_group": "Edge Platform Security",
+      "environment": "mission partner enclave",
+      "business_criticality": "high",
+      "sbom_components": [
+        {
+          "name": "log4j-core",
+          "version_family": "2.x legacy",
+          "package_type": "java-library"
+        },
+        {
+          "name": "appliance-auth-module",
+          "version_family": "family-2024",
+          "package_type": "appliance-component"
+        }
+      ],
+      "known_cve_overlaps": [
+        "CVE-2021-44228"
+      ],
+      "compensating_controls": [
+        "centralized web log collection",
+        "restricted management-plane access policy",
+        "emergency patch owner assigned"
+      ]
+    },
+    {
+      "asset_id": "asset-edge-002",
+      "product_family": "enterprise VPN appliance family",
+      "exposure_class": "edge_appliance",
+      "owner_group": "Remote Access Security",
+      "environment": "supplier access enclave",
+      "business_criticality": "high",
+      "sbom_components": [
+        {
+          "name": "federation-validator",
+          "version_family": "family-2025",
+          "package_type": "identity-component"
+        },
+        {
+          "name": "web-request-parser",
+          "version_family": "family-2023",
+          "package_type": "appliance-component"
+        }
+      ],
+      "known_cve_overlaps": [
+        "CVE-2023-46805",
+        "CVE-2024-21887"
+      ],
+      "compensating_controls": [
+        "central identity telemetry",
+        "admin session anomaly detection",
+        "configuration integrity review"
+      ]
+    },
+    {
+      "asset_id": "asset-edge-003",
+      "product_family": "managed firewall edge family",
+      "exposure_class": "edge_appliance",
+      "owner_group": "Perimeter Operations",
+      "environment": "production support enclave",
+      "business_criticality": "medium",
+      "sbom_components": [
+        {
+          "name": "management-api",
+          "version_family": "family-2025",
+          "package_type": "control-plane-component"
+        },
+        {
+          "name": "update-channel-verifier",
+          "version_family": "family-2024",
+          "package_type": "firmware-component"
+        }
+      ],
+      "known_cve_overlaps": [
+        "CVE-2024-3400"
+      ],
+      "compensating_controls": [
+        "firmware provenance checks",
+        "change window approval",
+        "management API audit logging"
+      ]
+    }
+  ]
+}
