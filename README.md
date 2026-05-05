@@ -276,6 +276,19 @@ Generate the current production readiness scorecard with:
 python3 scripts/production-readiness-scorecard.py
 ```
 
+Before adding more production-platform scope, run the product validation track:
+
+- `docs/PRODUCT_VALIDATION_PLAN.md`
+- `docs/CUSTOMER_DISCOVERY_GUIDE.md`
+- `docs/OUTREACH_PLAYBOOK.md`
+- `docs/DESIGN_PARTNER_PILOT_OFFER.md`
+
+Score anonymized discovery evidence with:
+
+```bash
+python3 scripts/customer-validation-scorecard.py --log docs/customer-validation-log.example.json
+```
+
 ## Repository Map
 
 ```text

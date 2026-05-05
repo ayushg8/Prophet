@@ -40,6 +40,16 @@ operator board for the next buyer-pilot cycles.
 
 ## Active Queue
 
+### P0: Product Validation Before More Platform Work
+
+- [x] Add customer discovery guide.
+- [x] Add outreach playbook.
+- [x] Add design partner pilot offer.
+- [x] Add customer validation scorecard.
+- [ ] Complete 15 qualified discovery conversations.
+- [ ] Get 3 design-partner pilot discussions.
+- [ ] Get 1 paid, sponsored, or procurement-sponsored pilot path.
+
 ### P0: Release Hygiene
 
 - [ ] Review the dirty worktree and split it into intentional commits once the

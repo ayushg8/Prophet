@@ -468,6 +468,11 @@ non-live unless a future customer policy explicitly authorizes a narrower mode.
   analyst time saved, policy-blocked unsafe action rate.
 - [ ] Add customer interview guide.
 - [ ] Add feedback collection form.
+- [x] Add product validation plan.
+- [x] Add customer discovery guide.
+- [x] Add outreach playbook.
+- [x] Add design partner pilot offer.
+- [x] Add customer validation scorecard.
 
 ## P3: UX And Design
 

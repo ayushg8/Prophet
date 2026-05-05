@@ -8,6 +8,12 @@ safe, deterministic, policy-bound, and testable. Production work should preserve
 that posture while adding identity, tenancy, durable storage, approved customer
 data, real operations, and security-review evidence.
 
+Do not treat this as permission to build the whole platform before buyer pull.
+The demand-validation source of truth is `docs/PRODUCT_VALIDATION_PLAN.md`.
+Production implementation should proceed only after the validation scorecard
+shows `pilot_pull_detected` or `build_next_slice` from real anonymized customer
+interviews.
+
 ## Production Definition
 
 Prophet is production-ready when a customer can:
@@ -91,6 +97,7 @@ The machine-readable source of truth is
 
 ### Week 1: Release And Architecture Lock
 
+- Run the product validation sprint in `docs/PRODUCT_VALIDATION_PLAN.md`.
 - Undraft or supersede PR #5.
 - Merge the pilot package and tag the fixture/hash set.
 - Run fresh-clone smoke on macOS and Linux.

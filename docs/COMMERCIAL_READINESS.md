@@ -71,6 +71,22 @@ It should exclude:
 | Quality | CI, golden smoke hashes, browser smoke, dependency audit, and release checklists exist; add schema compatibility and mutation tests. |
 | Security | Keep historical exploit lab material quarantined from default product distributions. |
 
+## Demand Validation Gate
+
+Do not build the full controlled-production roadmap until buyer pull is visible.
+Use `docs/PRODUCT_VALIDATION_PLAN.md` and score anonymized discovery logs with
+`scripts/customer-validation-scorecard.py`.
+
+The minimum signal to keep building is:
+
+- 15 qualified discovery conversations.
+- 8 high-pain accounts.
+- 3 design-partner pilot discussions.
+- 1 paid, sponsored, or procurement-sponsored pilot path.
+
+If the repeated pain is not evidence-backed prioritization and SOC/leadership
+handoff, narrow or pivot before adding more platform infrastructure.
+
 ## Evidence Bundle
 
 Every production run should emit an evidence bundle with:

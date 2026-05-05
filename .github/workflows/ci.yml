@@ -34,6 +34,8 @@ jobs:
           fi
       - name: Production readiness scorecard
         run: python3 scripts/production-readiness-scorecard.py --backlog docs/production-readiness-backlog.json >/tmp/prophet-production-readiness.json
+      - name: Customer validation scorecard
+        run: python3 scripts/customer-validation-scorecard.py --log docs/customer-validation-log.example.json >/tmp/prophet-customer-validation.json
       - name: Cyber-side contract tests
         run: PYTHONPATH=cyber-side python3 -m unittest discover -s cyber-side/tests -v
       - name: World-side forecaster tests
