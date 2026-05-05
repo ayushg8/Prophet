@@ -1,0 +1,74 @@
+{
+  "schema_version": "prophet_pilot_policy.v0.1",
+  "policy_id": "prophet-pilot-localhost-sandbox-v0.1",
+  "description": "Policy for deterministic seeded-OSINT refresh and localhost sandbox artifact generation with no live targets.",
+  "allowed_modes": {
+    "asset_context": [
+      "fixture",
+      "customer_owned_metadata"
+    ],
+    "osint_collection": [
+      "fixture",
+      "seeded_osint"
+    ],
+    "forecast_generation": [
+      "fixture",
+      "seeded_osint"
+    ],
+    "validation": [
+      "localhost_sandbox"
+    ],
+    "evidence_generation": [
+      "localhost_sandbox"
+    ]
+  },
+  "controls": {
+    "live_targets_allowed": false,
+    "live_vm_scraper_allowed": false,
+    "arbitrary_target_input_allowed": false,
+    "payload_generation_allowed": false,
+    "raw_scraper_text_allowed": false,
+    "private_hostnames_allowed": false,
+    "credentials_allowed": false
+  },
+  "required_attestations": [
+    "no_live_targets",
+    "no_live_target_data_included",
+    "no_payloads",
+    "no_credentials",
+    "no_raw_scraper_text",
+    "no_private_hostnames"
+  ],
+  "allowed_source_ids": [
+    "cisa_vulnrichment_cve_record_seed",
+    "osv_query_api_seed",
+    "redhat_security_data_cve_api"
+  ],
+  "allowed_sandbox_profiles": [
+    "edge-appliance-fixture"
+  ],
+  "allowed_integration_exports": [
+    "splunk_saved_search",
+    "elastic_detection_rule",
+    "sentinel_analytic_rule",
+    "jira_ticket",
+    "servicenow_task",
+    "operator_audit_event"
+  ],
+  "retention": {
+    "runtime_outputs_max_days": 30,
+    "audit_log_max_days": 90,
+    "customer_metadata_max_days": 30,
+    "raw_collection_retained": false,
+    "deletion_review_required": true
+  },
+  "default_outputs": {
+    "asset_seedset": "assets/outputs/runtime/localhost-sandbox-policy-seedset.json",
+    "seeded_osint_snapshot": "world-side/outputs/runtime/localhost-sandbox-policy-snapshot.jsonl",
+    "seeded_osint_manifest": "world-side/outputs/runtime/localhost-sandbox-policy-snapshot.manifest.json",
+    "forecast": "world-side/outputs/runtime/localhost-sandbox-policy-forecast.json",
+    "sandbox_artifact": "cyber-side/outputs/runtime/localhost-sandbox-policy-artifact.json",
+    "evidence_json": "evidence/outputs/runtime/localhost-sandbox-policy-evidence.json",
+    "evidence_markdown": "evidence/outputs/runtime/localhost-sandbox-policy-evidence.md"
+  }
+}

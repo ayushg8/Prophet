@@ -1,0 +1,58 @@
+{
+  "schema_version": "prophet_pilot_policy.v0.1",
+  "policy_id": "prophet-pilot-fixture-only-v0.1",
+  "description": "Fixture-only evaluation policy for customers who want no seeded OSINT or sandbox refresh during first review.",
+  "allowed_modes": {
+    "asset_context": [
+      "fixture"
+    ],
+    "osint_collection": [
+      "fixture"
+    ],
+    "forecast_generation": [
+      "fixture"
+    ],
+    "validation": [
+      "fixture"
+    ],
+    "evidence_generation": [
+      "fixture"
+    ]
+  },
+  "controls": {
+    "live_targets_allowed": false,
+    "live_vm_scraper_allowed": false,
+    "arbitrary_target_input_allowed": false,
+    "payload_generation_allowed": false,
+    "raw_scraper_text_allowed": false,
+    "private_hostnames_allowed": false,
+    "credentials_allowed": false
+  },
+  "required_attestations": [
+    "no_live_targets",
+    "no_live_target_data_included",
+    "no_payloads",
+    "no_credentials",
+    "no_raw_scraper_text",
+    "no_private_hostnames"
+  ],
+  "allowed_integration_exports": [
+    "splunk_saved_search",
+    "elastic_detection_rule",
+    "sentinel_analytic_rule",
+    "jira_ticket",
+    "servicenow_task",
+    "operator_audit_event"
+  ],
+  "retention": {
+    "runtime_outputs_max_days": 7,
+    "audit_log_max_days": 30,
+    "customer_metadata_max_days": 7,
+    "raw_collection_retained": false,
+    "deletion_review_required": true
+  },
+  "default_outputs": {
+    "evidence_json": "evidence/outputs/runtime/fixture-only-evidence.json",
+    "evidence_markdown": "evidence/outputs/runtime/fixture-only-evidence.md"
+  }
+}
