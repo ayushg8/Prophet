@@ -146,6 +146,23 @@ multi-scenario, policy-bound evaluator package. The biggest additions are:
   $( { git diff --name-only --diff-filter=ACMR; git ls-files --others
   --exclude-standard; } | sort -u )`: passed across 151 changed/untracked paths.
 
+## Post-Commit Validation
+
+After commit shaping on branch `prophet-pilot-consolidation-2026-05-05`:
+
+- `git status --short --untracked-files=all`: clean.
+- `git diff --check`: passed.
+- `PYTHONPATH=.:cyber-side:world-side python3 scripts/check-release-safety.py
+  --tracked`: passed across 245 tracked paths.
+- Full Python matrix passed: 19 cyber, 24 world-side, 18 assets, 10 sandbox,
+  26 policy, 56 evidence, 7 integrations, and 34 scripts tests.
+- `./scripts/run-pilot-demo-smoke.sh`: passed.
+- `./scripts/run-pilot-demo-smoke.sh --sector financial-workflow`: passed.
+- `cd prophet-console && npm run acceptance`: passed.
+- `cd prophet-console && npm audit --audit-level=moderate`: passed with 0
+  vulnerabilities.
+- GStack timeline event was logged for consolidation completion.
+
 ## Remediation During Consolidation
 
 - Added missing policy provenance to
@@ -158,24 +175,18 @@ multi-scenario, policy-bound evaluator package. The biggest additions are:
   scanning because version strings in that public catalog are expected to look
   like IPv4 literals.
 
-## Proposed Local Commit Groups
+## Local Commit Map
 
-1. Safety cleanup and removed lab/demo exploit material.
-2. Asset/SBOM fixtures, CSV import, seedset generation, and tests.
-3. Seeded OSINT snapshotting, source catalog safety, freshness, and forecaster
-   enrichment.
-4. Policy schema, linter, comparison, allowlists, retention, and policy tests.
-5. Evidence bundle, audit log, audit export, retention evidence, JSON Schema,
-   and evidence tests.
-6. Sandbox runner profiles, artifacts, manifests, negative fixtures, schemas,
-   and tests.
-7. Integration handoff exports, validation, docs, and tests.
-8. Console evidence, integration, policy, readiness, and browser smoke work.
-9. CI, release safety checks, pre-commit hook, and script tests.
-10. Buyer/evaluator docs, worksheets, walkthroughs, glossary, and
-    troubleshooting.
-11. Second-sector financial-workflow smoke path and hashes.
-12. Overnight supervisor script and consolidation docs.
+1. `13f16a8` - Remove lab exploit scaffolding from public tree.
+2. `347d1f0` - Add safe asset inventory seedsets.
+3. `3263e82` - Add seeded OSINT forecast context.
+4. `4fa99dc` - Add pilot policy controls.
+5. `cdd8e34` - Add deterministic sandbox runner workflow.
+6. `4987893` - Add policy-bound evidence bundles.
+7. `17952de` - Add safe integration handoff exports.
+8. `d00e619` - Harden console evidence workflow.
+9. `e1b1551` - Add pilot CI and smoke gates.
+10. `0357cc0` - Document buyer pilot package.
 
 ## Known Open Gaps
 
@@ -183,4 +194,4 @@ multi-scenario, policy-bound evaluator package. The biggest additions are:
 - Fresh-clone validation has not been run after commit shaping.
 - Production SaaS gaps remain: RBAC, SSO, tenant isolation, production secrets,
   deployment runbooks, and production retention automation.
-- No commit or push has been made yet for the overnight work.
+- No push has been made yet for the overnight work.

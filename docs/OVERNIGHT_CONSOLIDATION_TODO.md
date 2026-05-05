@@ -27,7 +27,7 @@ reviewable Prophet pilot release candidate.
 
 - [x] Add `docs/OVERNIGHT_CHANGE_REPORT.md`.
 - [x] Fill in final full-suite validation results.
-- [ ] Fill in commit hashes after local commits are created.
+- [x] Fill in commit hashes after local commits are created.
 - [x] Record any failing checks and exact remediation.
 - [x] Record residual risk after all validation.
 
@@ -89,36 +89,37 @@ reviewable Prophet pilot release candidate.
 Create local commits only after the full validation pass is green or the failure
 is documented and isolated.
 
-- [ ] Commit 1: safety cleanup and deleted lab/demo exploit material.
-- [ ] Commit 2: asset/SBOM fixtures, CSV import, seedset generation, and tests.
-- [ ] Commit 3: seeded OSINT snapshotting, source catalog safety, freshness, and
-  forecaster enrichment.
-- [ ] Commit 4: policy schema, linter, comparison, allowlists, retention, and
-  policy tests.
-- [ ] Commit 5: evidence bundle, audit log, audit export, retention evidence,
-  JSON Schema, and evidence tests.
-- [ ] Commit 6: sandbox runner profiles, artifacts, manifests, negative
-  fixtures, schemas, and tests.
-- [ ] Commit 7: integration handoff exports, validation, docs, and tests.
-- [ ] Commit 8: console evidence, integration, policy, readiness, and browser
-  smoke work.
-- [ ] Commit 9: CI, release safety checks, pre-commit hook, and script tests.
-- [ ] Commit 10: buyer/evaluator docs, worksheets, walkthroughs, glossary, and
-  troubleshooting.
-- [ ] Commit 11: second-sector financial-workflow smoke path and hashes.
-- [ ] Commit 12: overnight supervisor script and consolidation docs.
+- [x] Commit 1: `13f16a8` safety cleanup and deleted lab/demo exploit material.
+- [x] Commit 2: `347d1f0` asset/SBOM fixtures, CSV import, seedset generation,
+  and tests.
+- [x] Commit 3: `3263e82` seeded OSINT snapshotting, source catalog safety,
+  freshness, and forecaster enrichment.
+- [x] Commit 4: `4fa99dc` policy schema, linter, comparison, allowlists,
+  retention, and policy tests.
+- [x] Commit 5: `cdd8e34` sandbox runner profiles, artifacts, manifests,
+  negative fixtures, schemas, and tests.
+- [x] Commit 6: `4987893` evidence bundle, audit log, audit export, retention
+  evidence, JSON Schema, and evidence tests.
+- [x] Commit 7: `17952de` integration handoff exports, validation, docs, and
+  tests.
+- [x] Commit 8: `d00e619` console evidence, integration, policy, readiness, and
+  browser smoke work.
+- [x] Commit 9: `e1b1551` CI, release safety checks, pre-commit hook, smoke
+  scripts, second-sector hashes, and script tests.
+- [x] Commit 10: `0357cc0` buyer/evaluator docs, worksheets, walkthroughs,
+  glossary, troubleshooting, and consolidation report.
 
 ## P1: Post-Commit Review
 
-- [ ] Run `git log --oneline --decorate -12` and verify commit order is legible.
-- [ ] Run `git status --short --untracked-files=all` and confirm only ignored
+- [x] Run `git log --oneline --decorate -12` and verify commit order is legible.
+- [x] Run `git status --short --untracked-files=all` and confirm only ignored
   runtime outputs remain unstaged.
-- [ ] Re-run `git diff --check`.
-- [ ] Run the full Python matrix.
-- [ ] Run both smoke sectors.
-- [ ] Run `cd prophet-console && npm run acceptance`.
-- [ ] Run `cd prophet-console && npm audit --audit-level=moderate`.
-- [ ] Run a GStack review/timeline log for the consolidation pass.
+- [x] Re-run `git diff --check`.
+- [x] Run the full Python matrix.
+- [x] Run both smoke sectors.
+- [x] Run `cd prophet-console && npm run acceptance`.
+- [x] Run `cd prophet-console && npm audit --audit-level=moderate`.
+- [x] Run a GStack review/timeline log for the consolidation pass.
 
 ## P2: Fresh Clone Gate
 
@@ -138,7 +139,7 @@ is documented and isolated.
 
 ## Current Residual Risks
 
-- [~] The diff is large and needs human-readable commit boundaries.
+- [x] The diff is large and needs human-readable commit boundaries.
 - [ ] Console sector selector/evaluator mode remains open after the financial
   workflow smoke path.
 - [ ] Production SaaS features remain out of scope: RBAC, SSO, tenant isolation,
