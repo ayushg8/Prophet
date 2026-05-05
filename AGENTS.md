@@ -77,17 +77,20 @@ Prophet/
 │   ├── fixtures/                    ← exploit candidate mocks for dev/test
 │   └── outputs/                     ← generated forecasts (golden + live)
 ├── cyber-side/                      ← Exploit Engine contract + fixture path
-│   ├── README.md                    ← Mode A (fixture) + Mode B (Dell live) runbook
+│   ├── README.md                    ← fixture path + private lab boundary
 │   ├── INTERFACE.md                 ← Direction C contract (engine → Console)
 │   ├── INTEGRATIONS.md              ← Idan's Palantir/Danti handoff
 │   ├── validator.py                 ← stdlib-only artifact validator
 │   ├── fixtures/                    ← Direction C goldens for fixture mode
 │   └── tests/                       ← unittest coverage for the validator
+├── evidence/                        ← evidence bundle CLI, validator, fixtures
+├── assets/                          ← fictional asset/SBOM inventory fixtures
+├── sandbox_runner/                  ← deterministic local sandbox simulation
 ├── prophet-console/                 ← Console (React + Vite + TS)
 │   └── src/
 │       ├── components/              ← UI components
 │       └── data/                    ← worldSide.ts, mockEvents, cves, replayController
-└── [demo lab files]                 ← Log4Shell setup, Java PoC, scripts (root-level)
+└── docs/                            ← pilot, safety, and private lab policy
 ```
 
 ## Current status (2026-05-02, active hackathon)
@@ -96,8 +99,9 @@ Prophet/
 |---|---|
 | Forecaster | **Done.** Outputs `strike_windows` + `strike_vectors` JSON. Golden fixtures in `world-side/outputs/`. |
 | Console | **In progress.** Core layout and components built. Integration with forecaster JSON underway. |
-| Exploit Engine | **In progress.** Idan working on Dell locally; Dell currently unreachable from dev box. Contract: Direction A + B in `world-side/INTERFACE.md`, Direction C in `cyber-side/INTERFACE.md`. Fixture-mode demo path works without Dell. |
-| Demo (Log4Shell) | **Setup done.** Java PoC and lab scripts at repo root. See `LOG4SHELL_INSTRUCTIONS.md`. |
+| Exploit Engine | **Fixture path working.** Direction A + B in `world-side/INTERFACE.md`, Direction C in `cyber-side/INTERFACE.md`. Private research/lab work stays outside this public tree. |
+| Evidence export | **Working.** `evidence.bundle` emits JSON + Markdown bundles from validated fixture artifacts. |
+| Demo validation | Public demos use safe fixtures or the deterministic sandbox runner. Lab-only exploit scaffolding lives in a private research repo. |
 
 ## OPSEC — non-negotiable
 

@@ -1,0 +1,307 @@
+# Prophet Gstack Alpha Review
+
+Date: 2026-05-04
+Scope: customer, founder/product, engineering, UX, DX, safety, and readiness.
+
+## Executive Verdict
+
+Prophet is a serious internal alpha, not a production product yet. The strongest
+part is the safe end-to-end loop: forecast pressure, map exposure class, load a
+safe defense artifact, validate a localhost sandbox block, generate evidence,
+and export SIEM/ticketing review templates.
+
+Current general completion estimate:
+
+- Demoable defensive pilot package: 70-78%.
+- Serious internal alpha: 60-68%.
+- Customer pilot with a friendly design partner: 40-50%.
+- Controlled production product: 18-28%.
+
+The alpha is credible because contracts, validators, policy gates, and evidence
+export and policy linting are already real. It is not production-ready because
+customer asset ingest, operator audit identity, deployment architecture,
+retention controls, and multi-scenario proof are still early.
+
+## Customer Lens
+
+Primary customers:
+
+- Mission owner: wants to know what exposure class to harden before a pressure
+  window, without receiving exploit material.
+- SOC lead: wants reviewable detections and a clear reason why this class
+  deserves attention now.
+- Vulnerability manager: wants asset/SBOM linkage, owner routing, and
+  remediation tickets.
+- CISO/security reviewer: wants proof that the system is defensive, bounded,
+  auditable, and not a live-target exploit runner.
+- Program buyer: wants a narrow pilot with measurable evidence and a clear
+  path to deployment.
+
+The strongest customer promise is:
+
+> Prophet turns geopolitical pressure into a safe, auditable defense package for
+> one exposure class before the urgent advisory cycle lands.
+
+Do not sell it as zero-day discovery. Sell it as defensive exposure
+prioritization, sandbox validation, and executive-ready evidence.
+
+## Founder/Product Lens
+
+What is working:
+
+- The wedge is differentiated from scanners and generic threat intel.
+- The narrative is easy to understand: when, how, what, so what.
+- The safety boundary is part of the product, not an afterthought.
+- The evidence bundle gives buyers something concrete to review.
+- SIEM and ticketing handoff makes the workflow operational, not just visual.
+
+What still needs proof:
+
+- The system must work on at least two sectors or exposure classes.
+- Customer asset input is now useful for a CSV pilot path without accepting
+  unsafe hostnames, IPs, credentials, URLs, or named targets into committed
+  artifacts.
+- A buyer must be able to evaluate the output without trusting the demo team.
+- Readiness and policy state must be visible before the operator clicks
+  anything.
+- The console needs fewer "lab" cues and more "defensive review" cues.
+
+Product decision:
+
+- Keep the public product fixture-backed by default.
+- Treat live collection and live exploit validation as controlled integrations,
+  never as the default console path.
+- Make every customer-facing artifact answer: what was used, what was blocked,
+  what was generated, who approved it, and what should be reviewed next.
+
+## Engineering Lens
+
+What is strong:
+
+- Python contract modules are deterministic and stdlib-friendly.
+- Validators enforce important safety rules around payloads and live targets.
+- Control server is localhost-only and policy-bound.
+- Runtime outputs are ignored and generated through reproducible scripts.
+- Console smoke covers the main fixture-backed operator path.
+- CI is split cleanly into Python contracts and console checks.
+
+Main engineering risks:
+
+- Control server is becoming a large single file.
+- Runtime readiness was implicit before this pass.
+- UI state is still mostly local component state; future real integrations will
+  need clearer API client boundaries.
+- Policy enforcement is schema-versioned and separately lintable. Source
+  allowlists, validation-profile allowlists, integration export allowlists, and
+  retention hints are enforced by the policy loader/linter and relevant runtime
+  gates.
+- Audit identity is local-label only; retention has policy hints but no cleanup
+  workflow yet.
+- Browser smoke is optional/workflow-triggered, not a required PR gate.
+
+Engineering decision:
+
+- Add read-only readiness first, then split control-server modules only when the
+  next feature makes the single file painful.
+- Keep endpoint behavior deterministic and safe: GET readiness reads only, POST
+  endpoints perform explicit fixture/sandbox/evidence generation.
+
+## UX Lens
+
+What is working:
+
+- The console communicates a high-stakes operator workflow.
+- Forecast, defense, validation, evidence, and runbook are visible in one place.
+- The live scraper button is hidden unless explicitly enabled.
+- Evidence copy/export affordances are clear enough for demo use.
+
+UX gaps:
+
+- Readiness, policy, and export state need to be visible without reading docs.
+- Some labels still imply a lab exploit environment more than a defensive
+  product.
+- Integration exports are generated by scripts but not yet available in the
+  console.
+- Error states need to distinguish policy-blocked, control server offline,
+  missing fixture, and validation failed.
+- Evaluator mode should hide controls that are not part of the approved demo.
+
+## DX Lens
+
+What is working:
+
+- `./scripts/run-pilot-demo-smoke.sh` is the right root-level proof command.
+- Console has lint, build, control-server smoke, and Playwright smoke.
+- README quickstart is usable.
+- CI mirrors most of the important local checks.
+
+DX gaps:
+
+- The acceptance command was missing before this pass.
+- There is no release checklist with expected hashes/screenshots.
+- The control server has no API contract test harness beyond smoke scripts.
+- The repo has a broad dirty worktree and needs intentional commit slicing.
+
+## Safety Lens
+
+Non-negotiables:
+
+- No live third-party infrastructure testing.
+- No payload bytes in committed artifacts.
+- No raw scraper output in the public repo.
+- No credentials, IPs, hostnames, SSH keys, or session files.
+- No console path that turns Prophet into a live exploit runner.
+- Live scraper VM remains blocked by policy and disabled unless explicitly
+  opted in with an approved isolated collection plan.
+
+Safety assessment:
+
+- Current default posture is good for internal alpha.
+- The next safety milestone is signed/hash-chained operator approval records
+  plus policy-bound retention hints.
+
+## New Readiness Proof
+
+This pass adds a single operator/evaluator preflight surface:
+
+- `GET /api/readiness` on the local control server.
+- `POST /api/integrations/demo-export` on the local control server.
+- A read-only Alpha Readiness panel in the console.
+- Control smoke assertions that missing runtime evidence/export artifacts warn
+  instead of blocking.
+- Browser smoke coverage that the readiness panel is visible to operators.
+- `npm run acceptance` from `prophet-console/`.
+
+Readiness is advisory and read-only. It must not spawn generators, write output,
+or change control server run state.
+
+## Massive Todo List
+
+### P0: Internal Alpha Trust
+
+- [x] Add read-only readiness API.
+- [x] Add read-only console readiness panel.
+- [x] Add readiness smoke assertions.
+- [x] Add acceptance runner for pilot smoke plus console checks.
+- [ ] Split dirty worktree into intentional commits.
+- [ ] Run `git diff --check` before commit.
+- [ ] Capture expected hashes from the pilot smoke in a release note.
+- [ ] Add release checklist under `docs/`.
+- [ ] Add PR template with safety checklist.
+- [ ] Add screenshot artifact capture on Playwright failure.
+- [ ] Add expected demo screenshots for evaluator handoff.
+
+### P1: Customer Pilot Proof
+
+- [ ] Add one-page evaluator worksheet.
+- [ ] Add CISO evaluator checklist.
+- [ ] Add pilot statement of work template.
+- [ ] Add customer success criteria template.
+- [ ] Add data boundary appendix.
+- [ ] Add post-pilot conversion plan.
+- [ ] Add competitor/positioning memo.
+- [ ] Add pricing and packaging memo.
+- [ ] Add integration one-pager for SIEM, ticketing, SBOM, and sandbox systems.
+- [ ] Add production gap register with owner and target version.
+
+### P2: Asset And SBOM Ingest
+
+- [x] Define allowed customer asset import formats.
+- [x] Add CSV asset inventory import.
+- [ ] Add CycloneDX SBOM fixture and parser.
+- [ ] Add SPDX SBOM fixture and parser.
+- [x] Reject hostnames, live IPs, URLs, credentials, and raw target names.
+- [x] Add accepted/rejected row counts.
+- [x] Add per-row cleanup report.
+- [x] Hash original customer-owned inputs without committing unsafe raw input.
+- [ ] Add a second customer-safe fixture pack for another sector.
+- [ ] Show asset seed summary drilldown in the console.
+
+### P3: Policy And Audit
+
+- [x] Version the policy schema.
+- [x] Add fixture-only, seeded-OSINT-only, and localhost-sandbox policies.
+- [x] Add policy linter CLI.
+- [x] Enforce allowed source IDs in OSINT generation.
+- [x] Enforce allowed validation profiles in sandbox runner.
+- [ ] Add local operator identity to control server requests.
+- [ ] Add approval denial path to the console.
+- [ ] Add signed or hash-chained approval records.
+- [ ] Add immutable local audit log under ignored runtime output.
+- [ ] Include approval record hash in evidence.
+- [ ] Add RBAC model for viewer, analyst, approver, and admin.
+- [ ] Add audit export for customer security review.
+
+### P4: Console And Operator Workflow
+
+- [x] Add integration export panel.
+- [ ] Add policy status panel or fold policy into readiness details.
+- [ ] Add source freshness and source failure indicators.
+- [ ] Add sandbox artifact source badge: runtime vs checked-in fixture.
+- [ ] Add export path display for generated handoff artifacts.
+- [ ] Add copy/download controls for SIEM and ticket outputs.
+- [ ] Add policy-blocked error states.
+- [ ] Add evaluator mode that hides non-demo controls.
+- [ ] Reduce lab-only wording in customer-facing panels.
+- [ ] Add keyboard and accessibility pass for core operator flow.
+
+### P5: Sandbox And Validation
+
+- [ ] Package sandbox runner as reproducible container.
+- [ ] Add container image hash to sandbox artifact audit.
+- [ ] Add no-egress controls to sandbox profile docs.
+- [ ] Add resource limits to sandbox profile docs.
+- [ ] Add second sandbox profile for a different defensive class.
+- [ ] Add negative validation fixture where defense does not block.
+- [ ] Add timeout and failure evidence path.
+- [x] Add sandbox run manifest with logs hash and no raw logs.
+- [ ] Add customer approval gate before any non-fixture sandbox mode.
+
+### P6: Data And OSINT
+
+- [ ] Add official-source live collection policy gates.
+- [ ] Add source freshness metadata to forecast and evidence.
+- [ ] Add source failure budget.
+- [ ] Add fail-closed behavior for required sources.
+- [ ] Add source license and terms notes.
+- [ ] Add duplicate-source collapse in evidence summaries.
+- [ ] Add more official vendor/security advisory sources.
+- [ ] Add customer-approved source allowlist.
+- [ ] Add raw-to-sanitized boundary diagrams.
+- [ ] Add snapshot provenance manifest for every runtime OSINT output.
+
+### P7: Engineering Quality
+
+- [ ] Add golden artifact hash tests.
+- [ ] Add mutation tests for unsafe evidence and export text.
+- [ ] Add fixture freshness checks.
+- [ ] Add API contract tests for every public control endpoint.
+- [ ] Add coverage reporting for validator-heavy modules.
+- [ ] Add dependency audit workflow.
+- [ ] Split control server into route, readiness, policy, and runner modules.
+- [ ] Add typed client API boundary in the console.
+- [ ] Add structured error objects for UI recovery.
+- [ ] Add changelog discipline for alpha builds.
+
+### P8: Controlled Production Track
+
+- [ ] Decide single-tenant vs multi-tenant first architecture.
+- [ ] Add deployment architecture doc.
+- [ ] Add secrets handling design.
+- [ ] Add customer data retention/deletion workflow.
+- [ ] Add SSO/SAML/OIDC plan.
+- [ ] Add tenant isolation model.
+- [ ] Add logging and observability model.
+- [ ] Add backup and restore plan.
+- [ ] Add formal threat model.
+- [ ] Add incident response playbook.
+- [ ] Add compliance evidence map.
+
+## Next Loop Recommendation
+
+The next best loop is operator identity plus audit hashing.
+The console can now generate evidence and handoff exports, the repo can import
+safe customer asset CSV metadata with row-level rejection, and customer policy
+can narrow sources, sandbox profiles, and integration exports. The remaining
+buyer-facing gap is proving that approvals and retention are bound to the same
+policy surface.

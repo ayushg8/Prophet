@@ -54,7 +54,7 @@ The **Forecaster** ingests geopolitical signals — diplomatic calendars, confli
 
 Every forecast has to answer three linked questions, not one: **why this exploit, why now, why this adversary.** A state actor only burns a high-value exploit when the geopolitical payoff justifies the burn. Prophet triangulates all three.
 
-The **Exploit Engine** takes a CVE candidate and the forecast, predicts the **exploit class** the adversary would reach for, and validates against a vulnerable-by-design sandbox image — Vulhub, on localhost. Same agent run, it generates a **zero-day defense**: a patch primitive and a Sigma detection rule. The agent never writes a novel exploit. It orchestrates published Nuclei templates against published vulnerable images.
+The **Exploit Engine** takes a CVE candidate and the forecast, predicts the **exploit class** the adversary would reach for, and produces a deterministic localhost sandbox artifact under policy. Same agent run, it generates a **zero-day defense**: a patch primitive and a Sigma detection rule. The public demo never writes or runs a novel exploit; it shows validated fixture evidence, not live target activity.
 
 The defense lands in two places. The system gets the patch and the rule. The defender team gets an early alert — "this is the vector to watch in this window." Even when the patch can't be applied immediately for operational reasons, the SOC posture has already shifted.
 
@@ -104,7 +104,7 @@ Three reasons this matters for national defense.
 
 One, the **mandate is real**. BOD 22-01 makes KEV remediation a compliance obligation across the federal civilian branch, and DoD platforms inherit the same software stack. Prophet pushes the patch left of the listing.
 
-Two, **the demo has a resilient fixture path**. The forecast, the validation artifact, and the defense panels can run from golden JSON even when the Dell lab or private integrations are unreachable. When Idan's Palantir/Danti lane is available, it enriches the same contract rather than changing the demo surface.
+Two, **the demo has a resilient fixture path**. The forecast, validation artifact, defense panels, evidence bundle, and integration handoff files run from golden JSON and deterministic localhost sandbox output. Approved private integrations can enrich the same contract later without changing the default product surface.
 
 Three, **same structure scales**. Today the demo replays historical KEV entries. The same loop ingests new exploit candidates as soon as the Exploit Engine emits them. We don't ship a one-CVE trick; we ship the loop.
 
@@ -135,8 +135,8 @@ That's Prophet.
 
 ## Judge-challenge ammo (one-liners)
 
-- *"Is the patch real or are you faking the badge?"* — "Pull up `docker logs`, point at the env-var diff, re-run Nuclei. The state change is in the container, not the UI."
+- *"Is the patch real or are you faking the badge?"* — "Open the evidence bundle, sandbox artifact, validation summary, and SHA-256 hashes. The state transition is recorded in the artifact contract, not just the UI."
 - *"How is this different from XBOW or NodeZero?"* — "They find and validate. They don't predict ahead of KEV listing, and they don't co-generate the patch in the same loop. Prophet does both."
-- *"What about a CVE not in your demo?"* — "We can run `check_nuclei_template` live for any CVE. Vulhub coverage is the honest constraint — the loop generalizes; the sandbox catalog is what we replay."
+- *"What about a CVE not in your demo?"* — "The public pilot path is fixture-backed. New customer scenarios become approved metadata, policy, and sandbox-profile work before they enter the demo."
 - *"How do you not leak when scraping?"* — "Isolated machine, sanitization at the boundary, allowlist validator. Open feeds first, high-risk lanes off by default and gated on human review."
 - *"Give me a non-cyber example of why timing matters."* — "Strait of Hormuz. An adversary disables naval communications infrastructure right before targeting an isolated ship — comms down, no help inbound, dead in the water. The exploit is only worth burning when the geopolitical window makes the target reachable and isolated. That's the same logic Prophet applies to perimeter infrastructure during diplomatic windows."
