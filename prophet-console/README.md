@@ -30,6 +30,33 @@ npm run dev:control
 
 With both commands running, `DEMO REFRESH` uses the tracked sanitized chatter fixture and refreshes the forecast locally. `LOAD FIXTURE` in the Defence panel loads the cyber-side Direction C fixture from `cyber-side/fixtures/exploit-engine-output-edge-appliance.json` into the Exploit and Defence panels. `RUN SCRAPER VM` calls the local control server, which uses SSH key auth to run `world-side/scripts/run-scraper-vm-workflow.sh`. That script pulls back sanitized JSONL only, validates it through the Forecaster, and returns a refreshed forecast to the Console. If key auth is not ready, the button fails closed and does not prompt for a password.
 
+Readiness check:
+
+```bash
+curl http://127.0.0.1:8787/api/readiness
+```
+
+The Alpha Readiness panel uses this read-only endpoint. Missing runtime evidence
+or integration exports are warnings until an operator generates them; policy or
+core fixture failures are blocking.
+
+Integration handoff export:
+
+```bash
+curl -X POST -H 'x-prophet-control: local-console' \
+  http://127.0.0.1:8787/api/integrations/demo-export
+```
+
+The Handoff panel uses this localhost-only endpoint after evidence generation.
+It writes review templates under `integrations/outputs/runtime/`; it does not
+call customer SIEM or ticketing APIs.
+
+Full internal-alpha acceptance:
+
+```bash
+npm run acceptance
+```
+
 Before relying on the live VM button:
 
 ```bash
@@ -65,6 +92,7 @@ In the demo, the exploit agent stream is replayed from `src/data/mockEvents.ts` 
 | `AgentStream` | Live reasoning stream from the Exploit Engine |
 | `ExploitPanel` | Zero-day exploit prediction result |
 | `DefencePanel` | Generated patch + Sigma rule |
+| `IntegrationPanel` | SIEM, ticketing, and audit handoff export |
 | `ApprovalGate` | Human review gate between exploit and defense phases |
 | `PhaseProgress` | Four-phase progress bar (INTEL → PLAN → EXECUTE → DEFEND) |
 | `TriageQueue` | CVE triage queue (ranked candidates) |
@@ -75,3 +103,4 @@ In the demo, the exploit agent stream is replayed from `src/data/mockEvents.ts` 
 | `LabTopology` | Lab environment topology diagram |
 | `RunbookDrawer` | Collapsible runbook panel |
 | `SourceCitation` | Source citation badges |
+| `ReadinessPanel` | Read-only policy, fixture, evidence, export, and safety readiness |

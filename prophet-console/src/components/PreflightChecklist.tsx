@@ -1,4 +1,4 @@
-// PreflightChecklist: mirrors the real setup_status.py checks.
+// PreflightChecklist: mirrors safe fixture readiness checks.
 // Each item ticks ✓ in sequence over 1.2s on mount.
 // All checks must be ✓ before the run button enables.
 // Re-runs on reset (isRunning: false → true transition).

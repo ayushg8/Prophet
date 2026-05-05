@@ -1,6 +1,7 @@
 // ForecastPanel: analyst-readable forecast brief for the mission context strip.
 
 import type { SourceRefProps } from './SourceCitation';
+import type { EvidenceAssetContext } from './EvidencePanel';
 import './forecast.css';
 
 // ── Types ─────────────────────────────────────────────────────────────────
@@ -47,6 +48,15 @@ export interface ForecastSummaryProps {
   analyst_notes?: string[];
 }
 
+export interface ForecastAssetSeedContext {
+  integrated?: boolean;
+  asset_count?: number;
+  exposure_classes?: string[];
+  owner_queues?: string[];
+  cve_seed_count?: number;
+  package_seed_count?: number;
+}
+
 export interface ForecastPanelData {
   forecast_id: string;
   generated_at: string;
@@ -55,6 +65,7 @@ export interface ForecastPanelData {
   strike_windows?: StrikeWindowProps[];
   strike_vectors: StrikeVectorProps[];
   summary: ForecastSummaryProps;
+  asset_seed_context?: ForecastAssetSeedContext;
   source_refs?: SourceRefProps[];
 }
 
@@ -73,9 +84,10 @@ interface CandidateRailProps {
 interface ForecastPanelProps {
   forecast?: ForecastPanelData | null;
   candidate?: CandidateRailProps;
+  assetContext?: EvidenceAssetContext | null;
   onScraperRun?: () => void;
   onDemoRefresh?: () => void;
-  scraperRunState?: 'idle' | 'running' | 'ok' | 'error';
+  scraperRunState?: 'idle' | 'running' | 'ok' | 'error' | 'blocked';
   scraperStatusMessage?: string;
 }
 
@@ -242,6 +254,7 @@ function sourcePreview(refs: SourceRefProps[]): string {
 export function ForecastPanel({
   forecast,
   candidate,
+  assetContext,
   onScraperRun,
   onDemoRefresh,
   scraperRunState = 'idle',
@@ -255,6 +268,22 @@ export function ForecastPanel({
   const sourceRails = buildSourceRails(data.source_refs);
   const triggerSignals = topWindow?.trigger_signals?.slice(0, 4) ?? [];
   const confidenceScore = topVector?.confidence_score ?? topWindow?.confidence_score ?? 0;
+  const forecastAssetContext = data.asset_seed_context?.integrated
+    ? data.asset_seed_context
+    : null;
+  const exposureMatch = assetContext
+    ? {
+        count: assetContext.affected_asset_count ?? 0,
+        label: assetContext.matched_exposure_class,
+        owners: assetContext.recommended_owner_queue ?? [],
+      }
+    : forecastAssetContext
+      ? {
+          count: forecastAssetContext.asset_count ?? 0,
+          label: forecastAssetContext.exposure_classes?.[0],
+          owners: forecastAssetContext.owner_queues ?? [],
+        }
+      : null;
 
   if (!data || !frame) {
     return (
@@ -333,6 +362,19 @@ export function ForecastPanel({
             {candidate && <span>KEV {formatDate(candidate.kevDateAdded)}</span>}
           </div>
         </article>
+
+        {exposureMatch && (
+          <article className="fp-primary-card fp-primary-card--asset">
+            <span className="fp-card-label">Customer exposure match</span>
+            <strong>{exposureMatch.count} fictional assets</strong>
+            <p>{readable(exposureMatch.label)}</p>
+            <div className="fp-mini-metrics" aria-label="Asset context metrics">
+              {exposureMatch.owners.slice(0, 3).map((owner) => (
+                <span key={owner}>{owner}</span>
+              ))}
+            </div>
+          </article>
+        )}
       </div>
 
       <div className="fp-support-grid">

@@ -13,6 +13,20 @@ import { PreflightChecklist } from './components/PreflightChecklist';
 import { LiveFeedTicker } from './components/LiveFeedTicker';
 import { RunbookDrawer } from './components/RunbookDrawer';
 import { ForecastPanel } from './components/ForecastPanel';
+import {
+  EvidencePanel,
+  type EvidenceArtifactSource,
+  type EvidenceAssetContext,
+  type EvidenceBundle,
+  type EvidenceStatus,
+} from './components/EvidencePanel';
+import {
+  IntegrationPanel,
+  type IntegrationManifest,
+  type IntegrationStatus,
+} from './components/IntegrationPanel';
+import { PolicyStatusPanel } from './components/PolicyStatusPanel';
+import { ReadinessPanel } from './components/ReadinessPanel';
 import { cves } from './data/cves';
 import { mockEvents } from './data/mockEvents';
 import type {
@@ -29,9 +43,22 @@ import type { ReplayHandle } from './data/replayController';
 import { sanitize } from './lib/sanitize';
 import './index.css';
 
+const VM_SCRAPER_ENABLED = import.meta.env.VITE_PROPHET_ENABLE_VM_SCRAPER === '1';
+const CONTROL_ORIGIN =
+  import.meta.env.VITE_PROPHET_CONTROL_ORIGIN || 'http://127.0.0.1:8787';
+const CONTROL_HEADERS = {
+  'x-prophet-control': 'local-console',
+  'x-prophet-operator': 'local-console',
+};
+
 type Phase = 'INTEL' | 'PLAN' | 'EXECUTE' | 'DEFEND';
 type ExploitStatus = 'idle' | 'running' | 'vulnerable' | 'blocked';
-type ScraperRunState = 'idle' | 'running' | 'ok' | 'error';
+type ScraperRunState = 'idle' | 'running' | 'ok' | 'error' | 'blocked';
+
+interface ActionFailurePayload {
+  status?: string;
+  message?: string;
+}
 
 interface ScraperRunResponse {
   ok: boolean;
@@ -82,10 +109,44 @@ interface CyberPredictionPortfolioResponse {
   };
 }
 
+interface EvidenceDemoBundleResponse {
+  ok: boolean;
+  status: string;
+  message?: string;
+  artifactSource?: string;
+  artifactSourceLabel?: string;
+  artifactMode?: string;
+  bundle?: EvidenceBundle;
+  markdown?: string;
+  paths?: {
+    defenseArtifact?: string;
+  };
+}
+
+interface IntegrationDemoExportResponse {
+  ok: boolean;
+  status: string;
+  message?: string;
+  manifest?: IntegrationManifest;
+  paths?: {
+    manifest?: string;
+    outDir?: string;
+  };
+}
+
 function forecastForCveId(cveId: string): StrikeForecast | null {
   const cve = cves.find((item) => item.cveId === cveId);
   const candidateId = cve?.worldCandidateId ?? null;
   return candidateId ? getForecastForCandidate(candidateId) ?? null : null;
+}
+
+function isPolicyBlocked(payload: ActionFailurePayload): boolean {
+  return payload.status === 'policy_blocked';
+}
+
+function actionFailureMessage(payload: ActionFailurePayload, fallback: string): string {
+  const message = sanitize(payload.message || fallback);
+  return isPolicyBlocked(payload) ? `Policy blocked: ${message}` : message;
 }
 
 export default function App() {
@@ -104,9 +165,22 @@ export default function App() {
   const [runbookOpen, setRunbookOpen] = useState(false);
   const [scraperRunState, setScraperRunState] = useState<ScraperRunState>('idle');
   const [scraperStatusMessage, setScraperStatusMessage] = useState<string | undefined>(
-    'Start npm run dev:control to enable live VM runs',
+    VM_SCRAPER_ENABLED
+      ? 'Start npm run dev:control to enable approved VM runs'
+      : 'Live VM scraper disabled; use sanitized demo refresh',
   );
   const [isLoadingCyberFixture, setIsLoadingCyberFixture] = useState(false);
+  const [evidenceBundle, setEvidenceBundle] = useState<EvidenceBundle | null>(null);
+  const [evidenceMarkdown, setEvidenceMarkdown] = useState('');
+  const [evidenceStatus, setEvidenceStatus] = useState<EvidenceStatus>('idle');
+  const [evidenceError, setEvidenceError] = useState<string | undefined>(undefined);
+  const [evidenceArtifactSource, setEvidenceArtifactSource] =
+    useState<EvidenceArtifactSource | null>(null);
+  const [integrationManifest, setIntegrationManifest] = useState<IntegrationManifest | null>(null);
+  const [integrationStatus, setIntegrationStatus] = useState<IntegrationStatus>('idle');
+  const [integrationError, setIntegrationError] = useState<string | undefined>(undefined);
+  const [integrationOutputPath, setIntegrationOutputPath] = useState<string | undefined>(undefined);
+  const [assetContext, setAssetContext] = useState<EvidenceAssetContext | null>(null);
   // runCycle increments each time the user resets, so PreflightChecklist re-runs
   const [runCycle, setRunCycle] = useState(0);
   const [activeForecast, setActiveForecast] = useState<StrikeForecast | null>(() =>
@@ -157,12 +231,25 @@ export default function App() {
     setExploitExcerpt(undefined);
     setPatchDiff(null);
     setSigmaRule(null);
+    setEvidenceBundle(null);
+    setEvidenceMarkdown('');
+    setEvidenceStatus('idle');
+    setEvidenceError(undefined);
+    setEvidenceArtifactSource(null);
+    setIntegrationManifest(null);
+    setIntegrationStatus('idle');
+    setIntegrationError(undefined);
+    setIntegrationOutputPath(undefined);
 
     const handle = startReplay(
       mockEvents,
       handleEvent,
       () => {
         // Gate opened via handleEvent processing the human_gate event
+      },
+      () => {
+        setIsRunning(false);
+        replayRef.current = null;
       },
     );
     replayRef.current = handle;
@@ -173,19 +260,19 @@ export default function App() {
     setScraperStatusMessage('Contacting local control server and scraper VM...');
 
     try {
-      const response = await fetch('http://127.0.0.1:8787/api/scraper/run', {
+      const response = await fetch(`${CONTROL_ORIGIN}/api/scraper/run`, {
         method: 'POST',
-        headers: {
-          'x-prophet-control': 'local-console',
-        },
+        headers: CONTROL_HEADERS,
       });
       const payload = (await response.json()) as ScraperRunResponse;
 
       if (!response.ok || !payload.ok) {
-        setScraperRunState('error');
+        setScraperRunState(isPolicyBlocked(payload) ? 'blocked' : 'error');
         setScraperStatusMessage(
-          payload.message ||
+          actionFailureMessage(
+            payload,
             'Scraper VM workflow failed. Check the control server terminal.',
+          ),
         );
         return;
       }
@@ -209,19 +296,19 @@ export default function App() {
     setScraperStatusMessage('Refreshing forecast from sanitized demo chatter...');
 
     try {
-      const response = await fetch('http://127.0.0.1:8787/api/scraper/demo-refresh', {
+      const response = await fetch(`${CONTROL_ORIGIN}/api/scraper/demo-refresh`, {
         method: 'POST',
-        headers: {
-          'x-prophet-control': 'local-console',
-        },
+        headers: CONTROL_HEADERS,
       });
       const payload = (await response.json()) as ScraperRunResponse;
 
       if (!response.ok || !payload.ok) {
-        setScraperRunState('error');
+        setScraperRunState(isPolicyBlocked(payload) ? 'blocked' : 'error');
         setScraperStatusMessage(
-          payload.message ||
+          actionFailureMessage(
+            payload,
             'Demo refresh failed. Check the control server terminal.',
+          ),
         );
         return;
       }
@@ -244,18 +331,19 @@ export default function App() {
     setIsLoadingCyberFixture(true);
 
     try {
-      const response = await fetch('http://127.0.0.1:8787/api/cyber/demo-artifact', {
+      const response = await fetch(`${CONTROL_ORIGIN}/api/cyber/demo-artifact`, {
         method: 'POST',
-        headers: {
-          'x-prophet-control': 'local-console',
-        },
+        headers: CONTROL_HEADERS,
       });
       const payload = (await response.json()) as CyberDemoArtifactResponse;
 
       if (!response.ok || !payload.ok || !payload.artifact) {
         setExploitStatus('idle');
         setExploitExcerpt(
-          sanitize(payload.message || 'Cyber fixture unavailable. Start npm run dev:control.'),
+          actionFailureMessage(
+            payload,
+            'Cyber fixture unavailable. Start npm run dev:control.',
+          ),
         );
         return;
       }
@@ -269,6 +357,15 @@ export default function App() {
 
       setPatchDiff(patch);
       setSigmaRule(sigma);
+      setEvidenceBundle(null);
+      setEvidenceMarkdown('');
+      setEvidenceStatus('idle');
+      setEvidenceError(undefined);
+      setEvidenceArtifactSource(null);
+      setIntegrationManifest(null);
+      setIntegrationStatus('idle');
+      setIntegrationError(undefined);
+      setIntegrationOutputPath(undefined);
       setExploitStatus(postStatus === 'blocked' || postStatus === 'not_vulnerable'
         ? 'blocked'
         : postStatus === 'vulnerable'
@@ -286,11 +383,9 @@ export default function App() {
       }
 
       try {
-        const portfolioResponse = await fetch('http://127.0.0.1:8787/api/cyber/prediction-portfolio', {
+        const portfolioResponse = await fetch(`${CONTROL_ORIGIN}/api/cyber/prediction-portfolio`, {
           method: 'POST',
-          headers: {
-            'x-prophet-control': 'local-console',
-          },
+          headers: CONTROL_HEADERS,
         });
         const portfolioPayload = (await portfolioResponse.json()) as CyberPredictionPortfolioResponse;
         const portfolio = portfolioPayload.portfolio;
@@ -323,6 +418,92 @@ export default function App() {
     }
   }, []);
 
+  const handleGenerateEvidence = useCallback(async () => {
+    const artifactReady = Boolean(patchDiff && sigmaRule) || exploitStatus === 'blocked';
+    if (!artifactReady) {
+      setEvidenceStatus('error');
+      setEvidenceError('Load defense fixture or complete Prophet loop first.');
+      setEvidenceArtifactSource(null);
+      return;
+    }
+
+    setEvidenceStatus('generating');
+    setEvidenceError(undefined);
+    setEvidenceArtifactSource(null);
+
+    try {
+      const response = await fetch(`${CONTROL_ORIGIN}/api/evidence/demo-bundle`, {
+        method: 'POST',
+        headers: CONTROL_HEADERS,
+      });
+      const payload = (await response.json()) as EvidenceDemoBundleResponse;
+
+      if (!response.ok || !payload.ok || !payload.bundle) {
+        setEvidenceStatus(isPolicyBlocked(payload) ? 'blocked' : 'error');
+        setEvidenceError(
+          actionFailureMessage(payload, 'Evidence bundle generation failed.'),
+        );
+        return;
+      }
+
+      setEvidenceBundle(payload.bundle);
+      setEvidenceMarkdown(payload.markdown || '');
+      setEvidenceArtifactSource({
+        key: payload.artifactSource,
+        label: payload.artifactSourceLabel,
+        mode: payload.artifactMode,
+        path: payload.paths?.defenseArtifact,
+      });
+      setAssetContext(payload.bundle.asset_context ?? null);
+      setEvidenceStatus('ok');
+      setIntegrationManifest(null);
+      setIntegrationStatus('idle');
+      setIntegrationError(undefined);
+      setIntegrationOutputPath(undefined);
+    } catch {
+      setEvidenceStatus('error');
+      setEvidenceError(
+        'Local control server offline. Run npm run dev:control in prophet-console.',
+      );
+    }
+  }, [exploitStatus, patchDiff, sigmaRule]);
+
+  const handleExportIntegrations = useCallback(async () => {
+    if (evidenceStatus !== 'ok' || !evidenceBundle) {
+      setIntegrationStatus('error');
+      setIntegrationError('Generate a validated evidence bundle before exporting handoff files.');
+      return;
+    }
+
+    setIntegrationStatus('generating');
+    setIntegrationError(undefined);
+
+    try {
+      const response = await fetch(`${CONTROL_ORIGIN}/api/integrations/demo-export`, {
+        method: 'POST',
+        headers: CONTROL_HEADERS,
+      });
+      const payload = (await response.json()) as IntegrationDemoExportResponse;
+
+      if (!response.ok || !payload.ok || !payload.manifest) {
+        setIntegrationStatus(isPolicyBlocked(payload) ? 'blocked' : 'error');
+        setIntegrationError(
+          actionFailureMessage(payload, 'Integration handoff export failed.'),
+        );
+        return;
+      }
+
+      setIntegrationManifest(payload.manifest);
+      setIntegrationOutputPath(payload.paths?.manifest);
+      setIntegrationStatus('ok');
+    } catch {
+      setIntegrationStatus('error');
+      setIntegrationError(
+        'Local control server offline. Run npm run dev:control in prophet-console.',
+      );
+    }
+  }, [evidenceBundle, evidenceStatus]);
+
   const handleAuthorize = () => {
     setGateOpen(false);
     replayRef.current?.authorize();
@@ -333,6 +514,12 @@ export default function App() {
     replayRef.current?.reset();
     setIsRunning(false);
     setRunCycle((c) => c + 1);
+    void fetch(`${CONTROL_ORIGIN}/api/evidence/deny`, {
+      method: 'POST',
+      headers: CONTROL_HEADERS,
+    }).catch(() => {
+      // The local audit server may be offline during static UI review.
+    });
   };
 
   const handleSelectCve = (cveId: string) => {
@@ -370,7 +557,8 @@ export default function App() {
           <ForecastPanel
             forecast={activeForecast}
             candidate={selectedCve}
-            onScraperRun={handleScraperRun}
+            assetContext={assetContext}
+            onScraperRun={VM_SCRAPER_ENABLED ? handleScraperRun : undefined}
             onDemoRefresh={handleDemoRefresh}
             scraperRunState={scraperRunState}
             scraperStatusMessage={scraperStatusMessage}
@@ -411,6 +599,23 @@ export default function App() {
               onLoadFixture={handleLoadCyberFixture}
               isLoadingFixture={isLoadingCyberFixture}
             />
+            <EvidencePanel
+              bundle={evidenceBundle}
+              markdown={evidenceMarkdown}
+              status={evidenceStatus}
+              error={evidenceError}
+              artifactSource={evidenceArtifactSource}
+              onGenerate={handleGenerateEvidence}
+            />
+            <IntegrationPanel
+              manifest={integrationManifest}
+              status={integrationStatus}
+              error={integrationError}
+              outputPath={integrationOutputPath}
+              onExport={handleExportIntegrations}
+            />
+            <PolicyStatusPanel />
+            <ReadinessPanel />
           </aside>
         </div>
 

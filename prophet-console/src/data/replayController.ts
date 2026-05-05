@@ -20,6 +20,7 @@ export function startReplay(
   events: AgentEvent[],
   onEvent: ReplayCallback,
   onGate: (resolve: GateResolver) => void,
+  onComplete?: () => void,
 ): ReplayHandle {
   let cancelled = false;
   let gateResolve: (() => void) | null = null;
@@ -95,6 +96,10 @@ export function startReplay(
         onEvent(event);
         await delay(250);
       }
+    }
+
+    if (!cancelled) {
+      onComplete?.();
     }
   }
 

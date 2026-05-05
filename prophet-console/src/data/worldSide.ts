@@ -159,6 +159,15 @@ export interface SourceRef {
   supports: string;
 }
 
+export interface AssetSeedContext {
+  integrated?: boolean;
+  asset_count?: number;
+  exposure_classes?: string[];
+  owner_queues?: string[];
+  cve_seed_count?: number;
+  package_seed_count?: number;
+}
+
 export interface StrikeForecast {
   forecast_id: string;
   generated_at: string;
@@ -168,6 +177,7 @@ export interface StrikeForecast {
   strike_windows: StrikeWindow[];
   strike_vectors: StrikeVector[];
   summary: ForecastSummary;
+  asset_seed_context?: AssetSeedContext;
   source_refs: SourceRef[];
 }
 
