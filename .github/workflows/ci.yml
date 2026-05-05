@@ -40,6 +40,8 @@ jobs:
         run: PYTHONPATH=world-side:world-side/scraper:. python3 -m unittest discover -s world-side/tests -v
       - name: Asset seedset tests
         run: PYTHONPATH=. python3 -m unittest discover -s assets/tests -v
+      - name: Production platform tests
+        run: PYTHONPATH=. python3 -m unittest discover -s prophet_platform/tests -v
       - name: Sandbox runner tests
         run: PYTHONPATH=.:cyber-side python3 -m unittest discover -s sandbox_runner/tests -v
       - name: Policy lint tests

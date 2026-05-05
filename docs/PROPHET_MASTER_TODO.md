@@ -350,7 +350,7 @@ non-live unless a future customer policy explicitly authorizes a narrower mode.
 - [x] Add audit redaction report.
 - [ ] Add operator identity format guidance.
 - [ ] Add signed operator approval design.
-- [ ] Add RBAC roles: viewer, analyst, approver, admin.
+- [~] Add RBAC roles: viewer, analyst, approver, admin.
 - [ ] Add SSO/SAML/OIDC design.
 - [ ] Add approval quorum design for higher-risk modes.
 - [ ] Add break-glass policy design for production incidents.
@@ -418,7 +418,7 @@ non-live unless a future customer policy explicitly authorizes a narrower mode.
   hosted multi-tenant.
 - [x] Add production architecture doc.
 - [ ] Add deployment architecture doc.
-- [ ] Add tenant isolation model.
+- [~] Add tenant isolation model.
 - [ ] Add secrets handling design.
 - [ ] Add customer data retention and deletion workflow.
 - [ ] Add backup and restore plan.

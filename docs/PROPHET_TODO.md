@@ -91,8 +91,9 @@ operator board for the next buyer-pilot cycles.
 - [ ] Add CycloneDX and SPDX SBOM fixtures and parsers.
 - [x] Add production architecture, threat model, production execution plan, and
   compliance gap map.
-- [ ] Add RBAC/SSO plan, customer data-boundary appendix, and tenant isolation
-  test design.
+- [~] Add RBAC roles and tenant isolation decision primitive.
+- [ ] Add SSO plan, customer data-boundary appendix, and database-backed tenant
+  isolation test design.
 - [x] Add machine-readable production readiness backlog and scorecard.
 
 ## Verification Commands

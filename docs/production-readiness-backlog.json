@@ -222,17 +222,18 @@
         {
           "id": "M3-01",
           "title": "Define tenant, organization, workspace, user, role, and service-account model",
-          "status": "planned",
+          "status": "done",
           "priority": "P0",
           "owner": "security",
           "target_version": "v0.6",
           "risk_tags": ["identity", "security", "data"],
-          "acceptance_gates": ["Every persisted object has tenant scope or an explicit global classification."]
+          "acceptance_gates": ["Every persisted object has tenant scope or an explicit global classification."],
+          "evidence_paths": ["docs/RBAC_TENANT_MODEL.md", "prophet_platform/authorization.py", "prophet_platform/tests/test_authorization.py"]
         },
         {
           "id": "M3-02",
           "title": "Implement RBAC roles for viewer, analyst, approver, admin, and auditor",
-          "status": "planned",
+          "status": "in_progress",
           "priority": "P0",
           "owner": "engineering",
           "target_version": "v0.6",
@@ -252,7 +253,7 @@
         {
           "id": "M3-04",
           "title": "Add tenant isolation test harness",
-          "status": "planned",
+          "status": "in_progress",
           "priority": "P0",
           "owner": "engineering",
           "target_version": "v0.6",
