@@ -139,6 +139,10 @@ POLICY_HASH_REQUIRED_SCHEMAS: dict[str, tuple[str, tuple[tuple[str, ...], ...]]]
         "integration manifest",
         (("evidence_refs", "policy_sha256"),),
     ),
+    "prophet.operator_audit_event.v0.1": (
+        "integration operator audit event",
+        (("policy", "policy_sha256"),),
+    ),
     "prophet.sandbox_run_manifest.v0.1": (
         "sandbox run manifest",
         (("policy", "policy_sha256"),),

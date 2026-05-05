@@ -271,6 +271,35 @@ class PolicyLintTests(unittest.TestCase):
             "policy_sha256s[0]",
         )
 
+    def test_verify_runtime_policy_artifacts_checks_integration_audit_event(self) -> None:
+        policy_sha = lint_policy_file(DEFAULT_POLICY)["policy_sha256"]
+        with tempfile.TemporaryDirectory() as tmp:
+            artifact = Path(tmp) / "operator-approval-event.json"
+            artifact.write_text(
+                _json(
+                    {
+                        "schema_version": "prophet.operator_audit_event.v0.1",
+                        "policy": {
+                            "policy_id": "prophet-pilot-fixture-localhost-v0.1",
+                            "policy_sha256": policy_sha,
+                        },
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            summary = verify_runtime_policy_artifacts(DEFAULT_POLICY, [artifact])
+
+        self.assertEqual(summary["checked_artifact_count"], 1)
+        self.assertEqual(
+            summary["artifacts"][0]["artifact_type"],
+            "integration operator audit event",
+        )
+        self.assertEqual(
+            summary["artifacts"][0]["observed_policy_hashes"][0]["path"],
+            "policy.policy_sha256",
+        )
+
     def test_verify_runtime_policy_artifacts_checks_runtime_retention_report(self) -> None:
         policy_sha = lint_policy_file(DEFAULT_POLICY)["policy_sha256"]
         with tempfile.TemporaryDirectory() as tmp:

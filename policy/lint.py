@@ -77,6 +77,10 @@ RUNTIME_POLICY_HASH_SCHEMAS: dict[str, tuple[str, tuple[tuple[str, ...], ...]]] 
         "operator audit event",
         (("policy", "policy_sha256"),),
     ),
+    "prophet.operator_audit_event.v0.1": (
+        "integration operator audit event",
+        (("policy", "policy_sha256"),),
+    ),
     "prophet_operator_audit_export.v0.1": (
         "operator audit export",
         (("policy_sha256s",),),

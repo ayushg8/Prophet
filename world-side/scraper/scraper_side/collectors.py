@@ -13,7 +13,7 @@ from pathlib import Path
 import re
 from typing import Any, Iterable, Mapping
 from urllib.parse import urlencode, urljoin, urlparse
-from urllib.request import Request, urlopen
+from urllib.request import HTTPRedirectHandler, Request, build_opener
 import xml.etree.ElementTree as ET
 import zipfile
 
@@ -1931,18 +1931,29 @@ def fetch_public_bytes(url: str, *, timeout: float = 20.0) -> bytes:
         return response.read()
 
 
-def _open_public_request(url: str, *, timeout: float = 20.0) -> Any:
+class _AllowlistedRedirectHandler(HTTPRedirectHandler):
+    def redirect_request(self, req: Any, fp: Any, code: int, msg: str, headers: Any, newurl: str) -> Any:
+        redirected_url = urljoin(req.full_url, newurl)
+        _assert_allowed_live_url(redirected_url, context="live collection redirect")
+        return super().redirect_request(req, fp, code, msg, headers, redirected_url)
+
+
+def _assert_allowed_live_url(url: str, *, context: str = "live collection") -> None:
     parsed = urlparse(url)
     if parsed.scheme != "https":
-        raise ValueError("live collection only supports HTTPS URLs")
+        raise ValueError(f"{context} only supports HTTPS URLs")
     if parsed.username or parsed.password:
-        raise ValueError("live collection URL must not contain credentials")
+        raise ValueError(f"{context} URL must not contain credentials")
     if re.search(r"(?:api[_-]?key|access[_-]?token|token|password|secret)=", parsed.query, re.IGNORECASE):
-        raise ValueError("live collection URL must not contain credential query parameters")
+        raise ValueError(f"{context} URL must not contain credential query parameters")
     host = parsed.hostname or ""
     if host.lower() not in ALLOWED_LIVE_HOSTS:
         allowed = ", ".join(sorted(ALLOWED_LIVE_HOSTS))
-        raise ValueError(f"live collection host {host!r} is not allowed; allowed: {allowed}")
+        raise ValueError(f"{context} host {host!r} is not allowed; allowed: {allowed}")
+
+
+def _open_public_request(url: str, *, timeout: float = 20.0) -> Any:
+    _assert_allowed_live_url(url)
     request = Request(
         url,
         headers={
@@ -1950,7 +1961,10 @@ def _open_public_request(url: str, *, timeout: float = 20.0) -> Any:
             "User-Agent": "ProphetScraperSide/0.1 official-json-collector",
         },
     )
-    return urlopen(request, timeout=timeout)
+    opener = build_opener(_AllowlistedRedirectHandler)
+    response = opener.open(request, timeout=timeout)
+    _assert_allowed_live_url(response.geturl(), context="live collection final URL")
+    return response
 
 
 def _first_zip_text(data: bytes, *, source_name: str) -> str:

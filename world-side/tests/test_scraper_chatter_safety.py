@@ -270,6 +270,34 @@ class ScraperChatterSafetyTests(unittest.TestCase):
             if source["lane"] == "high_risk_metadata_only":
                 self.assertFalse(source["enabled"], f"{source['id']} is high risk")
 
+    def test_live_collector_rejects_unapproved_redirect_hosts(self) -> None:
+        from urllib.request import Request
+
+        from scraper_side.collectors import _AllowlistedRedirectHandler
+
+        handler = _AllowlistedRedirectHandler()
+        request = Request("https://www.cisa.gov/safe-feed.json")
+
+        with self.assertRaisesRegex(ValueError, "redirect host"):
+            handler.redirect_request(
+                request,
+                fp=None,
+                code=302,
+                msg="Found",
+                headers={},
+                newurl="https://example.com/redirected-feed.json",
+            )
+
+        redirected = handler.redirect_request(
+            request,
+            fp=None,
+            code=302,
+            msg="Found",
+            headers={},
+            newurl="/allowed-feed.json",
+        )
+        self.assertIsNotNone(redirected)
+
     def test_new_collectors_emit_sanitized_records(self) -> None:
         from scraper_side.catalog import CatalogEntry
         from scraper_side.collectors import (

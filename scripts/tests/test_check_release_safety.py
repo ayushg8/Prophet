@@ -115,6 +115,10 @@ class ReleaseSafetyScanTests(unittest.TestCase):
                 "schema_version": "prophet_integration_export.v0.1",
                 "evidence_refs": {"policy_sha256": policy_sha},
             },
+            "integration-audit-event.json": {
+                "schema_version": "prophet.operator_audit_event.v0.1",
+                "policy": {"policy_sha256": policy_sha},
+            },
             "sandbox-run-manifest.json": {
                 "schema_version": "prophet.sandbox_run_manifest.v0.1",
                 "policy": {"policy_sha256": policy_sha},
@@ -142,6 +146,10 @@ class ReleaseSafetyScanTests(unittest.TestCase):
                 "schema_version": "prophet_integration_export.v0.1",
                 "evidence_refs": {"policy_id": "fixture"},
             },
+            "integration-audit-event.json": {
+                "schema_version": "prophet.operator_audit_event.v0.1",
+                "policy": {"policy_id": "fixture"},
+            },
             "sandbox-run-manifest.json": {
                 "schema_version": "prophet.sandbox_run_manifest.v0.1",
                 "policy": {"policy_id": "fixture"},
@@ -162,6 +170,7 @@ class ReleaseSafetyScanTests(unittest.TestCase):
         self.assertTrue(any("OSINT manifest" in message for message in messages))
         self.assertTrue(any("sandbox artifact" in message for message in messages))
         self.assertTrue(any("integration manifest" in message for message in messages))
+        self.assertTrue(any("integration operator audit event" in message for message in messages))
         self.assertTrue(any("sandbox run manifest" in message for message in messages))
 
     def test_accepts_enabled_source_catalog_allowlist_coverage(self) -> None:

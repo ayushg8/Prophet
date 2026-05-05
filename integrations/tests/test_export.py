@@ -62,6 +62,14 @@ class IntegrationExportTests(unittest.TestCase):
             export["operator_audit_event"]["event_type"],
             "integration_handoff_exported",
         )
+        self.assertEqual(
+            export["operator_audit_event"]["schema_version"],
+            "prophet.operator_audit_event.v0.1",
+        )
+        self.assertEqual(
+            export["operator_audit_event"]["policy"]["policy_sha256"],
+            export["evidence_refs"]["policy_sha256"],
+        )
         self.assertEqual(export["evidence_refs"]["policy_id"], "prophet-pilot-fixture-localhost-v0.1")
         self.assertTrue(export["policy_restrictions"]["enforced"])
         self.assertTrue(export["safety_attestation"]["no_live_target_data_included"])
