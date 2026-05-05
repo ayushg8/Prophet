@@ -5,10 +5,6 @@
  */
 
 const REPLACEMENTS: [string | RegExp, string][] = [
-  // Real IPs
-  ['10.1.60.232', '[LAB-HOST]'],
-  ['10.1.60.216', '[LLM-HOST]'],
-
   // Credentials
   ['sshadmin', '[OPERATOR]'],
   ['sshguest', '[GUEST]'],
