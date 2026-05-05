@@ -289,6 +289,12 @@ Score anonymized discovery evidence with:
 python3 scripts/customer-validation-scorecard.py --log docs/customer-validation-log.example.json
 ```
 
+Plan outreach from an anonymized target tracker with:
+
+```bash
+python3 scripts/validation-targets-scorecard.py --targets docs/validation-targets.example.json
+```
+
 ## Repository Map
 
 ```text

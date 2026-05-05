@@ -191,6 +191,8 @@ Required fields are enforced by `scripts/customer-validation-scorecard.py`.
 
 Use a private anonymized log based on
 `docs/customer-validation-log.example.json`.
+Use a private anonymized target tracker based on
+`docs/validation-targets.example.json`.
 
 Do not commit real names, emails, phone numbers, company-private details, raw
 customer hostnames, IPs, screenshots, transcripts, or proprietary artifacts.
@@ -199,6 +201,12 @@ Run:
 
 ```bash
 python3 scripts/customer-validation-scorecard.py --log path/to/private-validation-log.json
+```
+
+Track outreach targets with:
+
+```bash
+python3 scripts/validation-targets-scorecard.py --targets path/to/private-targets.json
 ```
 
 The scorecard returns a verdict:

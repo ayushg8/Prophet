@@ -1,0 +1,33 @@
+{
+  "schema_version": "prophet_validation_targets.v0.1",
+  "updated_at": "2026-05-05",
+  "notes": "Example only. Keep real target names, emails, LinkedIn URLs, phone numbers, and company-private notes in validation/private/ and out of git.",
+  "targets": [
+    {
+      "target_label": "target-dib-platform-001",
+      "segment": "dib_platform_security",
+      "persona": "director_product_security",
+      "priority": "P0",
+      "source": "warm_intro_needed",
+      "status": "identified",
+      "hypothesized_pain": "Must justify remediation order for exposed product or edge software under customer pressure.",
+      "planned_ask": "Ask for workflow discovery call, not demo.",
+      "next_action": "Find warm intro through founder network.",
+      "last_touch": "",
+      "follow_up_due": ""
+    },
+    {
+      "target_label": "target-federal-advisor-001",
+      "segment": "federal_mission_advisor",
+      "persona": "mission_assurance_lead",
+      "priority": "P1",
+      "source": "cold_outreach",
+      "status": "identified",
+      "hypothesized_pain": "Needs leadership-ready evidence for why one exposure class matters first.",
+      "planned_ask": "Ask whether evidence-backed prioritization is real or already solved.",
+      "next_action": "Send short discovery note.",
+      "last_touch": "",
+      "follow_up_due": ""
+    }
+  ]
+}

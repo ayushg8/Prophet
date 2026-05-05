@@ -37,6 +37,7 @@ cyber-side/outputs/runtime/
 evidence/outputs/runtime/
 assets/outputs/runtime/
 integrations/outputs/runtime/
+validation/private/
 *.class
 *.db
 *.sqlite

@@ -46,6 +46,8 @@ operator board for the next buyer-pilot cycles.
 - [x] Add outreach playbook.
 - [x] Add design partner pilot offer.
 - [x] Add customer validation scorecard.
+- [x] Add validation sprint checklist and daily brief.
+- [x] Add anonymized outreach target tracker.
 - [ ] Complete 15 qualified discovery conversations.
 - [ ] Get 3 design-partner pilot discussions.
 - [ ] Get 1 paid, sponsored, or procurement-sponsored pilot path.
