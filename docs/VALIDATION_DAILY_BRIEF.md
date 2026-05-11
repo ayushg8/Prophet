@@ -143,19 +143,21 @@ copy-only `.txt` file per verified pending draft under
 `validation/private/send-copy-YYYY-MM-DD/`. The generated manifest, checklist,
 batch README, and neutral `COPY_ONLY_INDEX.md` are private tracker/operator
 metadata; `SUBJECT_ORDER.md` is also private tracker/operator metadata for
-file/subject order. Open the numbered `.txt` files and copy only their
-subject/body contents into the outreach channel after running the matching
-dry-run command for each target. Do not attach the `.txt` files, because
-filenames and the directory are private operator workflow. Use them only when
-the dashboard reports `send_copy_batch_state: ready` and
+file/subject order; `DO_NOT_SEND.md` is a private boundary reminder. Open the
+numbered `.txt` files and copy only their subject/body contents into the
+outreach channel after running the matching dry-run command for each target. Do
+not attach the `.txt` files, because filenames and the directory are private
+operator workflow. Use them only when the dashboard reports
+`send_copy_batch_state: ready` and
 `send_copy_batch_matches_current_pack: true`, with
 `send_copy_batch_readme_exists: true` and
 `send_copy_batch_checklist_exists: true`, and
 `send_copy_batch_copy_index_exists: true`, and
-`send_copy_batch_subject_order_exists: true`. The batch match check also verifies
+`send_copy_batch_subject_order_exists: true`, and
+`send_copy_batch_do_not_send_exists: true`. The batch match check also verifies
 manifest operator notes, manifest outbound-boundary fields, copy-file SHA-256
 values, the batch README body, the batch checklist body, and the neutral
-copy-index body and subject-order body.
+copy-index body, subject-order body, and DO_NOT_SEND guard.
 Use `make validation-send-copy-check DATE=YYYY-MM-DD` before using an existing
 batch directory; it verifies neutral numbered filenames, one `Subject:` line
 per file, copy-file SHA-256 matches, and no target labels or tracker metadata
@@ -497,9 +499,9 @@ review before pruning or rotating ignored artifacts. It writes
 `validation/private/today-weekly-review.json` and
 `validation/private/today-weekly-review.md`, reports outreach execution
 readiness with the matching review date, target-backed build-gate status,
-send-copy batch README/checklist/copy-index state, stale private artifacts, and
-unsafe or outdated private send-copy warnings, and pruning candidates, and does
-not delete files or mutate trackers/logs.
+send-copy batch README/checklist/copy-index/subject-order and DO_NOT_SEND guard
+state, stale private artifacts, unsafe or outdated private send-copy warnings,
+and pruning candidates, and does not delete files or mutate trackers/logs.
 
 After reviewing that report, use `make validation-prune-private
 DATE=YYYY-MM-DD` to dry-run pruning for generated ignored private artifacts

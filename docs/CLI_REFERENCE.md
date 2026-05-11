@@ -456,18 +456,20 @@ python3 scripts/validation-send-copy-batch.py \
 
 Open the generated numbered `.txt` files and copy only their subject/body
 contents into the outreach channel. Do not attach the `.txt` files; filenames,
-`manifest.json`, `CHECKLIST.md`, `COPY_ONLY_INDEX.md`, `SUBJECT_ORDER.md`, and
-batch `README.md` are private tracker/operator metadata and should not be
-pasted or sent to a buyer; do not send the private manifest, checklist, copy index,
-subject-order helper, or batch README. The dashboard verifies the directory through
+`manifest.json`, `CHECKLIST.md`, `COPY_ONLY_INDEX.md`, `SUBJECT_ORDER.md`,
+`DO_NOT_SEND.md`, and batch `README.md` are private tracker/operator metadata
+and should not be pasted or sent to a buyer; do not send the private manifest,
+checklist, copy index, subject-order helper, DO_NOT_SEND guard, or batch README.
+The dashboard verifies the directory through
 `send_copy_batch_state`, `send_copy_batch_matches_current_pack`,
 `send_copy_batch_readme_exists`, `send_copy_batch_checklist_exists`, and
 `outreach_execution.send_copy_batch_copy_index_exists`, and
-`outreach_execution.send_copy_batch_subject_order_exists`; the
+`outreach_execution.send_copy_batch_subject_order_exists`, and
+`outreach_execution.send_copy_batch_do_not_send_exists`; the
 match check covers numbered copy files, manifest fields, manifest operator
 notes, manifest outbound-boundary fields, copy-file SHA-256 values, the batch
 README body, the batch checklist body, neutral copy-index body, and
-subject-order body. Rerun
+subject-order body, and DO_NOT_SEND guard. Rerun
 the batch command before using the directory if the state is not ready or any
 ready/check boolean is not true. The dated directory convention is
 `validation/private/send-copy-YYYY-MM-DD/`.
@@ -648,7 +650,8 @@ The dashboard JSON includes `outreach_execution.next_draft_state`,
 `outreach_execution.send_copy_batch_readme_exists` plus
 `outreach_execution.send_copy_batch_checklist_exists` plus
 `outreach_execution.send_copy_batch_copy_index_exists` plus
-`outreach_execution.send_copy_batch_subject_order_exists`. Treat the already-rendered
+`outreach_execution.send_copy_batch_subject_order_exists` plus
+`outreach_execution.send_copy_batch_do_not_send_exists`. Treat the already-rendered
 `validation/private/today-next-draft.md` as tracker/audit metadata only when the
 state is `ready`; that means the draft target, outreach date, and verified
 status match the current next pending target. Run
@@ -660,10 +663,11 @@ target after the actual send. The
 `send_copy_batch_state` is `ready` and
 `send_copy_batch_matches_current_pack`, `send_copy_batch_readme_exists`, and
 `send_copy_batch_checklist_exists`, `send_copy_batch_copy_index_exists`, and
-`send_copy_batch_subject_order_exists` are true; the match check also verifies
+`send_copy_batch_subject_order_exists`, and `send_copy_batch_do_not_send_exists`
+are true; the match check also verifies
 manifest operator notes, manifest outbound-boundary fields, copy-file SHA-256
 values, the batch README body, the batch checklist body, and the neutral
-copy-index body and subject-order body.
+copy-index body, subject-order body, and DO_NOT_SEND guard.
 `validation-resume` wrapper runs the same dashboard check, prints the
 copy-only send text only when it matches, wraps it in begin/end markers, and
 prints the already-rendered next draft below a do-not-send divider only when it

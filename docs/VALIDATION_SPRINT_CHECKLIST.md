@@ -97,10 +97,11 @@ Do not add production platform scope while this checklist is red.
   `send_copy_batch_readme_exists: true` and
   `send_copy_batch_checklist_exists: true` and
   `send_copy_batch_copy_index_exists: true` and
-  `send_copy_batch_subject_order_exists: true`. The match check also verifies the
+  `send_copy_batch_subject_order_exists: true` and
+  `send_copy_batch_do_not_send_exists: true`. The match check also verifies the
   manifest operator notes, manifest outbound-boundary fields, copy-file
   SHA-256 values, batch README body, batch checklist body, and neutral
-  copy-index body and subject-order body.
+  copy-index body, subject-order body, and DO_NOT_SEND guard.
 - [ ] Before using an existing send-copy batch, run
   `make validation-send-copy-check DATE=YYYY-MM-DD`. It verifies neutral
   numbered filenames, one `Subject:` line per file, copy-file SHA-256 matches,
@@ -312,9 +313,9 @@ Every Friday:
 - [ ] Run `make validation-weekly-review DATE=YYYY-MM-DD` to write a read-only
   private review before pruning. It reports the validation gate, message-pack
   age, date-guarded outreach execution readiness, send-copy batch
-  README/checklist/copy-index state, stale private artifacts, unsafe or
-  outdated private send-copy warnings, and pruning candidates without deleting
-  files or mutating trackers/logs.
+  README/checklist/copy-index/subject-order and DO_NOT_SEND guard state, stale
+  private artifacts, unsafe or outdated private send-copy warnings, and pruning
+  candidates without deleting files or mutating trackers/logs.
 - [ ] Use the matching outreach date so stale private packs fail closed.
 - [ ] Run `make validation-status DATE=YYYY-MM-DD` if a private message pack
   exists, and use only aggregate status counts in shared updates.

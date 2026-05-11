@@ -289,10 +289,10 @@ operator board for the next buyer-pilot cycles.
 - [x] Weekly validation review report is executable and read-only:
   `scripts/validation-weekly-review.py` and
   `make validation-weekly-review DATE=YYYY-MM-DD` report date-guarded outreach
-  execution readiness, send-copy batch README/checklist/copy-index state, stale
-  private artifacts, and pruning candidates without deleting files or mutating
-  trackers/logs. The JSON report includes `review_date` for machine-readable
-  recovered-session handoffs.
+  execution readiness, send-copy batch README/checklist/copy-index/subject-order
+  and DO_NOT_SEND guard state, stale private artifacts, and pruning candidates
+  without deleting files or mutating trackers/logs. The JSON report includes
+  `review_date` for machine-readable recovered-session handoffs.
 - [x] Evaluator and buyer FAQ docs explicitly say the standard pilot is not
   live attack prediction, live collection, offensive validation, production
   control push, or autonomous remediation.

@@ -488,6 +488,7 @@ These files are generated for local operation and are intentionally ignored by
 - `validation/private/send-copy-2026-05-11/CHECKLIST.md`
 - `validation/private/send-copy-2026-05-11/COPY_ONLY_INDEX.md`
 - `validation/private/send-copy-2026-05-11/SUBJECT_ORDER.md`
+- `validation/private/send-copy-2026-05-11/DO_NOT_SEND.md`
 
 Do not commit private validation files. Export only aggregate counts or
 sanitized examples.
@@ -496,7 +497,7 @@ sanitized examples.
 
 Latest verification run for this inventory:
 
-- `python3 -m unittest discover -s scripts/tests -v`: 382 tests passed after
+- `python3 -m unittest discover -s scripts/tests -v`: 384 tests passed after
   the NIST/CMMC security packet docs guard, send-boundary dashboard, copy-only resume boundary, CLI-reference,
   validation-resume, goal-resume, validation-team-update, validation-weekly-review,
   validation-next-action handoff generation, weekly-review `review_date`,
@@ -572,17 +573,19 @@ Latest verification run for this inventory:
   pending draft under `validation/private/send-copy-2026-05-11/`, plus a
   private manifest with copy-file SHA-256 values and outbound-boundary fields,
   checklist, README, neutral `COPY_ONLY_INDEX.md` that omits target labels
-  and tracker commands, and private `SUBJECT_ORDER.md`.
+  and tracker commands, private `SUBJECT_ORDER.md`, and private
+  `DO_NOT_SEND.md`.
 - `make validation-dashboard DATE=2026-05-11` verifies the generated batch
   directory through `send_copy_batch_state: ready`,
   `send_copy_batch_matches_current_pack: true`,
   `send_copy_batch_readme_exists: true`,
   `send_copy_batch_checklist_exists: true`,
   `send_copy_batch_copy_index_exists: true`,
-  `send_copy_batch_subject_order_exists: true`, and 8 copy files.
+  `send_copy_batch_subject_order_exists: true`,
+  `send_copy_batch_do_not_send_exists: true`, and 8 copy files.
   The dashboard now checks copy-file SHA-256 values, manifest outbound-boundary
   fields, batch README body, batch checklist body, neutral copy-index body,
-  subject-order body, and
+  subject-order body, DO_NOT_SEND guard, and
   manifest operator notes, not only file existence.
 - Direct outbound copy checks found no target labels, validation commands,
   tracker commands, manifest/checklist references, or confirmation commands in
@@ -758,7 +761,8 @@ Latest verification run for this inventory:
   `send_copy_matches_next_pending`, plus `send_copy_batch_dir`,
   `send_copy_batch_state`, `send_copy_batch_readme_exists`,
   `send_copy_batch_checklist_exists`, `send_copy_batch_copy_index_exists`, and
-  `send_copy_batch_subject_order_exists`, and
+  `send_copy_batch_subject_order_exists`,
+  `send_copy_batch_do_not_send_exists`, and
   `send_copy_batch_matches_current_pack`.
 - Generated message pack, next-draft, send-copy, outreach-status, and dashboard
   next-action text now instruct operators to run the dry-run tracker update

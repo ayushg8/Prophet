@@ -117,6 +117,10 @@ class ValidationSprintDashboardTests(unittest.TestCase):
             str(pack_path.with_name("send-copy-2026-05-10") / "SUBJECT_ORDER.md"),
         )
         self.assertEqual(
+            summary["outreach_execution"]["send_copy_batch_do_not_send_path"],
+            str(pack_path.with_name("send-copy-2026-05-10") / "DO_NOT_SEND.md"),
+        )
+        self.assertEqual(
             summary["outreach_execution"]["send_copy_batch_command"],
             "make validation-send-copy-batch DATE=2026-05-10",
         )
@@ -126,6 +130,7 @@ class ValidationSprintDashboardTests(unittest.TestCase):
         self.assertFalse(summary["outreach_execution"]["send_copy_batch_checklist_exists"])
         self.assertFalse(summary["outreach_execution"]["send_copy_batch_copy_index_exists"])
         self.assertFalse(summary["outreach_execution"]["send_copy_batch_subject_order_exists"])
+        self.assertFalse(summary["outreach_execution"]["send_copy_batch_do_not_send_exists"])
         self.assertFalse(summary["outreach_execution"]["send_copy_batch_matches_current_pack"])
         self.assertEqual(summary["outreach_execution"]["send_copy_batch_state"], "missing")
         self.assertEqual(summary["outreach_execution"]["send_copy_batch_copy_file_count"], 0)
@@ -370,6 +375,7 @@ class ValidationSprintDashboardTests(unittest.TestCase):
         self.assertTrue(summary["outreach_execution"]["send_copy_batch_checklist_exists"])
         self.assertTrue(summary["outreach_execution"]["send_copy_batch_copy_index_exists"])
         self.assertTrue(summary["outreach_execution"]["send_copy_batch_subject_order_exists"])
+        self.assertTrue(summary["outreach_execution"]["send_copy_batch_do_not_send_exists"])
         self.assertTrue(summary["outreach_execution"]["send_copy_batch_matches_current_pack"])
         self.assertEqual(summary["outreach_execution"]["send_copy_batch_state"], "ready")
         self.assertEqual(summary["outreach_execution"]["send_copy_batch_copy_file_count"], 8)
@@ -570,6 +576,58 @@ class ValidationSprintDashboardTests(unittest.TestCase):
         self.assertEqual(
             summary["outreach_execution"]["send_copy_batch_mismatch_reason"],
             "send-copy batch SUBJECT_ORDER is missing",
+        )
+
+    def test_missing_send_copy_batch_do_not_send_guard_must_be_refreshed(self) -> None:
+        targets = json.loads(
+            (ROOT / "docs/validation-targets.example.json").read_text(encoding="utf-8")
+        )
+        outreach_block = _load_module("dashboard_outreach_block_batch_no_guard", OUTREACH_SCRIPT)
+        message_pack = _load_module("dashboard_message_pack_batch_no_guard", MESSAGE_SCRIPT)
+        send_copy_batch = _load_module("dashboard_send_copy_batch_no_guard", BATCH_SCRIPT)
+        block = outreach_block.build_outreach_block(targets, run_date="2026-05-10")
+        pack = message_pack.build_message_pack(block)
+
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_path = Path(tmp)
+            targets_path = tmp_path / "validation-targets.json"
+            pack_path = tmp_path / "today-message-pack.json"
+            batch_dir = tmp_path / "send-copy-2026-05-10"
+            manifest_path = batch_dir / "manifest.json"
+            targets_path.write_text(json.dumps(targets), encoding="utf-8")
+            pack_path.write_text(json.dumps(pack), encoding="utf-8")
+            manifest = send_copy_batch.write_send_copy_batch(
+                pack,
+                targets,
+                out_dir=batch_dir,
+                require_date="2026-05-10",
+            )
+            manifest["manifest_path"] = str(manifest_path)
+            manifest_path.write_text(
+                json.dumps(manifest, indent=2, sort_keys=True) + "\n",
+                encoding="utf-8",
+            )
+            (batch_dir / "DO_NOT_SEND.md").unlink()
+            summary = dashboard.build_dashboard(
+                log_path=ROOT / "docs/customer-validation-log.example.json",
+                targets_path=targets_path,
+                message_pack_path=pack_path,
+                require_date="2026-05-10",
+                scripts_dir=ROOT / "scripts",
+            )
+
+        self.assertTrue(summary["outreach_execution"]["send_copy_batch_exists"])
+        self.assertTrue(summary["outreach_execution"]["send_copy_batch_manifest_exists"])
+        self.assertTrue(summary["outreach_execution"]["send_copy_batch_readme_exists"])
+        self.assertTrue(summary["outreach_execution"]["send_copy_batch_checklist_exists"])
+        self.assertTrue(summary["outreach_execution"]["send_copy_batch_copy_index_exists"])
+        self.assertTrue(summary["outreach_execution"]["send_copy_batch_subject_order_exists"])
+        self.assertFalse(summary["outreach_execution"]["send_copy_batch_do_not_send_exists"])
+        self.assertFalse(summary["outreach_execution"]["send_copy_batch_matches_current_pack"])
+        self.assertEqual(summary["outreach_execution"]["send_copy_batch_state"], "stale")
+        self.assertEqual(
+            summary["outreach_execution"]["send_copy_batch_mismatch_reason"],
+            "send-copy batch DO_NOT_SEND guard is missing",
         )
 
     def test_stale_send_copy_batch_readme_must_be_refreshed(self) -> None:
@@ -1081,6 +1139,8 @@ class ValidationSprintDashboardTests(unittest.TestCase):
         self.assertIn("Send-copy batch copy index exists: false", rendered)
         self.assertIn(f"Send-copy batch subject order: {pack_path.with_name('send-copy-2026-05-10') / 'SUBJECT_ORDER.md'}", rendered)
         self.assertIn("Send-copy batch subject order exists: false", rendered)
+        self.assertIn(f"Send-copy batch do-not-send guard: {pack_path.with_name('send-copy-2026-05-10') / 'DO_NOT_SEND.md'}", rendered)
+        self.assertIn("Send-copy batch do-not-send guard exists: false", rendered)
         self.assertIn("Next target: target-dib-platform-001", rendered)
         self.assertIn(
             "Dry-run command: make validation-apply-draft TARGET=target-dib-platform-001 DATE=2026-05-10",

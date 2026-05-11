@@ -77,6 +77,8 @@ class CliSafetyMatrixDocsTests(unittest.TestCase):
             "send_copy_batch_matches_current_pack",
             "send_copy_batch_readme_exists",
             "send_copy_batch_checklist_exists",
+            "send_copy_batch_do_not_send_exists",
+            "DO_NOT_SEND guard",
             "--format send-text",
             "--target-label ... --format send-text",
             "temporary file",

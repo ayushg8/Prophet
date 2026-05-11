@@ -222,13 +222,14 @@ reports `outreach_execution.send_copy_batch_state` and
 `outreach_execution.send_copy_batch_readme_exists` and
 `outreach_execution.send_copy_batch_checklist_exists`, and
 `outreach_execution.send_copy_batch_copy_index_exists`, and
-`outreach_execution.send_copy_batch_subject_order_exists`; open the `.txt`
-files and copy only their contents when those fields are ready/true. Do not
-attach the files. The match check covers the numbered copy files, manifest
-fields, manifest operator notes, manifest outbound-boundary fields, copy-file
-SHA-256 values, batch README body, batch checklist body, neutral copy-index
-body, and subject-order body; do not send the private manifest, checklist, copy index,
-subject-order helper, or batch README.
+`outreach_execution.send_copy_batch_subject_order_exists`, and
+`outreach_execution.send_copy_batch_do_not_send_exists`; open the `.txt` files
+and copy only their contents when those fields are ready/true. Do not attach
+the files. The match check covers the numbered copy files, manifest fields,
+manifest operator notes, manifest outbound-boundary fields, copy-file SHA-256
+values, batch README body, batch checklist body, neutral copy-index body,
+subject-order body, and DO_NOT_SEND guard; do not send the private manifest,
+checklist, copy index, subject-order helper, DO_NOT_SEND guard, or batch README.
 `make validation-draft-copy TARGET=... DATE=YYYY-MM-DD` prints the same
 copy-only shape for one selected target without writing `today-send-copy.txt`.
 `make validation-resume` runs the dashboard, prints copy-only send text only
@@ -598,10 +599,12 @@ dashboard reports `outreach_execution.send_copy_batch_state: ready` and
 `outreach_execution.send_copy_batch_readme_exists: true` and
 `outreach_execution.send_copy_batch_checklist_exists: true`,
 `outreach_execution.send_copy_batch_copy_index_exists: true`, and
-`outreach_execution.send_copy_batch_subject_order_exists: true`; the match
-check also verifies the manifest operator notes, manifest outbound-boundary
-fields, copy-file SHA-256 values, batch README body, batch checklist body,
-neutral copy-index body, and subject-order body. Do not attach the files.
+`outreach_execution.send_copy_batch_subject_order_exists: true`, and
+`outreach_execution.send_copy_batch_do_not_send_exists: true`; the match check
+also verifies the manifest operator notes, manifest outbound-boundary fields,
+copy-file SHA-256 values, batch README body, batch checklist body, neutral
+copy-index body, subject-order body, and DO_NOT_SEND guard. Do not attach the
+files.
 Before sending, use
 `make validation-apply-draft TARGET=target-dib-platform-001 DATE=YYYY-MM-DD`
 to dry-run the generated tracker update; then, after a confirmed send, rerun it
