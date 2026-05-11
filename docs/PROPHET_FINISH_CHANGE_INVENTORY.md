@@ -532,7 +532,7 @@ sanitized examples.
 
 Latest verification run for this inventory:
 
-- `python3 -m unittest discover -s scripts/tests -v`: 412 tests passed after
+- `python3 -m unittest discover -s scripts/tests -v`: 414 tests passed after
   the NIST/CMMC security packet docs guard, send-boundary dashboard, copy-only resume boundary, CLI-reference,
   validation-resume, goal-resume, validation-team-update, validation-weekly-review,
   validation-next-action handoff generation, weekly-review `review_date`,
@@ -778,7 +778,7 @@ Latest verification run for this inventory:
 - `PYTHONPATH=.:cyber-side:world-side python3 scripts/check-release-safety.py --diff`:
   passed over 0 paths in the clean committed worktree.
 - `PYTHONPATH=.:cyber-side:world-side python3 scripts/check-release-safety.py --tracked --paths-only`:
-  passed over 371 tracked paths, including release-bound policy-hash coverage
+  passed over 373 tracked paths, including release-bound policy-hash coverage
   checks.
 - `python3 -m policy.lint --policy policy/prophet-pilot-policy.json`:
   passed and reported policy ID `prophet-pilot-fixture-localhost-v0.1` with
@@ -926,7 +926,7 @@ runtime output contents into the PR.
   console-live-check`, `make validation-working-product-handoff-save
   DATE=2026-05-11`, and `make validation-pre-send-check
   TARGET=target-dib-platform-001 DATE=2026-05-11`.
-- `python3 -m unittest discover -s scripts/tests -v` passed with 412 tests.
+- `python3 -m unittest discover -s scripts/tests -v` passed with 414 tests.
 - `make release-hygiene` passed.
 - `make console-live-check` passed against the running local demo.
 - `make console-screenshot-check` passed against the generated screenshot
