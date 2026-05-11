@@ -45,6 +45,8 @@ class ReleaseChecklistDocsTests(unittest.TestCase):
         self.assertIn("npm run capture:screenshots", text)
         self.assertIn("make console-screenshot-check", text)
         self.assertIn("console-screenshots/manifest.json", text)
+        self.assertIn("make supply-chain-sbom DATE=YYYY-MM-DD", text)
+        self.assertIn("evidence/outputs/runtime/supply-chain/", text)
         self.assertIn("scripts", text)
         self.assertIn("cyber-side", text)
         self.assertIn("world-side", text)

@@ -74,6 +74,19 @@ Prophet's current public SBOM source of truth is:
   dependencies. It is intentionally empty in this release state.
 - The repository file tree for stdlib-only Python modules and first-party code.
 
+The safe local generator is:
+
+```bash
+make supply-chain-sbom DATE=YYYY-MM-DD
+```
+
+It writes a machine-readable first-party review artifact to
+`evidence/outputs/runtime/supply-chain/prophet-supply-chain-sbom.json` by
+default. That path is ignored and should be attached or shared only as a
+review artifact for the exact commit being reviewed. The generated artifact is
+not a CycloneDX/SPDX release asset, SLSA attestation, or compliance
+certification.
+
 Current hash anchors:
 
 | Artifact | SHA-256 |
@@ -82,10 +95,10 @@ Current hash anchors:
 | `prophet-console/package-lock.json` | `6d2f4cb520ec57c718f2cfcfd3d708324ac53a3c44cf505a2088eb1e77801ff6` |
 | `world-side/scraper/requirements.txt` | `eaabd2deb39a232453f588ed16ff1af407ee16b67bb330d1bf53dfc20f146861` |
 
-Before a public release tag, generate a machine-readable SBOM artifact from the
-exact release commit and store it as a release asset or ignored runtime review
-artifact. Do not commit generated SBOM output unless the release owner explicitly
-wants that artifact versioned.
+Before a public release tag, run `make supply-chain-sbom DATE=YYYY-MM-DD` from
+the exact release commit and store the generated machine-readable artifact as a
+release asset or ignored runtime review artifact. Do not commit generated SBOM
+output unless the release owner explicitly wants that artifact versioned.
 
 ## Provenance Target
 
@@ -149,11 +162,12 @@ Remediation:
 | Every commit touching dependencies | Rerun `npm ci`, console lint/build/tests, `npm audit --audit-level=moderate`, and release hygiene. |
 | Before internal alpha or paid-pilot review | Recompute hashes above, rerun GitHub CI, release hygiene, validation dashboard, and pilot smoke. |
 | Weekly during active validation | Review npm audit output and GitHub Dependabot/security alerts if enabled. |
-| Before public release tag | Generate machine-readable SBOM from exact release commit, run full release checklist, and resolve the historical secret-history owner decision. |
+| Before public release tag | Run `make supply-chain-sbom DATE=YYYY-MM-DD` from the exact release commit, run full release checklist, and resolve the historical secret-history owner decision. |
 
 ## Current Gaps
 
-- No committed CycloneDX/SPDX SBOM artifact for Prophet itself.
+- No committed CycloneDX/SPDX SBOM artifact for Prophet itself. The current
+  `make supply-chain-sbom` output is an ignored local review inventory.
 - No signed provenance attestation.
 - No dependency license review packet.
 - No production container image digest because the current product path is a

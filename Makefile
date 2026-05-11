@@ -17,6 +17,7 @@ VALIDATION_WEEKLY_REVIEW_JSON ?= $(VALIDATION_DIR)/today-weekly-review.json
 VALIDATION_WEEKLY_REVIEW_MD ?= $(VALIDATION_DIR)/today-weekly-review.md
 VALIDATION_NEXT_ACTION_MD ?= $(VALIDATION_DIR)/NEXT_ACTION.md
 VALIDATION_INTERVIEW_JSON ?= $(if $(INTERVIEW),$(INTERVIEW),$(VALIDATION_DIR)/customer-validation-interview-next.json)
+SUPPLY_CHAIN_SBOM_OUT ?= evidence/outputs/runtime/supply-chain/prophet-supply-chain-sbom.json
 VALIDATION_RUN_DATE ?= $(if $(DATE),$(DATE),$(shell date +%F))
 DATE_ARG := $(if $(DATE),--date $(DATE),)
 REQUIRE_DATE_ARG := --require-date $(VALIDATION_RUN_DATE)
@@ -49,6 +50,7 @@ help:
 		'  make console-demo             Start control server and evaluator UI in one local terminal; Ctrl-C to stop.' \
 		'  make console-live-check       Check running local console readiness, evidence, integration, and audit endpoints.' \
 		'  make console-screenshot-check Verify generated console screenshot manifest hashes, dimensions, and ignored paths.' \
+		'  make supply-chain-sbom        Generate ignored machine-readable supply-chain review artifact; optional DATE=YYYY-MM-DD.' \
 		'  make console-control          Run the local console control server; Ctrl-C to stop.' \
 		'  make console-ui               Run the evaluator console UI; start console-control first.' \
 		'  make scripts-test             Run scripts unit tests.' \
@@ -146,6 +148,14 @@ console-live-check:
 .PHONY: console-screenshot-check
 console-screenshot-check:
 	@python3 scripts/check-console-screenshots.py --format text
+
+.PHONY: supply-chain-sbom
+supply-chain-sbom:
+	@python3 scripts/generate-supply-chain-sbom.py \
+		--date $(VALIDATION_RUN_DATE) \
+		--out $(SUPPLY_CHAIN_SBOM_OUT) \
+		> /dev/null
+	@printf 'Wrote machine-readable supply-chain review artifact to %s\n' '$(SUPPLY_CHAIN_SBOM_OUT)'
 
 .PHONY: console-control
 console-control:

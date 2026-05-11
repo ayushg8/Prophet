@@ -66,6 +66,9 @@ git config core.hooksPath .githooks
 - [ ] `python3 scripts/check-release-safety.py --staged` passes before commit.
 - [ ] `python3 -m unittest discover -s scripts/tests -v` passes.
 - [ ] Manual `GET /api/readiness` returns zero blocking failures.
+- [ ] `make supply-chain-sbom DATE=YYYY-MM-DD` generated the
+  machine-readable supply-chain review artifact under ignored
+  `evidence/outputs/runtime/supply-chain/` for the exact release commit.
 
   ```bash
   make console-demo

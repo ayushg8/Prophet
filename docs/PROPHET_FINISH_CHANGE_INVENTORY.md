@@ -235,6 +235,7 @@ Files:
 - `docs/PROPHET_GSTACK_ALPHA_REVIEW.md`
 - `docs/SAFETY_ARCHITECTURE.md`
 - `docs/THREAT_MODEL.md`
+- `scripts/generate-supply-chain-sbom.py`
 - `sandbox_runner/runner.py`
 - `sandbox_runner/tests/test_runner.py`
 - `scripts/tests/test_asset_import_guide_docs.py`
@@ -369,6 +370,7 @@ Files:
 - `scripts/tests/test_check_default_output_safety.py`
 - `scripts/tests/test_check_console_screenshots.py`
 - `scripts/tests/test_finish_inventory_docs.py`
+- `scripts/tests/test_generate_supply_chain_sbom.py`
 - `scripts/tests/test_incident_response_playbook_docs.py`
 - `scripts/tests/test_software_supply_chain_packet_docs.py`
 - `scripts/tests/test_nist_cmmc_security_packet_docs.py`
@@ -389,6 +391,9 @@ Review focus:
 - The software supply-chain packet should name dependency inventory, SBOM
   source of truth, provenance targets, vulnerability process, and update
   cadence without claiming signed provenance or public release readiness.
+- The machine-readable supply-chain review generator should write only under
+  ignored runtime output paths and should not claim CycloneDX/SPDX, SLSA, or
+  compliance certification.
 - The NIST/CMMC-oriented packet should include SSP draft, control matrix, data
   flows, asset inventory references, access-control gaps, IR reference, and
   POA&M without claiming CMMC/NIST compliance or CUI authorization.
@@ -487,7 +492,7 @@ sanitized examples.
 
 Latest verification run for this inventory:
 
-- `python3 -m unittest discover -s scripts/tests -v`: 378 tests passed after
+- `python3 -m unittest discover -s scripts/tests -v`: 382 tests passed after
   the NIST/CMMC security packet docs guard, send-boundary dashboard, copy-only resume boundary, CLI-reference,
   validation-resume, goal-resume, validation-team-update, validation-weekly-review,
   validation-next-action handoff generation, weekly-review `review_date`,
@@ -713,7 +718,7 @@ Latest verification run for this inventory:
 - `PYTHONPATH=.:cyber-side:world-side python3 scripts/check-release-safety.py --diff`:
   passed over 0 paths in the clean committed worktree.
 - `PYTHONPATH=.:cyber-side:world-side python3 scripts/check-release-safety.py --tracked --paths-only`:
-  passed over 353 tracked paths, including release-bound policy-hash coverage
+  passed over 355 tracked paths, including release-bound policy-hash coverage
   checks.
 - `python3 -m policy.lint --policy policy/prophet-pilot-policy.json`:
   passed and reported policy ID `prophet-pilot-fixture-localhost-v0.1` with

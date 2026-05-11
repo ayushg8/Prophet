@@ -248,6 +248,9 @@ operator board for the next buyer-pilot cycles.
 - [x] Software supply-chain packet exists with dependency inventory, SBOM
   source of truth, provenance targets, vulnerability process, and update cadence:
   `docs/SOFTWARE_SUPPLY_CHAIN_PACKET.md`.
+- [x] Machine-readable supply-chain review artifact generator exists and writes
+  only under ignored runtime outputs by default:
+  `make supply-chain-sbom DATE=YYYY-MM-DD`.
 - [x] NIST/CMMC-oriented security packet exists for buyer/security review with
   SSP draft, control matrix, data flows, asset inventory references, access
   control gaps, IR reference, and POA&M:

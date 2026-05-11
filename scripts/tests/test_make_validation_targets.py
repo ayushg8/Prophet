@@ -44,6 +44,8 @@ class MakeValidationTargetsTests(unittest.TestCase):
         self.assertIn("Check running local console readiness, evidence, integration", completed.stdout)
         self.assertIn("make console-screenshot-check", completed.stdout)
         self.assertIn("Verify generated console screenshot manifest", completed.stdout)
+        self.assertIn("make supply-chain-sbom", completed.stdout)
+        self.assertIn("ignored machine-readable supply-chain review artifact", completed.stdout)
         self.assertIn("make validation-status", completed.stdout)
         self.assertIn("REFRESH_README=1", completed.stdout)
         self.assertIn(

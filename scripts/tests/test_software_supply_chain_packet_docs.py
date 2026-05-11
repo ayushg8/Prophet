@@ -27,6 +27,9 @@ class SoftwareSupplyChainPacketDocsTests(unittest.TestCase):
 
         self.assertIn("prophet-console/package-lock.json", text)
         self.assertIn("world-side/scraper/requirements.txt", text)
+        self.assertIn("make supply-chain-sbom DATE=YYYY-MM-DD", text)
+        self.assertIn("evidence/outputs/runtime/supply-chain/prophet-supply-chain-sbom.json", text)
+        self.assertIn("not a CycloneDX/SPDX release asset", text)
         self.assertIn("npm audit --audit-level=moderate", text)
         self.assertIn("docs/INCIDENT_RESPONSE_PLAYBOOK.md", text)
         self.assertIn("docs/SECRET_HISTORY_REVIEW.md", text)
@@ -48,6 +51,7 @@ class SoftwareSupplyChainPacketDocsTests(unittest.TestCase):
         master_todo = MASTER_TODO.read_text(encoding="utf-8")
 
         self.assertIn("docs/SOFTWARE_SUPPLY_CHAIN_PACKET.md", todo)
+        self.assertIn("make supply-chain-sbom DATE=YYYY-MM-DD", todo)
         self.assertIn("[x] Add software supply-chain risk register.", master_todo)
         self.assertIn("[x] Add SBOM for Prophet itself.", master_todo)
 
