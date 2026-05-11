@@ -20,7 +20,7 @@ class PilotReleaseNotesDocsTests(unittest.TestCase):
         self.assertIn("http://127.0.0.1:8787/api/readiness", text)
         self.assertIn("make pilot-ready-check-full DATE=2026-05-11", text)
         self.assertIn("Playwright console smoke tests", text)
-        self.assertIn("342 tests", text)
+        self.assertIn("343 tests", text)
         self.assertIn("0 paths in the clean committed worktree", text)
         self.assertIn("0 untracked non-ignored files", text)
         self.assertIn("117 URLs", text)

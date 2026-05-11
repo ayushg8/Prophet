@@ -52,6 +52,17 @@ class ReleaseChecklistDocsTests(unittest.TestCase):
         self.assertIn("evidence", text)
         self.assertIn("integrations", text)
 
+    def test_release_tag_gate_blocks_unresolved_secret_history(self) -> None:
+        text = RELEASE_CHECKLIST.read_text(encoding="utf-8")
+
+        self.assertIn("## Release Tag Gate", text)
+        self.assertIn("Do not create or push a public pilot release tag", text)
+        self.assertIn("make secrets-archaeology", text)
+        self.assertIn("LOG4SHELL_INSTRUCTIONS.md", text)
+        self.assertIn("docs/SECRET_HISTORY_REVIEW.md", text)
+        self.assertIn("validation verdict", text)
+        self.assertIn("build-gate state", text)
+
     def test_documented_pre_commit_hook_exists_and_scans_staged_paths(self) -> None:
         text = RELEASE_CHECKLIST.read_text(encoding="utf-8")
         hook = PRE_COMMIT_HOOK.read_text(encoding="utf-8")

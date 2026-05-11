@@ -286,7 +286,8 @@ operator board for the next buyer-pilot cycles.
   gate rather than authorizing production scope:
   `docs/OVERNIGHT_CHANGE_REPORT.md` and
   `docs/OVERNIGHT_CONSOLIDATION_TODO.md`.
-- [ ] The pilot fixture/hash set has not yet been release-tagged.
+- [ ] The pilot fixture/hash set has not yet been release-tagged; public tagging
+  is blocked until the historical secret-history finding has an owner decision.
 
 ## Active Queue
 
@@ -329,7 +330,8 @@ operator board for the next buyer-pilot cycles.
 - [x] Harden PR template with validation-dashboard, closed build-gate,
   private-artifact, and current local wrapper checks.
 - [x] Store smoke output hashes in release notes.
-- [ ] Create a pilot release tag naming the fixture/hash set.
+- [ ] Create a pilot release tag naming the fixture/hash set after the
+  secret-history owner decision and final release checks.
 
 ### P1: Buyer Pilot Hardening
 

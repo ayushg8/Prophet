@@ -88,7 +88,8 @@ non-live unless a future customer policy explicitly authorizes a narrower mode.
 - [x] Run `cd prophet-console && npm audit --audit-level=moderate`.
 - [x] Run the top-level smoke script from a temporary worktree-overlay clone.
 - [x] Store smoke output hashes in a release note.
-- [ ] Create a pilot release tag.
+- [ ] Create a pilot release tag after the secret-history owner decision and
+  final release checks.
 - [x] Add a changelog entry for the buyer pilot package.
 - [x] Add a rollback note for restoring the previous local demo state if needed.
 - [x] Add a `make` or `just` wrapper if scripts keep multiplying.

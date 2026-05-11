@@ -36,12 +36,13 @@
         {
           "id": "M0-02",
           "title": "Undraft, merge, and tag the buyer pilot branch",
-          "status": "planned",
+          "status": "blocked",
           "priority": "P0",
           "owner": "founder",
           "target_version": "v0.3",
           "risk_tags": ["release", "buyer"],
-          "acceptance_gates": ["A tag such as pilot-v0.1 points to the reviewed commit and links to release notes."]
+          "acceptance_gates": ["A tag such as pilot-v0.1 points to the reviewed commit and links to release notes."],
+          "blocker": "Public pilot tag is blocked until the historical LOG4SHELL_INSTRUCTIONS.md secret-history finding has an owner decision and PR #5 is intentionally undrafted or merged."
         },
         {
           "id": "M0-03",

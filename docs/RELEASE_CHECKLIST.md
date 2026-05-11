@@ -91,6 +91,18 @@ git config core.hooksPath .githooks
 - [ ] Name whether the build is internal alpha, friendly pilot, or paid pilot candidate.
 - [ ] List manual steps needed to reproduce the demo from a clean checkout.
 
+## Release Tag Gate
+
+- [ ] Do not create or push a public pilot release tag while
+  `make secrets-archaeology` has unresolved git-history findings.
+- [ ] Resolve the historical `LOG4SHELL_INSTRUCTIONS.md` finding through
+  `docs/SECRET_HISTORY_REVIEW.md` before tagging the public fixture/hash set.
+- [ ] Recheck PR status, release hygiene, validation dashboard, and the
+  smoke-hash evidence immediately before creating a tag.
+- [ ] The tag message must name the release notes path, policy hash, smoke hash
+  manifest, validation verdict, build-gate state, and any remaining non-release
+  product blockers.
+
 ## Local Demo Rollback
 
 - [ ] If a local demo run corrupts or confuses runtime state, restore the known

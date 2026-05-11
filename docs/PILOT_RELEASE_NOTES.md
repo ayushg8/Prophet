@@ -125,7 +125,7 @@ After the default smoke passes, the main reviewer artifacts are:
 - `make console-screenshot-check` passed against the generated screenshot
   manifest, verifying ignored runtime paths, PNG hashes, PNG dimensions, and
   the fixture-backed sharing boundary.
-- `python3 -m unittest discover -s scripts/tests -v` passed with 342 tests,
+- `python3 -m unittest discover -s scripts/tests -v` passed with 343 tests,
   including validation-gate, send-boundary, console-demo, documented
   pre-commit hook, and release-note guardrail coverage.
 - `make python-tests` passed on 2026-05-11 across the scripts, cyber-side,
@@ -181,7 +181,8 @@ After the default smoke passes, the main reviewer artifacts are:
 
 ## Release Blockers
 
-- No git release tag has been created for this fixture/hash set.
+- No git release tag has been created for this fixture/hash set; public tagging
+  is blocked until the historical secret-history finding has an owner decision.
 - PR `#5` remains a draft; checks are green on the pushed commit set, but
   recheck before review, undraft, or merge.
 - Customer validation remains `insufficient_data`; production platform build
