@@ -728,6 +728,11 @@ Latest verification run for this inventory:
   rewrites only that ignored private README without overwriting private
   tracker/log files; `make validation-init DATE=YYYY-MM-DD REFRESH_README=1`
   wraps the same safe refresh path.
+- `docs/PROPHET_MASTER_TODO.md`: Day 1 through Day 6 of the 7-day execution
+  plan are reconciled against actual evidence and marked complete. Day 7
+  remains partial because fresh-clone smoke is covered, but release packaging
+  and tagging remain blocked by the historical secret-history owner decision
+  and unproven buyer demand.
 - `python3 scripts/production-readiness-scorecard.py`: readiness `26.7%`,
   29 critical open items.
 
