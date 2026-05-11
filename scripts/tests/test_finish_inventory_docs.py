@@ -99,11 +99,20 @@ class FinishInventoryDocsTests(unittest.TestCase):
     def test_release_hygiene_checks_are_recorded(self) -> None:
         audit = COMPLETION_AUDIT.read_text(encoding="utf-8")
         inventory = FINISH_INVENTORY.read_text(encoding="utf-8")
+        tracked_count = len(
+            subprocess.run(
+                ["git", "ls-files"],
+                cwd=ROOT,
+                check=True,
+                capture_output=True,
+                text=True,
+            ).stdout.splitlines()
+        )
 
         for text in (audit, inventory):
             with self.subTest(document=("audit" if text == audit else "inventory")):
                 self.assertIn("check-release-safety.py --tracked --paths-only", text)
-                self.assertIn("345 tracked", text)
+                self.assertIn(f"{tracked_count} tracked", text)
                 self.assertIn("policy.lint --policy policy/prophet-pilot-policy.json", text)
                 self.assertIn("check-default-output-safety.py", text)
                 self.assertRegex(text, r"7 (?:policy-listed )?default outputs")
