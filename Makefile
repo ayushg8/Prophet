@@ -61,6 +61,7 @@ help:
 		'  make validation-send-copy     Render/write copy-only next draft text without tracker metadata; optional DATE=YYYY-MM-DD.' \
 		'  make validation-send-copy-batch Write copy-only text files for all verified pending drafts; optional DATE=YYYY-MM-DD.' \
 		'  make validation-send-copy-check Verify existing batch copy files are outbound-only; optional DATE=YYYY-MM-DD.' \
+		'  make validation-pre-send-check Run the dry-run pre-send gate; requires TARGET=target-label, optional DATE=YYYY-MM-DD.' \
 		'  make validation-draft         Render one draft; requires TARGET=target-label, rejects packs not dated today unless DATE=YYYY-MM-DD.' \
 		'  make validation-draft-copy    Print copy-only text for one target; requires TARGET=target-label, optional DATE=YYYY-MM-DD.' \
 		'  make validation-apply-draft   Dry-run/apply tracker update; requires TARGET=target-label, optional DATE=YYYY-MM-DD, CONFIRM_SENT=1 after actual send.' \
@@ -270,6 +271,21 @@ validation-send-copy-check:
 	@python3 scripts/validation-send-copy-batch.py \
 		--check-dir $(VALIDATION_SEND_COPY_DIR) \
 		$(REQUIRE_DATE_ARG)
+
+.PHONY: validation-pre-send-check
+validation-pre-send-check:
+	@test -n "$(TARGET)" || { echo 'Usage: make validation-pre-send-check TARGET=target-dib-platform-001 [DATE=YYYY-MM-DD]'; exit 2; }
+	@test -z "$(CONFIRM_SENT_VALUE)$(CONFIRM_TARGET_VALUE)$(CONFIRM_LOG_VALUE)$(CONFIRM_PRUNE_VALUE)" || { echo 'validation-pre-send-check is dry-run only; do not pass CONFIRM_SENT, CONFIRM_TARGET, CONFIRM_LOG, or CONFIRM_PRUNE.'; exit 2; }
+	@printf '%s\n' '[1/5] Checking validation dashboard'
+	@$(MAKE) --no-print-directory validation-dashboard DATE=$(VALIDATION_RUN_DATE)
+	@printf '%s\n' '[2/5] Checking copy-only send batch'
+	@$(MAKE) --no-print-directory validation-send-copy-check DATE=$(VALIDATION_RUN_DATE)
+	@printf '%s\n' '[3/5] Refreshing weekly review for prune dry-run'
+	@$(MAKE) --no-print-directory validation-weekly-review DATE=$(VALIDATION_RUN_DATE) > /dev/null
+	@printf '%s\n' '[4/5] Dry-running private artifact prune plan'
+	@$(MAKE) --no-print-directory validation-prune-private DATE=$(VALIDATION_RUN_DATE)
+	@printf '%s\n' '[5/5] Dry-running tracker update for confirmed send'
+	@$(MAKE) --no-print-directory validation-apply-draft TARGET=$(TARGET) DATE=$(VALIDATION_RUN_DATE)
 
 .PHONY: validation-apply-draft
 validation-apply-draft:

@@ -44,6 +44,7 @@ make validation-init DATE=2026-05-11 REFRESH_README=1
 make validation-pack DATE=2026-05-11
 make validation-next-draft DATE=2026-05-11
 make validation-apply-draft TARGET=target-dib-platform-001 DATE=2026-05-11
+make validation-pre-send-check TARGET=target-dib-platform-001 DATE=2026-05-11
 make validation-reply-triage TARGET=target-dib-platform-001 REPLY=book_call DATE=2026-05-11
 make validation-status DATE=2026-05-11
 make validation-dashboard DATE=2026-05-11
@@ -477,6 +478,10 @@ ready/check boolean is not true. The dated directory convention is
 `.txt` files against the private manifest: neutral filenames, one `Subject:`
 line each, SHA-256 matches, no target labels, no tracker commands, and no
 private metadata.
+`make validation-pre-send-check TARGET=... DATE=YYYY-MM-DD` is the dry-run pre-send wrapper.
+It runs the dated dashboard, existing send-copy batch check,
+fresh private weekly review, prune dry-run, and tracker-update dry run for the
+target. It fails closed if any `CONFIRM_*` write guard is set.
 
 Render a specific target draft when needed:
 
@@ -668,6 +673,9 @@ are true; the match check also verifies
 manifest operator notes, manifest outbound-boundary fields, copy-file SHA-256
 values, the batch README body, the batch checklist body, and the neutral
 copy-index body, subject-order body, and DO_NOT_SEND guard.
+`make validation-pre-send-check TARGET=... DATE=YYYY-MM-DD` runs the dated
+dashboard, send-copy batch check, fresh private weekly review, prune dry-run,
+and tracker-update dry run, and it refuses `CONFIRM_*` write guards.
 `validation-resume` wrapper runs the same dashboard check, prints the
 copy-only send text only when it matches, wraps it in begin/end markers, and
 prints the already-rendered next draft below a do-not-send divider only when it

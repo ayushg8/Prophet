@@ -497,7 +497,7 @@ sanitized examples.
 
 Latest verification run for this inventory:
 
-- `python3 -m unittest discover -s scripts/tests -v`: 384 tests passed after
+- `python3 -m unittest discover -s scripts/tests -v`: 385 tests passed after
   the NIST/CMMC security packet docs guard, send-boundary dashboard, copy-only resume boundary, CLI-reference,
   validation-resume, goal-resume, validation-team-update, validation-weekly-review,
   validation-next-action handoff generation, weekly-review `review_date`,
@@ -543,6 +543,7 @@ Latest verification run for this inventory:
   docs coverage, ignored private validation output scan coverage, one-terminal
   console-demo help/dependency/runtime port-conflict/non-localhost-host docs
   coverage,
+  dry-run-only pre-send check guard coverage,
   release-checklist console-demo and python-tests wrapper coverage, pilot-release-note runnable-product
   coverage, worktree-smoke wrapper coverage, all-Python Make wrapper coverage,
   same-target wrong-date next-draft rejection, example-seed build-gate

@@ -32,6 +32,11 @@ class ValidationNextActionTests(unittest.TestCase):
             github_ci_summary="`success` (`completed`, `ci`): https://example.invalid/run",
         )
 
+        self.assertIn(
+            "make validation-pre-send-check TARGET=target-dib-platform-001 DATE=2026-05-11",
+            rendered,
+        )
+        self.assertIn("refuses all `CONFIRM_*` write", rendered)
         self.assertIn("make validation-dashboard DATE=2026-05-11", rendered)
         self.assertIn("make validation-send-copy-check DATE=2026-05-11", rendered)
         self.assertIn("copy_files_outbound_safe: true", rendered)

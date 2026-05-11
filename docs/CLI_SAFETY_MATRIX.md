@@ -93,6 +93,10 @@ temporary file and preserves the previous saved update if rendering fails.
 `make validation-next-action-save DATE=YYYY-MM-DD` regenerates the ignored
 private `NEXT_ACTION.md` handoff from the current dashboard and writes only
 that handoff; it does not send, delete, or mutate trackers/logs.
+`make validation-pre-send-check TARGET=... DATE=YYYY-MM-DD` is a dry-run-only
+wrapper for the outbound preflight. It runs the dated dashboard, send-copy
+batch check, fresh private weekly review, prune dry-run, and tracker-update
+dry run, and it fails closed if any `CONFIRM_*` write guard is set.
 `make validation-weekly-review DATE=YYYY-MM-DD` writes read-only private weekly
 review JSON/Markdown under `validation/private/` for pruning review; it does
 not send, delete, or confirm-update anything.

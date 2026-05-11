@@ -77,6 +77,8 @@ class MakeValidationTargetsTests(unittest.TestCase):
         self.assertIn("copy-only next draft text without tracker metadata", completed.stdout)
         self.assertIn("make validation-send-copy-check", completed.stdout)
         self.assertIn("Verify existing batch copy files are outbound-only", completed.stdout)
+        self.assertIn("make validation-pre-send-check", completed.stdout)
+        self.assertIn("Run the dry-run pre-send gate", completed.stdout)
         self.assertIn("make validation-send-copy-batch", completed.stdout)
         self.assertIn("copy-only text files for all verified pending drafts", completed.stdout)
         self.assertIn("make validation-reply-triage", completed.stdout)
@@ -106,6 +108,26 @@ class MakeValidationTargetsTests(unittest.TestCase):
         self.assertIn("python3 -m unittest discover -s policy/tests -v", makefile)
         self.assertIn("python3 -m unittest discover -s evidence/tests -v", makefile)
         self.assertIn("python3 -m unittest discover -s integrations/tests -v", makefile)
+
+    @unittest.skipIf(shutil.which("make") is None, "make is not available")
+    def test_validation_pre_send_check_rejects_confirm_guards(self) -> None:
+        completed = subprocess.run(
+            [
+                "make",
+                "validation-pre-send-check",
+                "TARGET=target-dib-platform-001",
+                "DATE=2026-05-11",
+                "CONFIRM_SENT=1",
+            ],
+            cwd=ROOT,
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            check=False,
+        )
+
+        self.assertNotEqual(completed.returncode, 0)
+        self.assertIn("validation-pre-send-check is dry-run only", completed.stdout)
 
     def test_console_demo_help_documents_safe_local_scope(self) -> None:
         completed = subprocess.run(

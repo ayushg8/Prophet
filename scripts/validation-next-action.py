@@ -35,6 +35,7 @@ def render_next_action(
     customer = dashboard["customer_validation"]
     build_gate = dashboard["build_gate"]
     outreach = dashboard.get("outreach_execution", {})
+    next_target = outreach.get("next_pending_target_label")
     effective_counts = customer.get("effective_validation_counts") or {}
     gaps = (customer.get("gaps_to_verdicts") or {}).get("build_next_slice") or {}
     lines = [
@@ -48,7 +49,14 @@ def render_next_action(
         "",
         "## 1. Rerun The Read-Only Checks",
         "",
-        "Before sending anything, rerun:",
+        "Before sending anything, rerun the dry-run pre-send gate:",
+        "",
+        "```bash",
+        f"make validation-pre-send-check TARGET={next_target or 'target-label'} DATE={run_date}",
+        "```",
+        "",
+        "That wrapper expands to these checks and refuses all `CONFIRM_*` write",
+        "guards:",
         "",
         "```bash",
         f"make validation-dashboard DATE={run_date}",
@@ -143,7 +151,6 @@ def render_next_action(
                 "",
             ]
         )
-    next_target = outreach.get("next_pending_target_label")
     confirmed = outreach.get("next_pending_confirmed_apply_command")
     lines.extend(
         [
