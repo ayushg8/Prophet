@@ -29,6 +29,7 @@ def render_next_action(
     *,
     run_date: str,
     git_head: str | None = None,
+    git_worktree_state: str | None = None,
 ) -> str:
     customer = dashboard["customer_validation"]
     build_gate = dashboard["build_gate"]
@@ -198,9 +199,15 @@ def render_next_action(
         lines.extend(
             [
                 f"- Local git head: `{git_head}`. Recheck GitHub status before release decisions.",
-                "- Do not use PR readiness as buyer-demand evidence.",
             ]
         )
+    if git_worktree_state:
+        lines.append(
+            f"- Local git worktree: `{git_worktree_state}`. If dirty, rerun the "
+            "dashboard and send-copy checks after resolving local changes."
+        )
+    if git_head or git_worktree_state:
+        lines.append("- Do not use PR readiness as buyer-demand evidence.")
     return "\n".join(lines) + "\n"
 
 
@@ -230,6 +237,7 @@ def main(argv: list[str] | None = None) -> int:
             dashboard,
             run_date=args.date,
             git_head=_git_head(),
+            git_worktree_state=_git_worktree_state(),
         )
     except Exception as exc:
         print(f"validation next action failed: {exc}", file=sys.stderr)
@@ -261,6 +269,21 @@ def _git_head() -> str | None:
     except (OSError, subprocess.CalledProcessError):
         return None
     return completed.stdout.strip() or None
+
+
+def _git_worktree_state() -> str | None:
+    try:
+        completed = subprocess.run(
+            ["git", "status", "--short", "--untracked-files=all"],
+            cwd=Path(__file__).resolve().parents[1],
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.DEVNULL,
+            check=True,
+        )
+    except (OSError, subprocess.CalledProcessError):
+        return None
+    return "dirty" if completed.stdout.strip() else "clean"
 
 
 def _load_dashboard_module() -> Any:

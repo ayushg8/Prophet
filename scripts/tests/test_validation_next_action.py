@@ -28,6 +28,7 @@ class ValidationNextActionTests(unittest.TestCase):
             dashboard,
             run_date="2026-05-11",
             git_head="abc1234",
+            git_worktree_state="clean",
         )
 
         self.assertIn("make validation-dashboard DATE=2026-05-11", rendered)
@@ -50,6 +51,7 @@ class ValidationNextActionTests(unittest.TestCase):
         self.assertIn("Validation verdict: insufficient_data", rendered)
         self.assertIn("Build gate: closed", rendered)
         self.assertIn("Local git head: `abc1234`", rendered)
+        self.assertIn("Local git worktree: `clean`", rendered)
         self.assertIn("Do not use PR readiness as buyer-demand evidence", rendered)
 
     def test_render_send_copy_fallback_stays_copy_only(self) -> None:
@@ -60,9 +62,11 @@ class ValidationNextActionTests(unittest.TestCase):
             dashboard,
             run_date="2026-05-11",
             git_head="abc1234",
+            git_worktree_state="dirty",
         )
 
         self.assertIn("validation/private/today-send-copy.txt", rendered)
+        self.assertIn("If dirty, rerun the dashboard and send-copy checks", rendered)
         self.assertNotIn("validation/private/today-message-pack.json", rendered)
 
     def test_cli_writes_private_handoff_without_mutating_trackers(self) -> None:
