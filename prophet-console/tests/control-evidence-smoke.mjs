@@ -371,7 +371,7 @@ try {
     'handoff artifact downloads must require the local console control header',
   );
 } finally {
-  child.kill('SIGTERM');
+  await stopChild(child);
 }
 
 await assertReadinessUsesPilotDemoAuditFallback();
@@ -463,7 +463,7 @@ async function assertReadinessUsesPilotDemoAuditFallback() {
         throw new Error(`operator audit fallback check did not pass\n${JSON.stringify(operatorAuditCheck)}\n${fallbackStderr}`);
       }
     } finally {
-      fallbackChild.kill('SIGTERM');
+      await stopChild(fallbackChild);
     }
   } finally {
     if (originalPilotDemoAuditLog === null) {
@@ -573,7 +573,7 @@ async function assertEvidenceEndpointRecoversLegacyAuditLog() {
       'legacy audit log replacement must include no_live_target_data_included',
     );
   } finally {
-    recoveryChild.kill('SIGTERM');
+    await stopChild(recoveryChild);
   }
 }
 
@@ -589,4 +589,24 @@ async function waitForHealth(serverBaseUrl = baseUrl, stderrForServer = () => st
     await new Promise((resolve) => setTimeout(resolve, 250));
   }
   throw new Error(`control server did not start\n${stderrForServer()}`);
+}
+
+async function stopChild(childProcess) {
+  if (childProcess.exitCode !== null || childProcess.signalCode !== null) return;
+  await new Promise((resolve) => {
+    let settled = false;
+    const finish = () => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(forceKill);
+      resolve();
+    };
+    const forceKill = setTimeout(() => {
+      if (childProcess.exitCode === null && childProcess.signalCode === null) {
+        childProcess.kill('SIGKILL');
+      }
+    }, 5_000);
+    childProcess.once('exit', finish);
+    if (!childProcess.kill('SIGTERM')) finish();
+  });
 }
