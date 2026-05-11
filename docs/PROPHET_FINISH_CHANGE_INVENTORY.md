@@ -520,7 +520,7 @@ sanitized examples.
 
 Latest verification run for this inventory:
 
-- `python3 -m unittest discover -s scripts/tests -v`: 402 tests passed after
+- `python3 -m unittest discover -s scripts/tests -v`: 403 tests passed after
   the NIST/CMMC security packet docs guard, send-boundary dashboard, copy-only resume boundary, CLI-reference,
   validation-resume, goal-resume, validation-team-update, validation-weekly-review,
   validation-next-action handoff generation, weekly-review `review_date`,
@@ -574,8 +574,8 @@ Latest verification run for this inventory:
   release-checklist console-demo and python-tests wrapper coverage, pilot-release-note runnable-product
   coverage, worktree-smoke wrapper coverage, all-Python Make wrapper coverage,
   same-target wrong-date next-draft rejection, example-seed build-gate
-  coverage, running-console live-check coverage, and console screenshot
-  manifest verification coverage.
+  coverage, running-console live-check coverage, console accessibility/browser
+  target coverage, and console screenshot manifest verification coverage.
 - `make python-tests`: passed on 2026-05-11 as the release-hygiene wrapper for
   scripts, cyber-side, world-side, assets, sandbox runner, policy, evidence,
   and integration Python suites.
@@ -765,7 +765,7 @@ Latest verification run for this inventory:
 - `PYTHONPATH=.:cyber-side:world-side python3 scripts/check-release-safety.py --diff`:
   passed over 0 paths in the clean committed worktree.
 - `PYTHONPATH=.:cyber-side:world-side python3 scripts/check-release-safety.py --tracked --paths-only`:
-  passed over 361 tracked paths, including release-bound policy-hash coverage
+  passed over 363 tracked paths, including release-bound policy-hash coverage
   checks.
 - `python3 -m policy.lint --policy policy/prophet-pilot-policy.json`:
   passed and reported policy ID `prophet-pilot-fixture-localhost-v0.1` with
@@ -774,7 +774,7 @@ Latest verification run for this inventory:
   `raw_scraper_text_allowed` all false.
 - `python3 scripts/check-default-output-safety.py --policy policy/prophet-pilot-policy.json --format text`:
   passed over 7 policy-listed default outputs and 1 OSINT provenance manifest.
-- `python3 scripts/check-doc-links.py`: passed over 89 Markdown source files
+- `python3 scripts/check-doc-links.py`: passed over 90 Markdown source files
   with external URLs and ignored private/runtime output skipped.
 - Explicit untracked file checks: no-index whitespace checks passed over 0
   untracked non-ignored files, and release hygiene reported no untracked
@@ -900,7 +900,7 @@ runtime output contents into the PR.
   `python3 -m unittest discover -s scripts/tests -v`, `make release-hygiene`,
   and `make release-tag-preflight DATE=2026-05-11` failed closed while
   reporting both current blockers.
-- `python3 -m unittest discover -s scripts/tests -v` passed with 402 tests.
+- `python3 -m unittest discover -s scripts/tests -v` passed with 403 tests.
 - `make release-hygiene` passed.
 - `make console-live-check` passed against the running local demo.
 - `make console-screenshot-check` passed against the generated screenshot

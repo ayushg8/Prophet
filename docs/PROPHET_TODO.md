@@ -387,6 +387,8 @@ operator board for the next buyer-pilot cycles.
 - [x] Add redacted final-console screenshots or expected screenshot artifacts,
   plus ignored responsive desktop/mobile capture:
   `cd prophet-console && npm run capture:screenshots`.
+- [x] Add local console accessibility and browser target:
+  `docs/CONSOLE_ACCESSIBILITY_AND_BROWSER_TARGET.md`.
 - [x] Add a glossary for non-cyber readers.
 
 ### P1/P2: Validation And Evidence

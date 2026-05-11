@@ -498,8 +498,8 @@ non-live unless a future customer policy explicitly authorizes a narrower mode.
 - [ ] Add sandbox run view.
 - [ ] Add evidence comparison view.
 - [ ] Add pilot walkthrough mode.
-- [ ] Add accessibility target and test plan.
-- [ ] Add browser compatibility target.
+- [x] Add accessibility target and test plan.
+- [x] Add browser compatibility target.
 
 ## P4: Research And Advanced Modeling
 
