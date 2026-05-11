@@ -111,13 +111,14 @@ class FinishInventoryDocsTests(unittest.TestCase):
                 self.assertIn("check-doc-links.py", text)
                 self.assertIn("89 Markdown", text)
 
-    def test_completion_audit_names_current_pushed_finish_head(self) -> None:
+    def test_completion_audit_names_latest_implementation_checkpoint(self) -> None:
         audit = COMPLETION_AUDIT.read_text(encoding="utf-8")
 
         self.assertIn("checked product/runtime baseline", audit)
         self.assertIn("1929dc0211f9d4567774df8b22a674afd01df48b", audit)
         self.assertIn("actions/runs/25663480672", audit)
-        self.assertIn("current pushed finish-pass head", audit)
+        self.assertIn("latest implementation", audit)
+        self.assertIn("audit-only resume refresh", audit)
         self.assertIn("f91da90463b753743175d89d82e6f709f8ffc859", audit)
         self.assertIn("actions/runs/25666846465", audit)
         self.assertIn("Add supply-chain SBOM review generator", audit)
@@ -125,17 +126,22 @@ class FinishInventoryDocsTests(unittest.TestCase):
         self.assertIn("make console-live-check", audit)
         self.assertIn("make release-hygiene", audit)
         self.assertIn("make validation-send-copy-check DATE=2026-05-11", audit)
+        self.assertIn("moving current head", audit)
+        self.assertIn("git log --oneline -1", audit)
         self.assertIn("Future commits after this checkpoint must rerun", audit)
 
-    def test_finish_inventory_names_latest_finish_checkpoint(self) -> None:
+    def test_finish_inventory_names_latest_implementation_checkpoint(self) -> None:
         inventory = FINISH_INVENTORY.read_text(encoding="utf-8")
 
-        self.assertIn("Latest pushed finish-pass checkpoint", inventory)
+        self.assertIn("Latest implementation checkpoint", inventory)
+        self.assertIn("audit-only resume refresh", inventory)
         self.assertIn("f91da90463b753743175d89d82e6f709f8ffc859", inventory)
         self.assertIn("actions/runs/25666846465", inventory)
         self.assertIn("Add supply-chain SBOM review generator", inventory)
         self.assertIn("does not open", inventory)
         self.assertIn("production platform scope", inventory)
+        self.assertIn("moving current head", inventory)
+        self.assertIn("git log --oneline -1", inventory)
 
     def test_github_main_fresh_clone_baseline_smoke_is_recorded(self) -> None:
         audit = COMPLETION_AUDIT.read_text(encoding="utf-8")
