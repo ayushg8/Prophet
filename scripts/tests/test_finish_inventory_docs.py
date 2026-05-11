@@ -118,9 +118,23 @@ class FinishInventoryDocsTests(unittest.TestCase):
         self.assertIn("1929dc0211f9d4567774df8b22a674afd01df48b", audit)
         self.assertIn("actions/runs/25663480672", audit)
         self.assertIn("npm run acceptance` passed locally at `1929dc0`", audit)
+        self.assertIn("latest pushed buyer/security packet handoff checkpoint", audit)
+        self.assertIn("3431795b9e2b3ab8c79d985e8561f08ee5039aef", audit)
+        self.assertIn("actions/runs/25666353445", audit)
+        self.assertIn("does not replace the checked", audit)
+        self.assertIn("product/runtime baseline", audit)
         self.assertIn("Documentation-only commits", audit)
         self.assertIn("make validation-send-copy-check DATE=2026-05-11", audit)
         self.assertIn("Do not append every later documentation-only commit", audit)
+
+    def test_finish_inventory_names_latest_packet_handoff_checkpoint(self) -> None:
+        inventory = FINISH_INVENTORY.read_text(encoding="utf-8")
+
+        self.assertIn("Latest pushed buyer/security packet handoff checkpoint", inventory)
+        self.assertIn("3431795b9e2b3ab8c79d985e8561f08ee5039aef", inventory)
+        self.assertIn("actions/runs/25666353445", inventory)
+        self.assertIn("not a replacement for the", inventory)
+        self.assertIn("checked product/runtime baseline", inventory)
 
     def test_github_main_fresh_clone_baseline_smoke_is_recorded(self) -> None:
         audit = COMPLETION_AUDIT.read_text(encoding="utf-8")
