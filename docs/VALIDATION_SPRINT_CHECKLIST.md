@@ -106,8 +106,9 @@ Do not add production platform scope while this checklist is red.
 - [ ] Send from `validation/private/today-send-copy.txt` only when the dashboard
   reports `next_draft_state: ready`, `next_draft_matches_next_pending: true`,
   `send_copy_state: ready`, and `send_copy_matches_next_pending: true`.
-- [ ] Replace only the recipient name and channel-specific greeting before
-  sending; do not add private customer details or new claims.
+- [ ] Copy the generated subject/body as-is, or personalize only in the
+  outreach channel after pasting. Do not store recipient names, private contact
+  details, or new claims in repo files.
 - [ ] Render individual drafts with `--target-label` and `--require-date` when
   sending one ask at a time, or use
   `make validation-draft TARGET=target-dib-platform-004 DATE=YYYY-MM-DD`.

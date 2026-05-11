@@ -315,7 +315,8 @@ def _render_operator_readme(*, generated_for: str, copy_file_count: int) -> str:
             "- `COPY_ONLY_INDEX.md` is a neutral operator aid for send order, not buyer collateral.",
             "- Do not send `manifest.json`, `CHECKLIST.md`, `COPY_ONLY_INDEX.md`, or this README.",
             "- Each `.txt` file should contain only one `Subject:` line and the message body.",
-            "- Replace only the recipient name and channel-specific greeting before sending.",
+            "- Copy the generated subject/body as-is, or personalize only in the outreach channel after pasting.",
+            "- Do not store recipient names or private contact details in repo files.",
             "",
             "## Tracker Boundary",
             "",
@@ -435,6 +436,8 @@ def _validate_copy_text(
             raise SendCopyBatchError(
                 f"copy-only send text contains tracker metadata: {literal}"
             )
+    if re.search(r"<[^>\n]+>", rendered):
+        raise SendCopyBatchError("copy-only send text contains placeholder text")
     for regex_name, label in (
         ("EMAIL_RE", "email-like text"),
         ("URL_RE", "URL-like text"),

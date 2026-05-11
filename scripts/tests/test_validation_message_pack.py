@@ -119,7 +119,8 @@ class ValidationMessagePackTests(unittest.TestCase):
         self.assertIn("Confirmed-send apply command:", rendered)
         self.assertIn("Subject options:", rendered)
         self.assertIn("Tracker update command:", rendered)
-        self.assertIn("Hi <first name>", rendered)
+        self.assertIn("Hi,", rendered)
+        self.assertNotIn("<first name>", rendered)
         self.assertIn("No live data ask, no exploit tooling, no sales deck.", rendered)
         self.assertIn("make validation-status DATE=2026-05-10", rendered)
         self.assertIn("before sending and before writing tracker changes", rendered)
@@ -150,7 +151,9 @@ class ValidationMessagePackTests(unittest.TestCase):
 
         self.assertIn("target-dib-platform-001", filtered["target_labels"])
         self.assertTrue(rendered.startswith("Subject: "))
-        self.assertIn("Hi <first name>", rendered)
+        self.assertIn("Hi,", rendered)
+        self.assertNotIn("<first name>", rendered)
+        self.assertNotRegex(rendered, r"<[^>\n]+>")
         self.assertIn("No live data ask, no exploit tooling, no sales deck.", rendered)
         self.assertNotIn("target-dib-platform-004", rendered)
         self.assertNotIn("make validation-apply-draft", rendered)
@@ -243,8 +246,26 @@ class ValidationMessagePackTests(unittest.TestCase):
 
         self.assertTrue(completed.stdout.startswith("Subject: "))
         self.assertIn("Is that a real pain", completed.stdout)
+        self.assertIn("Hi,", completed.stdout)
+        self.assertNotIn("<first name>", completed.stdout)
+        self.assertNotRegex(completed.stdout, r"<[^>\n]+>")
         self.assertNotIn("target-dib-platform-004", completed.stdout)
         self.assertNotIn("make validation-apply-draft", completed.stdout)
+
+    def test_send_text_rejects_placeholder_text(self) -> None:
+        targets = outreach_block.json.loads(EXAMPLE.read_text(encoding="utf-8"))
+        block = outreach_block.build_outreach_block(targets, run_date="2026-05-10")
+        pack = message_pack.build_message_pack(block)
+        filtered = message_pack.filter_pack_by_target_label(pack, "target-dib-platform-004")
+        filtered = copy.deepcopy(filtered)
+        filtered["drafts"][0]["body"] = filtered["drafts"][0]["body"].replace(
+            "Hi,",
+            "Hi <first name>,",
+            1,
+        )
+
+        with self.assertRaisesRegex(message_pack.MessagePackError, "placeholder text"):
+            message_pack.render_send_text(filtered)
 
     def test_cli_send_text_requires_target_label_when_pack_has_multiple_drafts(self) -> None:
         targets = outreach_block.json.loads(EXAMPLE.read_text(encoding="utf-8"))

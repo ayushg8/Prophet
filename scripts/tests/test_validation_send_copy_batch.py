@@ -72,7 +72,9 @@ class ValidationSendCopyBatchTests(unittest.TestCase):
                 hashlib.sha256(rendered.encode("utf-8")).hexdigest(),
             )
             self.assertTrue(rendered.startswith("Subject: "))
-            self.assertIn("Hi <first name>", rendered)
+            self.assertIn("Hi,", rendered)
+            self.assertNotIn("<first name>", rendered)
+            self.assertNotRegex(rendered, r"<[^>\n]+>")
             self.assertIn("No live data ask", rendered)
             self.assertNotIn("target-dib-platform-001", rendered)
             self.assertNotIn("make validation-apply-draft", rendered)
@@ -91,6 +93,8 @@ class ValidationSendCopyBatchTests(unittest.TestCase):
             )
             self.assertIn("SHA-256", readme)
             self.assertIn("make validation-status DATE=2026-05-10", readme)
+            self.assertIn("personalize only in the outreach channel", readme)
+            self.assertIn("Do not store recipient names", readme)
             self.assertNotIn("target-dib-platform-001", readme)
             self.assertNotIn("@", readme)
             self.assertNotIn("http://", readme)
@@ -322,6 +326,26 @@ class ValidationSendCopyBatchTests(unittest.TestCase):
             with self.assertRaisesRegex(
                 send_copy_batch.SendCopyBatchError,
                 "contains tracker metadata",
+            ):
+                send_copy_batch.write_send_copy_batch(
+                    pack,
+                    targets,
+                    out_dir=Path(tmp),
+                    require_date="2026-05-10",
+                )
+
+    def test_rejects_copy_text_with_placeholder(self) -> None:
+        targets, pack = _targets_and_pack()
+        pack = copy.deepcopy(pack)
+        pack["drafts"][0]["body"] = pack["drafts"][0]["body"].replace(
+            "Hi,",
+            "Hi <first name>,",
+            1,
+        )
+        with tempfile.TemporaryDirectory() as tmp:
+            with self.assertRaisesRegex(
+                send_copy_batch.SendCopyBatchError,
+                "contains placeholder text",
             ):
                 send_copy_batch.write_send_copy_batch(
                     pack,

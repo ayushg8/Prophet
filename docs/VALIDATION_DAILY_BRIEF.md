@@ -159,8 +159,9 @@ Use `make validation-draft-copy TARGET=... DATE=YYYY-MM-DD` only when you want
 copy-only text for a selected target without writing
 `validation/private/today-send-copy.txt`; it does not change the dashboard's
 next-pending send-copy match.
-When sending from the rendered draft, replace only the recipient name and
-channel-specific greeting; do not add private customer details or new claims.
+When sending from the rendered draft, copy the generated subject/body as-is, or
+personalize only in the outreach channel after pasting. Do not store recipient
+names, private contact details, or new claims in repo files.
 
 Before sending, dry-run the generated tracker update with:
 

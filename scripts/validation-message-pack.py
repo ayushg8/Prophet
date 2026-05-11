@@ -65,7 +65,8 @@ def build_message_pack(block: dict[str, Any]) -> dict[str, Any]:
         "draft_count": len(drafts),
         "drafts": drafts,
         "operator_notes": [
-            "Replace only the recipient name and channel-specific greeting before sending.",
+            "Copy the generated subject/body as-is, or personalize only in the outreach channel after pasting.",
+            "Do not store recipient names or private contact details in repo files.",
             "Do not add customer names, emails, URLs, hostnames, IPs, screenshots, or raw artifacts.",
             "Use the Make dry-run command before sending and before writing tracker changes.",
             "Use the CONFIRM_SENT=1 command only after the message was actually sent.",
@@ -315,7 +316,7 @@ def _message_body(
 ) -> str:
     if kind == "referral":
         return (
-            "Hi <first name>,\n\n"
+            "Hi,\n\n"
             "I'm looking for one operationally honest intro, not broad feedback.\n\n"
             "The person I need to learn from owns vulnerability prioritization, "
             "product security, platform security, CTI, or mission assurance and has "
@@ -327,7 +328,7 @@ def _message_body(
         )
     if kind == "follow_up":
         return (
-            "Hi <first name>,\n\n"
+            "Hi,\n\n"
             "Following up on the narrow workflow question: when KEV, CMMC, customer, "
             "or mission pressure hits, how do you prove what exposure class should "
             "be hardened first and what SOC or platform handoff should follow?\n\n"
@@ -341,7 +342,7 @@ def _message_body(
         )
     if source == "warm_intro_needed":
         return (
-            "Hi <first name>,\n\n"
+            "Hi,\n\n"
             f"I'm trying to find one operationally honest conversation with someone in a {persona} "
             f"role across {segment}.\n\n"
             "The workflow question is whether KEV, CMMC, customer, mission, or audit "
@@ -353,7 +354,7 @@ def _message_body(
             "No live data ask, no exploit tooling, no sales deck."
         )
     return (
-        "Hi <first name>,\n\n"
+        "Hi,\n\n"
         "I'm testing a narrow defensive workflow: evidence-backed vulnerability "
         "prioritization for teams that need to prove what exposure class gets "
         "hardened first and why.\n\n"
@@ -392,6 +393,8 @@ def _validate_send_text(rendered: str, *, target_labels: set[str]) -> None:
             raise MessagePackError(
                 f"copy-only send text contains tracker metadata: {literal}"
             )
+    if re.search(r"<[^>\n]+>", rendered):
+        raise MessagePackError("copy-only send text contains placeholder text")
     for regex, label in (
         (EMAIL_RE, "email-like text"),
         (URL_RE, "URL-like text"),

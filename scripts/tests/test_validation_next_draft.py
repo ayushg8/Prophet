@@ -61,10 +61,8 @@ class ValidationNextDraftTests(unittest.TestCase):
             "make validation-status DATE=2026-05-10",
             "\n".join(selected["operator_notes"]),
         )
-        self.assertIn(
-            "Replace only the recipient name",
-            "\n".join(selected["operator_notes"]),
-        )
+        self.assertIn("personalize only in the outreach channel", "\n".join(selected["operator_notes"]))
+        self.assertIn("Do not store recipient names", "\n".join(selected["operator_notes"]))
         self.assertIn(
             "before sending or writing tracker changes",
             "\n".join(selected["operator_notes"]),
@@ -96,7 +94,8 @@ class ValidationNextDraftTests(unittest.TestCase):
         )
         self.assertIn("CONFIRM_SENT=1", rendered)
         self.assertIn("Tracker update command:", rendered)
-        self.assertIn("Replace only the recipient name", rendered)
+        self.assertIn("personalize only in the outreach channel", rendered)
+        self.assertIn("Do not store recipient names", rendered)
         self.assertIn("Rerun make validation-status DATE=2026-05-10", rendered)
         self.assertNotIn("@", rendered)
         self.assertNotIn("http://", rendered)
@@ -111,7 +110,9 @@ class ValidationNextDraftTests(unittest.TestCase):
         self.assertTrue(rendered.startswith("Subject: Intro to someone"))
         self.assertNotIn("Subject options:", rendered)
         self.assertNotIn("Message:", rendered)
-        self.assertIn("Hi <first name>", rendered)
+        self.assertIn("Hi,", rendered)
+        self.assertNotIn("<first name>", rendered)
+        self.assertNotRegex(rendered, r"<[^>\n]+>")
         self.assertIn("No live data ask", rendered)
         self.assertNotIn("Who should I learn from", rendered)
         self.assertNotIn("Prophet Validation Draft", rendered)
@@ -123,6 +124,19 @@ class ValidationNextDraftTests(unittest.TestCase):
         self.assertNotIn("@", rendered)
         self.assertNotIn("http://", rendered)
         self.assertNotIn("https://", rendered)
+
+    def test_send_text_rejects_placeholder_text(self) -> None:
+        targets, pack = _targets_and_pack()
+        selected = next_draft.build_next_draft(pack, targets)
+        selected = copy.deepcopy(selected)
+        selected["draft"]["body"] = selected["draft"]["body"].replace(
+            "Hi,",
+            "Hi <first name>,",
+            1,
+        )
+
+        with self.assertRaisesRegex(next_draft.NextDraftError, "placeholder text"):
+            next_draft.render_send_text(selected)
 
     def test_send_text_rejects_target_label_leak(self) -> None:
         targets, pack = _targets_and_pack()
@@ -249,7 +263,9 @@ class ValidationNextDraftTests(unittest.TestCase):
         self.assertTrue(completed.stdout.startswith("Subject: Intro to someone"))
         self.assertNotIn("Subject options:", completed.stdout)
         self.assertNotIn("Message:", completed.stdout)
-        self.assertIn("Hi <first name>", completed.stdout)
+        self.assertIn("Hi,", completed.stdout)
+        self.assertNotIn("<first name>", completed.stdout)
+        self.assertNotRegex(completed.stdout, r"<[^>\n]+>")
         self.assertNotIn("target-", completed.stdout)
         self.assertNotIn("make validation-apply-draft", completed.stdout)
         self.assertNotIn("Tracker update command", completed.stdout)

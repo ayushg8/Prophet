@@ -721,7 +721,9 @@ class MakeValidationTargetsTests(unittest.TestCase):
 
             self.assertEqual(send_copy.returncode, 0, send_copy.stderr)
             self.assertTrue(send_copy.stdout.startswith("Subject: Intro to someone"))
-            self.assertIn("Hi <first name>", send_copy.stdout)
+            self.assertIn("Hi,", send_copy.stdout)
+            self.assertNotIn("<first name>", send_copy.stdout)
+            self.assertNotRegex(send_copy.stdout, r"<[^>\n]+>")
             self.assertNotIn("Prophet Validation Draft - 2026-05-10", send_copy.stdout)
             self.assertNotIn("Subject options:", send_copy.stdout)
             self.assertNotIn("Message:", send_copy.stdout)
@@ -1021,7 +1023,9 @@ class MakeValidationTargetsTests(unittest.TestCase):
             "END COPY-ONLY SEND TEXT", 1
         )[0]
         self.assertIn("Subject: Intro to someone", send_block)
-        self.assertIn("Hi <first name>", send_block)
+        self.assertIn("Hi,", send_block)
+        self.assertNotIn("<first name>", send_block)
+        self.assertNotRegex(send_block, r"<[^>\n]+>")
         self.assertNotIn("target-dib-platform-001", send_block)
         self.assertNotIn("make validation-apply-draft", send_block)
 

@@ -86,7 +86,8 @@ def build_next_draft(
         "draft": draft,
         "status_item": selected,
         "operator_notes": [
-            "Replace only the recipient name and channel-specific greeting before sending.",
+            "Copy the generated subject/body as-is, or personalize only in the outreach channel after pasting.",
+            "Do not store recipient names or private contact details in repo files.",
             "Run the Make dry-run command before sending or writing tracker changes.",
             "Send the copy-only text before applying the confirmed tracker update.",
             "Run the CONFIRM_SENT=1 command only after the message was actually sent.",
@@ -237,6 +238,8 @@ def _validate_copy_text(
             raise NextDraftError(
                 f"copy-only send text contains tracker metadata: {literal}"
             )
+    if re.search(r"<[^>\n]+>", rendered):
+        raise NextDraftError("copy-only send text contains placeholder text")
     for regex_name, label in (
         ("EMAIL_RE", "email-like text"),
         ("URL_RE", "URL-like text"),
