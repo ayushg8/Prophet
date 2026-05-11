@@ -174,6 +174,8 @@ make check-local-env
 make pilot-ready-check DATE=YYYY-MM-DD
 make pilot-ready-check-full DATE=YYYY-MM-DD
 make pilot-smoke
+make supply-chain-sbom DATE=YYYY-MM-DD
+make supply-chain-sbom-check DATE=YYYY-MM-DD
 make validation-pack DATE=YYYY-MM-DD
 make validation-init DATE=YYYY-MM-DD REFRESH_README=1
 make validation-next-draft DATE=YYYY-MM-DD
@@ -202,6 +204,11 @@ make worktree-smoke
 make release-hygiene
 make release-safety
 ```
+
+`make supply-chain-sbom-check` validates the ignored generated supply-chain
+review artifact. It is the correct check for that runtime review file;
+release-safety intentionally rejects generated runtime outputs as commit
+content.
 
 `make validation-status` prints the Markdown status report for humans and
 refreshes `validation/private/today-outreach-status.json` for machine-readable

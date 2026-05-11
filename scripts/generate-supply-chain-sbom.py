@@ -15,6 +15,7 @@ from urllib.parse import quote
 
 
 SCHEMA_VERSION = "prophet_supply_chain_sbom.v0.1"
+CHECK_SCHEMA_VERSION = "prophet_supply_chain_sbom_check.v0.1"
 DEFAULT_OUTPUT = Path("evidence/outputs/runtime/supply-chain/prophet-supply-chain-sbom.json")
 PACKAGE_JSON = Path("prophet-console/package.json")
 PACKAGE_LOCK = Path("prophet-console/package-lock.json")
@@ -125,6 +126,14 @@ def main(argv: list[str] | None = None) -> int:
         help="Output path under an ignored */outputs/runtime/ directory.",
     )
     parser.add_argument(
+        "--check",
+        help="Validate an existing generated artifact under an ignored */outputs/runtime/ directory instead of writing one.",
+    )
+    parser.add_argument(
+        "--require-date",
+        help="Require the existing artifact's generated_at field to match this date or timestamp.",
+    )
+    parser.add_argument(
         "--date",
         help="Generation timestamp/date to record. Use YYYY-MM-DD or an ISO timestamp.",
     )
@@ -136,17 +145,98 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     root = Path(args.root).resolve()
     try:
-        generated_at = _normalize_generated_at(args.date)
-        sbom = build_supply_chain_sbom(root=root, generated_at=generated_at)
-        out_path = _safe_output_path(root, Path(args.out))
-        rendered = json.dumps(sbom, indent=2, sort_keys=True) + "\n"
-        out_path.parent.mkdir(parents=True, exist_ok=True)
-        out_path.write_text(rendered, encoding="utf-8")
+        if args.check:
+            require_date = _normalize_generated_at(args.require_date)
+            summary = check_supply_chain_sbom(
+                root=root,
+                artifact_path=Path(args.check),
+                require_date=require_date,
+            )
+            rendered = json.dumps(summary, indent=2, sort_keys=True) + "\n"
+        else:
+            generated_at = _normalize_generated_at(args.date)
+            sbom = build_supply_chain_sbom(root=root, generated_at=generated_at)
+            out_path = _safe_output_path(root, Path(args.out))
+            rendered = json.dumps(sbom, indent=2, sort_keys=True) + "\n"
+            out_path.parent.mkdir(parents=True, exist_ok=True)
+            out_path.write_text(rendered, encoding="utf-8")
     except (OSError, json.JSONDecodeError, SupplyChainSbomError) as exc:
-        print(f"supply-chain SBOM generation failed: {exc}", file=sys.stderr)
+        action = "check" if args.check else "generation"
+        print(f"supply-chain SBOM {action} failed: {exc}", file=sys.stderr)
         return 1
     print(rendered, end="")
     return 0
+
+
+def check_supply_chain_sbom(
+    *,
+    root: Path,
+    artifact_path: Path,
+    require_date: str | None = None,
+) -> dict[str, Any]:
+    safe_path = _safe_output_path(root, artifact_path)
+    artifact = _load_json(safe_path)
+    _require_equal(artifact.get("schema_version"), SCHEMA_VERSION, "schema_version")
+    generated_at = artifact.get("generated_at")
+    if not isinstance(generated_at, str) or not generated_at:
+        raise SupplyChainSbomError("generated_at must be a non-empty string")
+    if require_date is not None and generated_at != require_date:
+        raise SupplyChainSbomError(
+            f"generated_at {generated_at!r} does not match required date {require_date!r}"
+        )
+
+    generated_from = _require_object(artifact.get("generated_from"), "generated_from")
+    source_paths = _require_list(generated_from.get("source_paths"), "generated_from.source_paths")
+    checked_sources = _check_source_hashes(root, source_paths)
+
+    components = _require_list(artifact.get("components"), "components")
+    summary = _require_object(artifact.get("summary"), "summary")
+    review_boundary = _require_object(artifact.get("review_boundary"), "review_boundary")
+    non_claims = _require_list(review_boundary.get("non_claims"), "review_boundary.non_claims")
+    limitations = _require_list(artifact.get("limitations"), "limitations")
+
+    component_count = len(components)
+    npm_count = sum(1 for component in components if _component_field(component, "ecosystem") == "npm")
+    direct_runtime_count = sum(
+        1 for component in components if _component_field(component, "scope") == "direct_runtime"
+    )
+    direct_development_count = sum(
+        1 for component in components if _component_field(component, "scope") == "direct_development"
+    )
+    _require_equal(summary.get("component_count"), component_count, "summary.component_count")
+    _require_equal(summary.get("npm_component_count"), npm_count, "summary.npm_component_count")
+    _require_equal(
+        summary.get("direct_runtime_dependency_count"),
+        direct_runtime_count,
+        "summary.direct_runtime_dependency_count",
+    )
+    _require_equal(
+        summary.get("direct_development_dependency_count"),
+        direct_development_count,
+        "summary.direct_development_dependency_count",
+    )
+    _require_contains(non_claims, "not a CMMC certification artifact", "review_boundary.non_claims")
+    _require_contains(non_claims, "not evidence of production SaaS readiness", "review_boundary.non_claims")
+    _require_contains(
+        limitations,
+        "Public release tagging remains blocked until the historical secret-history owner decision is recorded.",
+        "limitations",
+    )
+
+    return {
+        "schema_version": CHECK_SCHEMA_VERSION,
+        "ok": True,
+        "artifact_path": safe_path.relative_to(root).as_posix(),
+        "generated_at": generated_at,
+        "recorded_git_commit": generated_from.get("git_commit"),
+        "current_git_commit": _git(["rev-parse", "HEAD"], root=root),
+        "recorded_dirty_worktree": bool(generated_from.get("dirty_worktree")),
+        "component_count": component_count,
+        "npm_component_count": npm_count,
+        "source_path_count": len(checked_sources),
+        "source_hashes_match": True,
+        "review_boundary": review_boundary,
+    }
 
 
 def _load_json(path: Path) -> dict[str, Any]:
@@ -162,6 +252,38 @@ def _source_hash(root: Path, rel_path: Path) -> dict[str, str]:
         "path": rel_path.as_posix(),
         "sha256": _sha256(path),
     }
+
+
+def _check_source_hashes(root: Path, source_paths: list[Any]) -> list[dict[str, str]]:
+    checked: list[dict[str, str]] = []
+    seen_paths: set[str] = set()
+    for index, source in enumerate(source_paths):
+        if not isinstance(source, dict):
+            raise SupplyChainSbomError(f"generated_from.source_paths[{index}] must be an object")
+        rel_path = source.get("path")
+        recorded_hash = source.get("sha256")
+        if not isinstance(rel_path, str) or not rel_path:
+            raise SupplyChainSbomError(f"generated_from.source_paths[{index}].path must be a non-empty string")
+        if not isinstance(recorded_hash, str) or len(recorded_hash) != 64:
+            raise SupplyChainSbomError(f"generated_from.source_paths[{index}].sha256 must be a SHA-256 hex string")
+        if rel_path.startswith("/") or ".." in Path(rel_path).parts:
+            raise SupplyChainSbomError(f"generated_from.source_paths[{index}].path must stay inside the repository")
+        actual_hash = _sha256(root / rel_path)
+        if actual_hash != recorded_hash:
+            raise SupplyChainSbomError(
+                f"source hash mismatch for {rel_path}: artifact is stale for the current source file"
+            )
+        checked.append({"path": rel_path, "sha256": recorded_hash})
+        seen_paths.add(rel_path)
+    expected_paths = {
+        PACKAGE_JSON.as_posix(),
+        PACKAGE_LOCK.as_posix(),
+        SCRAPER_REQUIREMENTS.as_posix(),
+    }
+    missing = sorted(expected_paths - seen_paths)
+    if missing:
+        raise SupplyChainSbomError(f"generated_from.source_paths is missing required source path(s): {', '.join(missing)}")
+    return checked
 
 
 def _sha256(path: Path) -> str:
@@ -281,6 +403,34 @@ def _python_stdlib_component() -> dict[str, str]:
         "scope": "product_python_path",
         "path": "stdlib",
     }
+
+
+def _require_object(value: Any, field_name: str) -> dict[str, Any]:
+    if not isinstance(value, dict):
+        raise SupplyChainSbomError(f"{field_name} must be an object")
+    return value
+
+
+def _require_list(value: Any, field_name: str) -> list[Any]:
+    if not isinstance(value, list):
+        raise SupplyChainSbomError(f"{field_name} must be a list")
+    return value
+
+
+def _require_equal(actual: Any, expected: Any, field_name: str) -> None:
+    if actual != expected:
+        raise SupplyChainSbomError(f"{field_name} mismatch: expected {expected!r}, got {actual!r}")
+
+
+def _require_contains(values: list[Any], expected: str, field_name: str) -> None:
+    if expected not in values:
+        raise SupplyChainSbomError(f"{field_name} must include {expected!r}")
+
+
+def _component_field(component: Any, field_name: str) -> Any:
+    if not isinstance(component, dict):
+        raise SupplyChainSbomError("components must contain only objects")
+    return component.get(field_name)
 
 
 def _git(args: list[str], *, root: Path) -> str:

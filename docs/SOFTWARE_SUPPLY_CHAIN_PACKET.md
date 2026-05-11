@@ -78,6 +78,7 @@ The safe local generator is:
 
 ```bash
 make supply-chain-sbom DATE=YYYY-MM-DD
+make supply-chain-sbom-check DATE=YYYY-MM-DD
 ```
 
 It writes a machine-readable first-party review artifact to
@@ -102,25 +103,24 @@ output unless the release owner explicitly wants that artifact versioned.
 
 ## Generated Review Artifact Check
 
-After generating the local review artifact, verify it is ignored and tied to
-the current commit before sharing it with a buyer or security reviewer:
+After generating the local review artifact, verify it is ignored and that its
+source hashes still match the current dependency source files before sharing it
+with a buyer or security reviewer:
 
 ```bash
 make supply-chain-sbom DATE=YYYY-MM-DD
+make supply-chain-sbom-check DATE=YYYY-MM-DD
 git check-ignore -v evidence/outputs/runtime/supply-chain/prophet-supply-chain-sbom.json
-jq -e --arg head "$(git rev-parse HEAD)" \
-  '.generated_from.git_commit == $head
-   and .generated_from.dirty_worktree == false
-   and .review_boundary.output_policy
-   and (.review_boundary.non_claims | index("not evidence of production SaaS readiness"))' \
-  evidence/outputs/runtime/supply-chain/prophet-supply-chain-sbom.json
 ```
 
 Do not run `check-release-safety.py` directly on this generated runtime
 artifact as a release-bound file. The path policy should reject it as an
 ignored runtime artifact if someone tries to stage or scan it as commit
-content. Use `make release-hygiene` for committed-state checks, and use the
-artifact only as an ignored review attachment when explicitly approved.
+content. `make supply-chain-sbom-check` is the right validator for the ignored
+review artifact: it checks the schema, requested date, source-file SHA-256
+values, component counts, and review-boundary non-claims. Use
+`make release-hygiene` for committed-state checks, and use the artifact only as
+an ignored review attachment when explicitly approved.
 
 ## Provenance Target
 
@@ -184,7 +184,7 @@ Remediation:
 | Every commit touching dependencies | Rerun `npm ci`, console lint/build/tests, `npm audit --audit-level=moderate`, and release hygiene. |
 | Before internal alpha or paid-pilot review | Recompute hashes above, rerun GitHub CI, release hygiene, validation dashboard, and pilot smoke. |
 | Weekly during active validation | Review npm audit output and GitHub Dependabot/security alerts if enabled. |
-| Before public release tag | Run `make supply-chain-sbom DATE=YYYY-MM-DD` from the exact release commit, run full release checklist, and resolve the historical secret-history owner decision. |
+| Before public release tag | Run `make supply-chain-sbom DATE=YYYY-MM-DD` and `make supply-chain-sbom-check DATE=YYYY-MM-DD` from the exact release commit, run full release checklist, and resolve the historical secret-history owner decision. |
 
 ## Current Gaps
 

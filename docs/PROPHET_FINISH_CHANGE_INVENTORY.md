@@ -527,7 +527,7 @@ sanitized examples.
 
 Latest verification run for this inventory:
 
-- `python3 -m unittest discover -s scripts/tests -v`: 406 tests passed after
+- `python3 -m unittest discover -s scripts/tests -v`: 410 tests passed after
   the NIST/CMMC security packet docs guard, send-boundary dashboard, copy-only resume boundary, CLI-reference,
   validation-resume, goal-resume, validation-team-update, validation-weekly-review,
   validation-next-action handoff generation, weekly-review `review_date`,
@@ -912,7 +912,7 @@ runtime output contents into the PR.
   `make validation-contact-form-copy-check DATE=2026-05-11`, and
   `make release-tag-preflight DATE=2026-05-11` failed closed while reporting
   both current blockers.
-- `python3 -m unittest discover -s scripts/tests -v` passed with 406 tests.
+- `python3 -m unittest discover -s scripts/tests -v` passed with 410 tests.
 - `make release-hygiene` passed.
 - `make console-live-check` passed against the running local demo.
 - `make console-screenshot-check` passed against the generated screenshot

@@ -65,6 +65,7 @@ help:
 		'  make console-screenshot-check Verify generated console screenshot manifest hashes, dimensions, and ignored paths.' \
 		'  make asset-sbom-demo        Import sanitized CycloneDX/SPDX fixture to ignored inventory/report/seedset outputs; optional DATE=YYYY-MM-DD.' \
 		'  make supply-chain-sbom        Generate ignored machine-readable supply-chain review artifact; optional DATE=YYYY-MM-DD.' \
+		'  make supply-chain-sbom-check  Verify ignored supply-chain review artifact source hashes and review boundary; optional DATE=YYYY-MM-DD.' \
 		'  make console-control          Run the local console control server; Ctrl-C to stop.' \
 		'  make console-ui               Run the evaluator console UI; start console-control first.' \
 		'  make scripts-test             Run scripts unit tests.' \
@@ -197,6 +198,12 @@ supply-chain-sbom:
 		--out $(SUPPLY_CHAIN_SBOM_OUT) \
 		> /dev/null
 	@printf 'Wrote machine-readable supply-chain review artifact to %s\n' '$(SUPPLY_CHAIN_SBOM_OUT)'
+
+.PHONY: supply-chain-sbom-check
+supply-chain-sbom-check:
+	@python3 scripts/generate-supply-chain-sbom.py \
+		--check $(SUPPLY_CHAIN_SBOM_OUT) \
+		--require-date $(VALIDATION_RUN_DATE)
 
 .PHONY: console-control
 console-control:

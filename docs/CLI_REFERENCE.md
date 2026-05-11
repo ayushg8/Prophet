@@ -41,6 +41,8 @@ make python-tests
 make worktree-smoke
 make pilot-smoke
 make console-demo
+make supply-chain-sbom DATE=2026-05-11
+make supply-chain-sbom-check DATE=2026-05-11
 make validation-init DATE=2026-05-11 REFRESH_README=1
 make validation-pack DATE=2026-05-11
 make validation-next-draft DATE=2026-05-11
@@ -70,6 +72,14 @@ tracked and untracked whitespace checks, release-safety scans for tracked diffs
 and untracked files, tracked path policy-hash coverage, staged-path safety,
 current-worktree secret scanning, pilot policy lint, default-output
 URL/provenance safety, and local Markdown link checking.
+
+`make supply-chain-sbom DATE=YYYY-MM-DD` writes an ignored machine-readable
+supply-chain review artifact under `evidence/outputs/runtime/supply-chain/`.
+`make supply-chain-sbom-check DATE=YYYY-MM-DD` validates the existing ignored
+artifact's schema, requested date, source-file SHA-256 values, component
+counts, and review-boundary non-claims. Use that check for the generated
+runtime artifact; `check-release-safety.py` intentionally rejects runtime
+outputs as release-bound commit content.
 
 `make secrets-archaeology` runs the full current-worktree plus git-history secret scan.
 It reports only paths and commit IDs, not matched values. Treat any
@@ -865,6 +875,7 @@ Run safety scans:
 ```bash
 PYTHONPATH=.:cyber-side:world-side python3 scripts/check-release-safety.py --diff
 PYTHONPATH=.:cyber-side:world-side python3 scripts/check-release-safety.py --staged
+make supply-chain-sbom-check DATE=2026-05-11
 ```
 
 Run CLI guard coverage:

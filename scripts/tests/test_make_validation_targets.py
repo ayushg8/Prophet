@@ -48,6 +48,8 @@ class MakeValidationTargetsTests(unittest.TestCase):
         self.assertIn("Import sanitized CycloneDX/SPDX fixture", completed.stdout)
         self.assertIn("make supply-chain-sbom", completed.stdout)
         self.assertIn("ignored machine-readable supply-chain review artifact", completed.stdout)
+        self.assertIn("make supply-chain-sbom-check", completed.stdout)
+        self.assertIn("Verify ignored supply-chain review artifact source hashes", completed.stdout)
         self.assertIn("make validation-status", completed.stdout)
         self.assertIn("REFRESH_README=1", completed.stdout)
         self.assertIn(
@@ -143,6 +145,46 @@ class MakeValidationTargetsTests(unittest.TestCase):
         self.assertFalse(report_json["raw_sbom_embedded"])
         self.assertFalse(report_json["raw_component_values_embedded"])
         self.assertEqual(seedset_json["schema_version"], "asset_osint_seedset.v0.1")
+
+    @unittest.skipIf(shutil.which("make") is None, "make is not available")
+    def test_supply_chain_sbom_check_validates_requested_runtime_output(self) -> None:
+        with tempfile.TemporaryDirectory(dir=ROOT / "evidence/outputs/runtime") as tmp:
+            out_path = Path(tmp) / "supply-chain-sbom.json"
+            generate = subprocess.run(
+                [
+                    "make",
+                    "supply-chain-sbom",
+                    "DATE=2026-05-11",
+                    f"SUPPLY_CHAIN_SBOM_OUT={out_path}",
+                ],
+                cwd=ROOT,
+                text=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                check=False,
+            )
+            check = subprocess.run(
+                [
+                    "make",
+                    "supply-chain-sbom-check",
+                    "DATE=2026-05-11",
+                    f"SUPPLY_CHAIN_SBOM_OUT={out_path}",
+                ],
+                cwd=ROOT,
+                text=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                check=False,
+            )
+
+        self.assertEqual(generate.returncode, 0, generate.stderr)
+        self.assertIn("Wrote machine-readable supply-chain review artifact", generate.stdout)
+        self.assertEqual(check.returncode, 0, check.stderr)
+        summary = json.loads(check.stdout)
+        self.assertEqual(summary["schema_version"], "prophet_supply_chain_sbom_check.v0.1")
+        self.assertTrue(summary["ok"])
+        self.assertEqual(summary["generated_at"], "2026-05-11")
+        self.assertTrue(summary["source_hashes_match"])
 
     def test_python_tests_target_runs_all_unit_suites(self) -> None:
         makefile = (ROOT / "Makefile").read_text(encoding="utf-8")

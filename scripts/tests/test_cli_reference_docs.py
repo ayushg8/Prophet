@@ -26,6 +26,8 @@ class CliReferenceDocsTests(unittest.TestCase):
         self.assertIn("make validation-prune-private", text)
         self.assertIn("validation-reply-triage.py", text)
         self.assertIn("make validation-reply-triage", text)
+        self.assertIn("make supply-chain-sbom", text)
+        self.assertIn("make supply-chain-sbom-check", text)
         self.assertIn("make validation-send-copy", text)
         self.assertIn("make validation-send-copy-batch", text)
         self.assertIn("make validation-contact-form-copy", text)
@@ -70,6 +72,10 @@ class CliReferenceDocsTests(unittest.TestCase):
     def test_validation_status_documents_machine_readable_output(self) -> None:
         text = CLI_REFERENCE.read_text(encoding="utf-8")
 
+        self.assertIn("make supply-chain-sbom DATE=2026-05-11", text)
+        self.assertIn("make supply-chain-sbom-check DATE=2026-05-11", text)
+        self.assertIn("source-file SHA-256 values", text)
+        self.assertIn("check-release-safety.py` intentionally rejects runtime", text)
         self.assertIn("make validation-status", text)
         self.assertIn("make validation-team-update", text)
         self.assertIn("make validation-team-update-save", text)

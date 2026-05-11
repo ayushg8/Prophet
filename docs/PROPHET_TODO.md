@@ -265,6 +265,10 @@ operator board for the next buyer-pilot cycles.
 - [x] Machine-readable supply-chain review artifact generator exists and writes
   only under ignored runtime outputs by default:
   `make supply-chain-sbom DATE=YYYY-MM-DD`.
+- [x] Machine-readable supply-chain review artifact checker exists for ignored
+  runtime outputs and validates schema, requested date, source hashes,
+  component counts, and review-boundary non-claims:
+  `make supply-chain-sbom-check DATE=YYYY-MM-DD`.
 - [x] NIST/CMMC-oriented security packet exists for buyer/security review with
   SSP draft, control matrix, data flows, asset inventory references, access
   control gaps, IR reference, and POA&M:
