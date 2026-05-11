@@ -178,9 +178,15 @@ class FinishInventoryDocsTests(unittest.TestCase):
         self.assertIn("next_pending_pre_send_check_command", audit)
         self.assertIn("per-draft pre-send commands", audit)
         self.assertIn("pre-send wrapper", audit)
-        self.assertIn("manifest.json` as tracker/audit metadata", audit)
-        self.assertIn("CHECKLIST.md` as tracker/audit metadata", audit)
-        self.assertIn("README.md` as tracker/audit metadata", audit)
+        self.assertIn("Run the pre-send guard immediately before sending", audit)
+        self.assertIn(
+            "make validation-pre-send-check TARGET=target-dib-platform-001 DATE=2026-05-11",
+            audit,
+        )
+        self.assertIn("`validation/private/send-copy-2026-05-11/manifest.json`", audit)
+        self.assertIn("`validation/private/send-copy-2026-05-11/CHECKLIST.md`", audit)
+        self.assertIn("`validation/private/send-copy-2026-05-11/README.md`", audit)
+        self.assertIn("tracker/audit metadata", audit)
 
     def test_inventory_lists_private_workspace_readme(self) -> None:
         inventory = FINISH_INVENTORY.read_text(encoding="utf-8")

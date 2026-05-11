@@ -248,16 +248,18 @@ raw OSINT warehouse.
 
 ## Highest-Leverage Next Action
 
-Use either the copy-only send text in
+Run the pre-send guard immediately before sending:
+`make validation-pre-send-check TARGET=target-dib-platform-001 DATE=2026-05-11`.
+If it passes, use either the copy-only send text in
 `validation/private/today-send-copy.txt` for the next pending draft
 `target-dib-platform-001`, or the verified `.txt` files under
 `validation/private/send-copy-2026-05-11/` if sending the whole block outside
 the repo. Treat `validation/private/today-next-draft.md`,
-`validation/private/send-copy-2026-05-11/manifest.json` as tracker/audit metadata,
-`validation/private/send-copy-2026-05-11/CHECKLIST.md` as tracker/audit metadata,
-and `validation/private/send-copy-2026-05-11/README.md` as tracker/audit metadata,
-not outbound artifacts. Do not change the private tracker before the
-send. After the first message is actually sent, run
+`validation/private/send-copy-2026-05-11/manifest.json` as tracker/audit
+metadata, `validation/private/send-copy-2026-05-11/CHECKLIST.md` as
+tracker/audit metadata, and `validation/private/send-copy-2026-05-11/README.md`
+as tracker/audit metadata, not outbound artifacts. Do not change the private
+tracker before the send. After the first message is actually sent, run
 `make validation-apply-draft TARGET=target-dib-platform-001 DATE=2026-05-11 CONFIRM_SENT=1`.
 Then run `make validation-status DATE=2026-05-11` to confirm the private tracker
 matches the outreach pack. If the terminal is restored on a later day, keep using
