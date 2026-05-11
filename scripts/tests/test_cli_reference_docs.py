@@ -34,6 +34,7 @@ class CliReferenceDocsTests(unittest.TestCase):
         self.assertIn("make validation-send-copy-batch", text)
         self.assertIn("make validation-contact-form-copy", text)
         self.assertIn("make validation-contact-form-copy-check", text)
+        self.assertIn("make validation-send-batch-ready-save", text)
         self.assertIn("make validation-pre-send-check", text)
         self.assertIn("make validation-pre-send-check-all", text)
         self.assertIn("make validation-draft-copy", text)
@@ -46,6 +47,7 @@ class CliReferenceDocsTests(unittest.TestCase):
         self.assertIn("validation/private/today-outreach-status.json", text)
         self.assertIn("validation/private/today-team-update.md", text)
         self.assertIn("validation/private/NEXT_ACTION.md", text)
+        self.assertIn("validation/private/SEND_BATCH_READY.md", text)
         self.assertIn("validation/private/WORKING_PRODUCT_HANDOFF.md", text)
         self.assertIn("validation/private/today-send-copy.txt", text)
         self.assertIn("validation/private/send-copy-YYYY-MM-DD/", text)
@@ -71,6 +73,7 @@ class CliReferenceDocsTests(unittest.TestCase):
         self.assertIn("does not store recipient names", text)
         self.assertIn("external outreach channel", text)
         self.assertIn("real contact\nmust come from outside the repo", text)
+        self.assertIn("writes no tracker\nstate", text)
 
     def test_validation_status_documents_machine_readable_output(self) -> None:
         text = CLI_REFERENCE.read_text(encoding="utf-8")

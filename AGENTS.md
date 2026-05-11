@@ -65,6 +65,7 @@ make validation-next-draft
 make validation-send-copy
 make validation-send-copy-batch
 make validation-contact-form-copy
+make validation-send-batch-ready-save
 make validation-pre-send-check TARGET=target-dib-platform-001
 make validation-draft-copy TARGET=target-dib-platform-004
 ```
@@ -107,6 +108,7 @@ make validation-next-draft DATE=YYYY-MM-DD
 make validation-send-copy DATE=YYYY-MM-DD
 make validation-send-copy-batch DATE=YYYY-MM-DD
 make validation-contact-form-copy DATE=YYYY-MM-DD
+make validation-send-batch-ready-save DATE=YYYY-MM-DD
 make validation-pre-send-check TARGET=target-dib-platform-001 DATE=YYYY-MM-DD
 make validation-draft-copy TARGET=target-dib-platform-004 DATE=YYYY-MM-DD
 ```
@@ -155,6 +157,11 @@ When a public contact form needs shorter text, run
 numbered `.txt` file contents from
 `validation/private/contact-form-copy-YYYY-MM-DD/`. The manifest, checklist,
 index, README, and DO_NOT_SEND guard remain private operator metadata.
+For a full-block handoff, run
+`make validation-send-batch-ready-save DATE=YYYY-MM-DD` after the full pre-send
+gate passes. It writes ignored `validation/private/SEND_BATCH_READY.md` from the
+current verifier output, refuses all `CONFIRM_*` guards, sends nothing, and
+writes no tracker state.
 
 The next operational loop is:
 
@@ -183,13 +190,17 @@ The next operational loop is:
    DATE=YYYY-MM-DD` immediately before sending. It is dry-run only and refuses
    `CONFIRM_SENT`, `CONFIRM_TARGET`, `CONFIRM_LOG`, or `CONFIRM_PRUNE`; it
    also validates the contact-form copy directory when one exists for the date.
-9. Send from `validation/private/today-send-copy.txt` or the checked compact
+9. If another operator will perform the full send block, run
+   `make validation-send-batch-ready-save DATE=YYYY-MM-DD` and hand off only
+   the ignored private `validation/private/SEND_BATCH_READY.md` instructions
+   inside the local workspace.
+10. Send from `validation/private/today-send-copy.txt` or the checked compact
    contact-form `.txt` contents only after that dry-run
    gate is clean and the dashboard reports `send_copy_state: ready` plus
    `send_copy_matches_next_pending: true`.
-10. Add `CONFIRM_SENT=1` only after the sent message and anonymized update are
+11. Add `CONFIRM_SENT=1` only after the sent message and anonymized update are
    correct.
-11. Rerun `make validation-status DATE=YYYY-MM-DD` and
+12. Rerun `make validation-status DATE=YYYY-MM-DD` and
    `make validation-dashboard DATE=YYYY-MM-DD`.
 
 Do not invent sent messages, buyer replies, calls, or pilot signals.

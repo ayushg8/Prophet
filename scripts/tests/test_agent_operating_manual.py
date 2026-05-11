@@ -20,6 +20,7 @@ class AgentOperatingManualTests(unittest.TestCase):
         self.assertIn("make validation-send-copy", text)
         self.assertIn("make validation-send-copy-batch", text)
         self.assertIn("make validation-contact-form-copy", text)
+        self.assertIn("make validation-send-batch-ready-save", text)
         self.assertIn("make validation-pre-send-check", text)
         self.assertIn("make validation-draft-copy", text)
         self.assertIn("make validation-team-update", text)
@@ -34,6 +35,7 @@ class AgentOperatingManualTests(unittest.TestCase):
         self.assertIn("today-outreach-status.json", text)
         self.assertIn("today-team-update.md", text)
         self.assertIn("NEXT_ACTION.md", text)
+        self.assertIn("SEND_BATCH_READY.md", text)
         self.assertIn("WORKING_PRODUCT_HANDOFF.md", text)
         self.assertIn("worktree", text)
         self.assertIn("GitHub CI", text)
@@ -61,6 +63,8 @@ class AgentOperatingManualTests(unittest.TestCase):
         self.assertIn("does not store recipient names", text)
         self.assertIn("external outreach", text)
         self.assertIn("real contact selected outside the repo", text)
+        self.assertIn("full-block handoff", text)
+        self.assertIn("writes no tracker state", text)
         self.assertIn(
             "make validation-apply-draft TARGET=<target-label> DATE=YYYY-MM-DD",
             text,

@@ -189,6 +189,7 @@ make validation-draft-copy TARGET=target-dib-platform-004 DATE=YYYY-MM-DD
 make validation-send-copy-batch DATE=YYYY-MM-DD
 make validation-contact-form-copy DATE=YYYY-MM-DD
 make validation-contact-form-copy-check DATE=YYYY-MM-DD
+make validation-send-batch-ready-save DATE=YYYY-MM-DD
 make validation-status DATE=YYYY-MM-DD
 make validation-reply-triage TARGET=target-dib-platform-001 REPLY=book_call DATE=YYYY-MM-DD
 make validation-dashboard DATE=YYYY-MM-DD
@@ -266,6 +267,11 @@ guards.
 send-copy batch, the contact-form copy batch when present, and every pending
 generated tracker update in one dry-run report. It is useful before sending a
 full outreach block; it still does not send messages or write tracker state.
+`make validation-send-batch-ready-save DATE=YYYY-MM-DD` writes that full
+pre-send report to ignored `validation/private/SEND_BATCH_READY.md` for local
+handoff after a restore or before a full send block. It is private operator
+metadata, refuses `CONFIRM_*` guards, sends nothing, and writes no tracker
+state.
 `make validation-draft-copy TARGET=... DATE=YYYY-MM-DD` prints the same
 copy-only shape for one selected target without writing `today-send-copy.txt`.
 `make validation-resume` runs the dashboard, prints copy-only send text only
