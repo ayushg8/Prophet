@@ -218,12 +218,13 @@ file per verified pending draft under
 reports `outreach_execution.send_copy_batch_state` and
 `outreach_execution.send_copy_batch_matches_current_pack`, plus
 `outreach_execution.send_copy_batch_readme_exists` and
-`outreach_execution.send_copy_batch_checklist_exists`; open the `.txt` files
+`outreach_execution.send_copy_batch_checklist_exists`, and
+`outreach_execution.send_copy_batch_copy_index_exists`; open the `.txt` files
 and copy only their contents when those fields are ready/true. Do not attach
 the files. The match check covers the numbered copy files, manifest fields,
 manifest operator notes, manifest outbound-boundary fields, copy-file SHA-256
-values, batch README body, and batch checklist body; do not send the private
-manifest, checklist, or batch README.
+values, batch README body, batch checklist body, and neutral copy-index body;
+do not send the private manifest, checklist, copy index, or batch README.
 `make validation-draft-copy TARGET=... DATE=YYYY-MM-DD` prints the same
 copy-only shape for one selected target without writing `today-send-copy.txt`.
 `make validation-resume` runs the dashboard, prints copy-only send text only
