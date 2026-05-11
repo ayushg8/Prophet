@@ -247,12 +247,13 @@ outbound copy; the manifest, checklist, index, README, and DO_NOT_SEND guard
 stay private.
 `make validation-pre-send-check TARGET=... DATE=YYYY-MM-DD` is the dry-run
 pre-send wrapper: it runs the dashboard, existing send-copy batch check, fresh
-weekly review, prune dry-run, and tracker-update dry run, and it refuses all
-`CONFIRM_*` write guards.
+contact-form copy check when that directory exists, weekly review, prune
+dry-run, and tracker-update dry run, and it refuses all `CONFIRM_*` write
+guards.
 `make validation-pre-send-check-all DATE=YYYY-MM-DD` verifies the existing
-send-copy batch and every pending generated tracker update in one dry-run
-report. It is useful before sending a full outreach block; it still does not
-send messages or write tracker state.
+send-copy batch, the contact-form copy batch when present, and every pending
+generated tracker update in one dry-run report. It is useful before sending a
+full outreach block; it still does not send messages or write tracker state.
 `make validation-draft-copy TARGET=... DATE=YYYY-MM-DD` prints the same
 copy-only shape for one selected target without writing `today-send-copy.txt`.
 `make validation-resume` runs the dashboard, prints copy-only send text only

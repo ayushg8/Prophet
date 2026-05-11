@@ -175,7 +175,8 @@ The next operational loop is:
    `.txt` file contents.
 8. Run `make validation-pre-send-check TARGET=<target-label>
    DATE=YYYY-MM-DD` immediately before sending. It is dry-run only and refuses
-   `CONFIRM_SENT`, `CONFIRM_TARGET`, `CONFIRM_LOG`, or `CONFIRM_PRUNE`.
+   `CONFIRM_SENT`, `CONFIRM_TARGET`, `CONFIRM_LOG`, or `CONFIRM_PRUNE`; it
+   also validates the contact-form copy directory when one exists for the date.
 9. Send from `validation/private/today-send-copy.txt` or the checked compact
    contact-form `.txt` contents only after that dry-run
    gate is clean and the dashboard reports `send_copy_state: ready` plus

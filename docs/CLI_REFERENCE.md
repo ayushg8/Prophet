@@ -516,13 +516,14 @@ the contact-form copy manifest, but `CONFIRM_SENT=1` is still allowed only
 after the message was actually sent. The dated directory convention is
 `validation/private/contact-form-copy-YYYY-MM-DD/`.
 `make validation-pre-send-check TARGET=... DATE=YYYY-MM-DD` is the dry-run pre-send wrapper.
-It runs the dated dashboard, existing send-copy batch check,
-fresh private weekly review, prune dry-run, and tracker-update dry run for the
-target. It fails closed if any `CONFIRM_*` write guard is set.
+It runs the dated dashboard, existing send-copy batch check, contact-form copy
+check when that directory exists, fresh private weekly review, prune dry-run,
+and tracker-update dry run for the target. It fails closed if any `CONFIRM_*`
+write guard is set.
 `make validation-pre-send-check-all DATE=YYYY-MM-DD` verifies the existing
-send-copy batch and all pending generated tracker updates in one dry-run
-report before sending a whole block. It does not send outreach or write tracker
-state.
+send-copy batch, the contact-form copy batch when present, and all pending
+generated tracker updates in one dry-run report before sending a whole block.
+It does not send outreach or write tracker state.
 
 Render a specific target draft when needed:
 

@@ -187,8 +187,9 @@ Review focus:
   of `today-outreach-status.json`.
 - `make validation-pre-send-check-all DATE=YYYY-MM-DD` should verify the full
   pending send batch before outreach, including message-pack date, dry-run
-  command verification, numbered copy files, send-copy manifest/checklist, and
-  copy-file count, without writing private tracker state.
+  command verification, numbered copy files, send-copy manifest/checklist,
+  contact-form copy batch when present, and copy-file count, without writing
+  private tracker state.
 - `make validation-resume DATE=YYYY-MM-DD` should run the dashboard and print
   the existing next-draft file only when it still matches the current next
   pending target, without mutating private tracker state.
@@ -519,7 +520,7 @@ sanitized examples.
 
 Latest verification run for this inventory:
 
-- `python3 -m unittest discover -s scripts/tests -v`: 399 tests passed after
+- `python3 -m unittest discover -s scripts/tests -v`: 400 tests passed after
   the NIST/CMMC security packet docs guard, send-boundary dashboard, copy-only resume boundary, CLI-reference,
   validation-resume, goal-resume, validation-team-update, validation-weekly-review,
   validation-next-action handoff generation, weekly-review `review_date`,
@@ -893,7 +894,7 @@ runtime output contents into the PR.
   `make release-hygiene`, the dated validation dashboard,
   contact-form-copy checking, default-port live console checks, and the root
   pilot demo smoke.
-- `python3 -m unittest discover -s scripts/tests -v` passed with 399 tests.
+- `python3 -m unittest discover -s scripts/tests -v` passed with 400 tests.
 - `make release-hygiene` passed.
 - `make console-live-check` passed against the running local demo.
 - `make console-screenshot-check` passed against the generated screenshot

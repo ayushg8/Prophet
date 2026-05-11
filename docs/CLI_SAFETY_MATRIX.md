@@ -105,8 +105,8 @@ reminds operators that the external outreach channel and real contact must be
 selected outside the repo.
 `make validation-pre-send-check TARGET=... DATE=YYYY-MM-DD` is a dry-run-only
 wrapper for the outbound preflight. It runs the dated dashboard, send-copy
-batch check, fresh private weekly review, prune dry-run, and tracker-update
-dry run, and it fails closed if any `CONFIRM_*` write guard is set.
+batch check, contact-form copy check when that directory exists, fresh private
+weekly review, prune dry-run, and tracker-update dry run, and it fails closed if any `CONFIRM_*` write guard is set.
 `make validation-weekly-review DATE=YYYY-MM-DD` writes read-only private weekly
 review JSON/Markdown under `validation/private/` for pruning review; it does
 not send, delete, or confirm-update anything.

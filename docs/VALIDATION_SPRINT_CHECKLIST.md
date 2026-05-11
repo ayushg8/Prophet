@@ -114,13 +114,14 @@ Do not add production platform scope while this checklist is red.
   checklist, index, README, or DO_NOT_SEND guard.
 - [ ] Before sending a whole block, run
   `make validation-pre-send-check-all DATE=YYYY-MM-DD`. It verifies the
-  existing send-copy batch and all pending generated tracker updates in one
-  dry-run report without sending messages or writing tracker state.
+  existing send-copy batch, the contact-form copy batch when present, and all
+  pending generated tracker updates in one dry-run report without sending
+  messages or writing tracker state.
 - [ ] Immediately before sending, run
   `make validation-pre-send-check TARGET=target-dib-platform-001 DATE=YYYY-MM-DD`.
-  It runs the dashboard, existing batch check, fresh weekly review, prune
-  dry-run, and tracker-update dry run, and it refuses all `CONFIRM_*` write
-  guards.
+  It runs the dashboard, existing batch check, contact-form copy check when
+  present, fresh weekly review, prune dry-run, and tracker-update dry run, and
+  it refuses all `CONFIRM_*` write guards.
 - [ ] Send from `validation/private/today-send-copy.txt` only when the dashboard
   reports `next_draft_state: ready`, `next_draft_matches_next_pending: true`,
   `send_copy_state: ready`, and `send_copy_matches_next_pending: true`.
