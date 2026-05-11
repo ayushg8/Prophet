@@ -36,6 +36,7 @@ class MakeValidationTargetsTests(unittest.TestCase):
         self.assertIn("make worktree-smoke", completed.stdout)
         self.assertIn("overlay dirty non-ignored files", completed.stdout)
         self.assertIn("make buyer-follow-up-check", completed.stdout)
+        self.assertIn("Refresh fixture smoke", completed.stdout)
         self.assertIn("qualified-buyer follow-up docs", completed.stdout)
         self.assertIn("make console-control", completed.stdout)
         self.assertIn("Run the local console control server", completed.stdout)
@@ -428,6 +429,17 @@ class MakeValidationTargetsTests(unittest.TestCase):
 
         self.assertIn(".PHONY: console-screenshot-check", makefile)
         self.assertIn("python3 scripts/check-console-screenshots.py --format text", makefile)
+
+    def test_buyer_follow_up_check_refreshes_smoke_before_verifying(self) -> None:
+        makefile = (ROOT / "Makefile").read_text(encoding="utf-8")
+        target = makefile.split(".PHONY: buyer-follow-up-check", 1)[1].split(".PHONY: pilot-ready-check", 1)[0]
+
+        self.assertIn("./scripts/run-pilot-demo-smoke.sh", target)
+        self.assertIn("python3 scripts/check-buyer-follow-up-package.py --format text", target)
+        self.assertLess(
+            target.index("./scripts/run-pilot-demo-smoke.sh"),
+            target.index("python3 scripts/check-buyer-follow-up-package.py --format text"),
+        )
 
     def test_worktree_smoke_script_overlays_non_ignored_dirty_files(self) -> None:
         script = (ROOT / "scripts" / "run-worktree-smoke.sh").read_text(encoding="utf-8")

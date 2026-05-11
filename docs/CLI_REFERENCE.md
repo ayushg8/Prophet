@@ -69,13 +69,14 @@ the safe root pilot smoke without staging, committing, pushing, or tagging.
 runner, policy, evidence, and integration Python unit suites. Use it before a
 pilot commit or PR review when you need the full Python verification set.
 
-`make buyer-follow-up-check` verifies the qualified-buyer follow-up package
-after a smoke run. It checks the tracked buyer docs, confirms generated evidence
-and handoff artifacts are ignored/untracked runtime outputs, compares their
-SHA-256 hashes to `scripts/pilot-demo-smoke.sha256`, and verifies the evidence
-safety attestation plus review-template-only handoff manifest. Run
-`./scripts/run-pilot-demo-smoke.sh` first if the runtime files are missing or
-stale.
+`make buyer-follow-up-check` refreshes the deterministic fixture smoke and then
+verifies the qualified-buyer follow-up package. It checks the tracked buyer docs,
+confirms generated evidence and handoff artifacts are ignored/untracked runtime
+outputs, compares their SHA-256 hashes to `scripts/pilot-demo-smoke.sha256`,
+and verifies the evidence safety attestation plus review-template-only handoff
+manifest. Use `python3 scripts/check-buyer-follow-up-package.py --format text`
+directly only when you intentionally want to inspect the current runtime files
+without refreshing them first.
 
 `make release-hygiene` is the read-only pre-commit hygiene wrapper. It runs
 tracked and untracked whitespace checks, release-safety scans for tracked diffs

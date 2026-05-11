@@ -62,7 +62,7 @@ help:
 		'  make worktree-smoke          Temp-clone HEAD, overlay dirty non-ignored files, and run safe smoke.' \
 		'  make pilot-smoke              Run the default buyer pilot smoke.' \
 		'  make pilot-smoke-clean        Regenerate ignored runtime smoke outputs.' \
-		'  make buyer-follow-up-check    Verify qualified-buyer follow-up docs and ignored runtime artifacts.' \
+		'  make buyer-follow-up-check    Refresh fixture smoke, then verify qualified-buyer follow-up docs and ignored runtime artifacts.' \
 		'  make console-acceptance       Run console acceptance from prophet-console/.' \
 		'  make console-audit            Run npm audit for the console.' \
 		'  make console-demo             Start control server and evaluator UI in one local terminal; Ctrl-C to stop.' \
@@ -128,6 +128,7 @@ pilot-smoke-clean:
 
 .PHONY: buyer-follow-up-check
 buyer-follow-up-check:
+	@./scripts/run-pilot-demo-smoke.sh
 	@python3 scripts/check-buyer-follow-up-package.py --format text
 
 .PHONY: pilot-ready-check

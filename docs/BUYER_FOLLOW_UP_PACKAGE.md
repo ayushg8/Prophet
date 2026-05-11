@@ -42,8 +42,11 @@ Before using the generated evidence or handoff artifacts, run:
 make buyer-follow-up-check
 ```
 
-If it fails because runtime artifacts are missing or stale, rerun
-`./scripts/run-pilot-demo-smoke.sh`, then run the check again.
+The Make target refreshes the deterministic fixture smoke before verification,
+then checks that the generated runtime artifacts are ignored, untracked, and
+match the smoke hash manifest. Use the lower-level
+`python3 scripts/check-buyer-follow-up-package.py --format text` only when you
+intentionally want to check the current runtime files without refreshing them.
 
 Do not include raw customer data, raw scraper text, credentials, private
 hostnames, live IPs, screenshots of customer systems, or lab/offensive material.
