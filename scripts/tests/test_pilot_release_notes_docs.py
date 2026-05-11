@@ -8,6 +8,8 @@ ROOT = Path(__file__).resolve().parents[2]
 RELEASE_NOTES = ROOT / "docs" / "PILOT_RELEASE_NOTES.md"
 CHANGELOG = ROOT / "CHANGELOG.md"
 CI_WORKFLOW = ROOT / ".github" / "workflows" / "ci.yml"
+BROWSER_SMOKE_WORKFLOW = ROOT / ".github" / "workflows" / "browser-smoke.yml"
+DEPENDENCY_AUDIT_WORKFLOW = ROOT / ".github" / "workflows" / "dependency-audit.yml"
 MASTER_TODO = ROOT / "docs" / "PROPHET_MASTER_TODO.md"
 
 
@@ -90,6 +92,7 @@ class PilotReleaseNotesDocsTests(unittest.TestCase):
         self.assertIn("runs on `ubuntu-latest`", notes)
         self.assertIn("Linux fresh-clone pilot smoke preflight", notes)
         self.assertIn("Linux fresh-clone pilot smoke", notes)
+        self.assertIn("FORCE_JAVASCRIPT_ACTIONS_TO_NODE24=true", notes)
         self.assertIn("name: Linux fresh-clone pilot smoke preflight", workflow)
         self.assertIn("run: ./scripts/check-local-env.sh", workflow)
         self.assertIn("name: Linux fresh-clone pilot smoke", workflow)
@@ -98,6 +101,9 @@ class PilotReleaseNotesDocsTests(unittest.TestCase):
         self.assertIn("check-release-safety.py --tracked --paths-only", workflow)
         self.assertIn("Policy examples schema validation, lint, and compare", workflow)
         self.assertIn("python3 -m policy.lint", workflow)
+        for workflow_path in (CI_WORKFLOW, BROWSER_SMOKE_WORKFLOW, DEPENDENCY_AUDIT_WORKFLOW):
+            workflow_text = workflow_path.read_text(encoding="utf-8")
+            self.assertIn("FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true", workflow_text)
         self.assertIn("[x] Fresh clone smoke on Linux.", master_todo)
         self.assertIn("[x] Day 4: Add CI jobs for smoke hashes, policy lint, and unsafe text scan.", master_todo)
 

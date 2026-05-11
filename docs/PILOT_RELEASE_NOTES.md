@@ -176,6 +176,9 @@ After the default smoke passes, the main reviewer artifacts are:
   `Linux fresh-clone pilot smoke preflight` plus
   `Linux fresh-clone pilot smoke` steps, covering the Linux fresh-clone smoke
   gate for pushed heads.
+- GitHub workflows opt JavaScript actions into Node 24 with
+  `FORCE_JAVASCRIPT_ACTIONS_TO_NODE24=true`, so the CI path is already testing
+  the upcoming hosted-runner action runtime.
 - `make worktree-smoke` is now the repeatable local wrapper for that pre-commit
   worktree-overlay check. It clones HEAD to `/tmp`, overlays non-ignored dirty
   files, excludes ignored private validation files, and runs the safe root

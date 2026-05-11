@@ -346,7 +346,9 @@ Files:
 - `.github/pull_request_template.md`
 - `docs/OVERNIGHT_CHANGE_REPORT.md`
 - `docs/OVERNIGHT_CONSOLIDATION_TODO.md`
+- `.github/workflows/browser-smoke.yml`
 - `.github/workflows/ci.yml`
+- `.github/workflows/dependency-audit.yml`
 - `CHANGELOG.md`
 - `Makefile`
 - `scripts/check-default-output-safety.py`
@@ -395,6 +397,8 @@ Review focus:
 - The pilot smoke should scan policy-listed default outputs for live-target URL
   fields while allowing public source citations, and should verify
   policy-listed OSINT snapshot provenance manifests.
+- GitHub workflows should keep `FORCE_JAVASCRIPT_ACTIONS_TO_NODE24=true` so CI
+  is already testing the upcoming JavaScript action runtime.
 - Pilot release tag remains blocked until the historical secret-history finding
   has an owner decision. A true GitHub fresh clone of the PR branch at
   `6fe55f3` passed on macOS with 26 verified pilot hashes. The GitHub Actions
