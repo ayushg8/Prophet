@@ -59,8 +59,8 @@ function CVECard({ cve, selected, onSelect }: CVECardProps) {
       </div>
 
       <div className="cve-signals">
-        {cve.nuclei && <span className="signal-chip signal-active">NUCLEI ✓</span>}
-        {cve.exploitDb && <span className="signal-chip signal-active">EXPLOIT-DB ✓</span>}
+        {cve.nuclei && <span className="signal-chip signal-active">PUBLIC TEMPLATE ✓</span>}
+        {cve.exploitDb && <span className="signal-chip signal-active">PUBLIC INDEX ✓</span>}
         <span className="signal-chip signal-active">ATT&CK {cve.attackTechnique}</span>
       </div>
     </button>

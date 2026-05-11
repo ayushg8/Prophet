@@ -25,7 +25,7 @@ import {
   type IntegrationManifest,
   type IntegrationStatus,
 } from './components/IntegrationPanel';
-import { PolicyStatusPanel } from './components/PolicyStatusPanel';
+import { PolicyStatusPanel, type PolicyStatusReport } from './components/PolicyStatusPanel';
 import { ReadinessPanel } from './components/ReadinessPanel';
 import { cves } from './data/cves';
 import { mockEvents } from './data/mockEvents';
@@ -44,6 +44,8 @@ import { sanitize } from './lib/sanitize';
 import './index.css';
 
 const VM_SCRAPER_ENABLED = import.meta.env.VITE_PROPHET_ENABLE_VM_SCRAPER === '1';
+const EVALUATOR_MODE = import.meta.env.VITE_PROPHET_EVALUATOR_MODE !== '0';
+const SOURCE_REFRESH_CONTROLS_VISIBLE = VM_SCRAPER_ENABLED && !EVALUATOR_MODE;
 const CONTROL_ORIGIN =
   import.meta.env.VITE_PROPHET_CONTROL_ORIGIN || 'http://127.0.0.1:8787';
 const CONTROL_HEADERS = {
@@ -54,6 +56,7 @@ const CONTROL_HEADERS = {
 type Phase = 'INTEL' | 'PLAN' | 'EXECUTE' | 'DEFEND';
 type ExploitStatus = 'idle' | 'running' | 'vulnerable' | 'blocked';
 type ScraperRunState = 'idle' | 'running' | 'ok' | 'error' | 'blocked';
+type SourceRefreshGateStatus = 'unknown' | 'allowed' | 'blocked';
 
 interface ActionFailurePayload {
   status?: string;
@@ -134,6 +137,17 @@ interface IntegrationDemoExportResponse {
   };
 }
 
+function downloadNameFromDisposition(value: string | null): string | null {
+  const match = value?.match(/filename="([^"]+)"/i);
+  return match?.[1] ?? null;
+}
+
+function downloadNameForArtifact(artifactId: string, manifest: IntegrationManifest | null): string {
+  if (artifactId === 'review_zip') return 'prophet-handoff-review-bundle.zip';
+  const relativePath = manifest?.files?.[artifactId];
+  return relativePath?.split('/').pop() ?? `${artifactId}.txt`;
+}
+
 function forecastForCveId(cveId: string): StrikeForecast | null {
   const cve = cves.find((item) => item.cveId === cveId);
   const candidateId = cve?.worldCandidateId ?? null;
@@ -147,6 +161,11 @@ function isPolicyBlocked(payload: ActionFailurePayload): boolean {
 function actionFailureMessage(payload: ActionFailurePayload, fallback: string): string {
   const message = sanitize(payload.message || fallback);
   return isPolicyBlocked(payload) ? `Policy blocked: ${message}` : message;
+}
+
+function sourceRefreshGateStatus(report: PolicyStatusReport | null): SourceRefreshGateStatus {
+  const liveSourceGate = report?.actionGates.find((gate) => gate.id === 'live_vm_scraper');
+  return liveSourceGate?.status === 'allowed' ? 'allowed' : 'blocked';
 }
 
 export default function App() {
@@ -164,10 +183,14 @@ export default function App() {
   const [runReady, setRunReady] = useState(false);
   const [runbookOpen, setRunbookOpen] = useState(false);
   const [scraperRunState, setScraperRunState] = useState<ScraperRunState>('idle');
+  const [sourceRefreshStatus, setSourceRefreshStatus] =
+    useState<SourceRefreshGateStatus>('unknown');
   const [scraperStatusMessage, setScraperStatusMessage] = useState<string | undefined>(
-    VM_SCRAPER_ENABLED
-      ? 'Start npm run dev:control to enable approved VM runs'
-      : 'Live VM scraper disabled; use sanitized demo refresh',
+    SOURCE_REFRESH_CONTROLS_VISIBLE
+      ? 'Start npm run dev:control to request approved source refresh'
+      : EVALUATOR_MODE
+        ? 'Evaluator mode: demo controls only; live collection controls hidden'
+      : 'Live collection disabled; use sanitized demo refresh',
   );
   const [isLoadingCyberFixture, setIsLoadingCyberFixture] = useState(false);
   const [evidenceBundle, setEvidenceBundle] = useState<EvidenceBundle | null>(null);
@@ -179,6 +202,12 @@ export default function App() {
   const [integrationManifest, setIntegrationManifest] = useState<IntegrationManifest | null>(null);
   const [integrationStatus, setIntegrationStatus] = useState<IntegrationStatus>('idle');
   const [integrationError, setIntegrationError] = useState<string | undefined>(undefined);
+  const [integrationDownloadError, setIntegrationDownloadError] = useState<string | undefined>(
+    undefined,
+  );
+  const [downloadingIntegrationArtifact, setDownloadingIntegrationArtifact] = useState<
+    string | null
+  >(null);
   const [integrationOutputPath, setIntegrationOutputPath] = useState<string | undefined>(undefined);
   const [assetContext, setAssetContext] = useState<EvidenceAssetContext | null>(null);
   // runCycle increments each time the user resets, so PreflightChecklist re-runs
@@ -186,6 +215,13 @@ export default function App() {
   const [activeForecast, setActiveForecast] = useState<StrikeForecast | null>(() =>
     forecastForCveId('CVE-2021-44228'),
   );
+
+  const handlePolicyStatusReport = useCallback((report: PolicyStatusReport | null) => {
+    if (!SOURCE_REFRESH_CONTROLS_VISIBLE) {
+      return;
+    }
+    setSourceRefreshStatus(sourceRefreshGateStatus(report));
+  }, []);
 
   const replayRef = useRef<ReplayHandle | null>(null);
   const selectedCve = cves.find((item) => item.cveId === selectedCveId) ?? cves[0];
@@ -239,6 +275,8 @@ export default function App() {
     setIntegrationManifest(null);
     setIntegrationStatus('idle');
     setIntegrationError(undefined);
+    setIntegrationDownloadError(undefined);
+    setDownloadingIntegrationArtifact(null);
     setIntegrationOutputPath(undefined);
 
     const handle = startReplay(
@@ -257,7 +295,7 @@ export default function App() {
 
   const handleScraperRun = useCallback(async () => {
     setScraperRunState('running');
-    setScraperStatusMessage('Contacting local control server and scraper VM...');
+    setScraperStatusMessage('Requesting policy-gated source refresh...');
 
     try {
       const response = await fetch(`${CONTROL_ORIGIN}/api/scraper/run`, {
@@ -271,7 +309,7 @@ export default function App() {
         setScraperStatusMessage(
           actionFailureMessage(
             payload,
-            'Scraper VM workflow failed. Check the control server terminal.',
+            'Policy-gated source refresh failed. Check the control server terminal.',
           ),
         );
         return;
@@ -282,7 +320,7 @@ export default function App() {
       }
 
       setScraperRunState('ok');
-      setScraperStatusMessage(payload.message || 'Scraper VM forecast refreshed.');
+      setScraperStatusMessage(payload.message || 'Source refresh forecast updated.');
     } catch {
       setScraperRunState('error');
       setScraperStatusMessage(
@@ -342,7 +380,7 @@ export default function App() {
         setExploitExcerpt(
           actionFailureMessage(
             payload,
-            'Cyber fixture unavailable. Start npm run dev:control.',
+            'Defense fixture unavailable. Start npm run dev:control.',
           ),
         );
         return;
@@ -365,19 +403,21 @@ export default function App() {
       setIntegrationManifest(null);
       setIntegrationStatus('idle');
       setIntegrationError(undefined);
+      setIntegrationDownloadError(undefined);
+      setDownloadingIntegrationArtifact(null);
       setIntegrationOutputPath(undefined);
       setExploitStatus(postStatus === 'blocked' || postStatus === 'not_vulnerable'
         ? 'blocked'
         : postStatus === 'vulnerable'
           ? 'vulnerable'
           : 'idle');
-      setExploitExcerpt(sanitize(excerpt || payload.message || 'Cyber fixture loaded.'));
+      setExploitExcerpt(sanitize(excerpt || payload.message || 'Defense fixture loaded.'));
       if (rationale) {
         setStreamEvents((prev) => [
           ...prev,
           {
             kind: 'text',
-            content: sanitize(`Cyber fixture loaded: ${rationale}`),
+            content: sanitize(`Defense fixture loaded: ${rationale}`),
           },
         ]);
       }
@@ -400,7 +440,7 @@ export default function App() {
             {
               kind: 'text',
               content: sanitize(
-                `Prediction portfolio loaded: ${zeroDays.length} hypothesized zero-day classes and ${oneDays.length} one-day replay classes. Top zero-day class: ${topZeroDay}. Top one-day class: ${topOneDay}.`,
+                `Exposure-class portfolio loaded: ${zeroDays.length} defensive hypothesis classes and ${oneDays.length} known-pressure replay classes. Top hypothesis class: ${topZeroDay}. Top replay class: ${topOneDay}.`,
               ),
             },
           ]);
@@ -477,6 +517,8 @@ export default function App() {
 
     setIntegrationStatus('generating');
     setIntegrationError(undefined);
+    setIntegrationDownloadError(undefined);
+    setDownloadingIntegrationArtifact(null);
 
     try {
       const response = await fetch(`${CONTROL_ORIGIN}/api/integrations/demo-export`, {
@@ -503,6 +545,53 @@ export default function App() {
       );
     }
   }, [evidenceBundle, evidenceStatus]);
+
+  const handleDownloadIntegrationArtifact = useCallback(
+    async (artifactId: string) => {
+      setDownloadingIntegrationArtifact(artifactId);
+      setIntegrationDownloadError(undefined);
+
+      try {
+        const response = await fetch(
+          `${CONTROL_ORIGIN}/api/integrations/review-artifact?artifact=${encodeURIComponent(
+            artifactId,
+          )}`,
+          { headers: CONTROL_HEADERS },
+        );
+
+        if (!response.ok) {
+          let message = 'Handoff review artifact download failed.';
+          try {
+            const payload = (await response.json()) as ActionFailurePayload;
+            message = actionFailureMessage(payload, message);
+          } catch {
+            // Keep the generic message when the endpoint did not return JSON.
+          }
+          setIntegrationDownloadError(message);
+          return;
+        }
+
+        const blob = await response.blob();
+        const downloadUrl = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = downloadUrl;
+        link.download =
+          downloadNameFromDisposition(response.headers.get('content-disposition')) ??
+          downloadNameForArtifact(artifactId, integrationManifest);
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        URL.revokeObjectURL(downloadUrl);
+      } catch {
+        setIntegrationDownloadError(
+          'Local control server offline. Run npm run dev:control in prophet-console.',
+        );
+      } finally {
+        setDownloadingIntegrationArtifact(null);
+      }
+    },
+    [integrationManifest],
+  );
 
   const handleAuthorize = () => {
     setGateOpen(false);
@@ -550,16 +639,18 @@ export default function App() {
           onRunClick={handleRun}
           onRunbookClick={() => setRunbookOpen(true)}
           runReady={runReady}
+          evaluatorMode={EVALUATOR_MODE}
         />
 
         {/* Mission Context brief — forecast, timing, candidate, and source rails */}
-        <div className="mission-context" aria-label="World Side forecast and strike windows">
+        <div className="mission-context" aria-label="Forecaster brief and strike windows">
           <ForecastPanel
             forecast={activeForecast}
             candidate={selectedCve}
             assetContext={assetContext}
-            onScraperRun={VM_SCRAPER_ENABLED ? handleScraperRun : undefined}
+            onScraperRun={SOURCE_REFRESH_CONTROLS_VISIBLE ? handleScraperRun : undefined}
             onDemoRefresh={handleDemoRefresh}
+            sourceRefreshGateStatus={sourceRefreshStatus}
             scraperRunState={scraperRunState}
             scraperStatusMessage={scraperStatusMessage}
           />
@@ -611,15 +702,18 @@ export default function App() {
               manifest={integrationManifest}
               status={integrationStatus}
               error={integrationError}
+              downloadError={integrationDownloadError}
+              downloadingArtifact={downloadingIntegrationArtifact}
               outputPath={integrationOutputPath}
               onExport={handleExportIntegrations}
+              onDownloadArtifact={handleDownloadIntegrationArtifact}
             />
-            <PolicyStatusPanel />
+            <PolicyStatusPanel onReport={handlePolicyStatusReport} />
             <ReadinessPanel />
           </aside>
         </div>
 
-        {/* Live feed ticker — bottom bar */}
+        {/* Demo feed ticker — bottom bar */}
         <LiveFeedTicker />
 
         {gateOpen && (

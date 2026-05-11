@@ -23,13 +23,13 @@ const REPLACEMENTS: [string | RegExp, string][] = [
   [/cmd\.exe \/c net localgroup administrators[^\n]*/gi, '[REDACTED PAYLOAD]'],
   [/Runtime\.getRuntime\(\)\.exec\([^)]+\)/g, '[REDACTED EXEC]'],
 
-  // World-Side additions — patterns scanned from stage2 fixtures and outputs.
+  // Forecast fixture additions — patterns scanned from safe fixtures and outputs.
   // The INTERFACE.md schema explicitly bans named live targets, individual
   // names, actor emails/handles, and credential paths. The fixture/output
   // files were reviewed: no live IPs, no personal credentials, no actor
   // emails, and no named-individual targets were found. The patterns below
   // are added as a defensive belt-and-suspenders layer in case any such
-  // strings appear in future world-side content passed through sanitize().
+  // strings appear in future forecast content passed through sanitize().
 
   // Generic bare IPv4 addresses that are not already covered above
   [/\b(?:10\.\d{1,3}\.\d{1,3}\.\d{1,3}|172\.(?:1[6-9]|2\d|3[01])\.\d{1,3}\.\d{1,3}|192\.168\.\d{1,3}\.\d{1,3})\b/g, '[INTERNAL-IP]'],

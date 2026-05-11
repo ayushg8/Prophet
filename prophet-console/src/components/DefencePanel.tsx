@@ -80,7 +80,7 @@ export function DefencePanel({
                 type="button"
                 onClick={onLoadFixture}
                 disabled={isLoadingFixture}
-                aria-label="Load cyber defense fixture"
+                aria-label="Load defense fixture"
               >
                 [ {isLoadingFixture ? 'LOADING' : 'LOAD FIXTURE'} ]
               </button>

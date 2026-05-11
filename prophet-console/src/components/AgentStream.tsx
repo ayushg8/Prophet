@@ -121,7 +121,7 @@ function ExploitStatusBadge({ event }: { event: ExploitStatusEvent }) {
     return (
       <div className="exploit-status-badge exploit-status-badge--running stream-item">
         <span className="exploit-status-dot exploit-status-dot--running" aria-hidden />
-        <span>EXECUTING NUCLEI TEMPLATE…</span>
+        <span>RUNNING FIXTURE VALIDATION...</span>
       </div>
     );
   }

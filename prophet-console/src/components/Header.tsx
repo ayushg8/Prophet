@@ -22,9 +22,16 @@ interface HeaderProps {
   onRunClick: () => void;
   onRunbookClick: () => void;
   runReady: boolean;
+  evaluatorMode: boolean;
 }
 
-export function Header({ isRunning, onRunClick, onRunbookClick, runReady }: HeaderProps) {
+export function Header({
+  isRunning,
+  onRunClick,
+  onRunbookClick,
+  runReady,
+  evaluatorMode,
+}: HeaderProps) {
   const [clock, setClock] = useState(() => new Date());
 
   useEffect(() => {
@@ -54,10 +61,14 @@ export function Header({ isRunning, onRunClick, onRunbookClick, runReady }: Head
         </div>
 
         <div className="header-right">
-          <StatusPill dotColor="var(--success)" label="KEV FEED · LIVE" />
-          <StatusPill dotColor="var(--success)" label="NVD STREAMING" />
-          <StatusPill dotColor="var(--success)" label="CODEX TERMINAL · READY" />
-          <StatusPill dotColor="var(--info)" label="FIXTURE MODE · ARMED" />
+          <StatusPill
+            dotColor="var(--success)"
+            label={evaluatorMode ? 'EVALUATOR · DEMO ONLY' : 'OPERATOR MODE'}
+          />
+          <StatusPill dotColor="var(--success)" label="KEV SEED · CACHED" />
+          <StatusPill dotColor="var(--success)" label="NVD CONTEXT · CACHED" />
+          <StatusPill dotColor="var(--success)" label="LOCAL CONTROL · READY" />
+          <StatusPill dotColor="var(--info)" label="FIXTURE MODE · ACTIVE" />
           <StatusPill dotColor="var(--success)" label="SANDBOX · ISOLATED" />
 
           <button

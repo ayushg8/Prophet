@@ -418,8 +418,8 @@ export function LabTopology({ currentPhase, exploitStatus }: LabTopologyProps) {
           <Node
             x={TARGET.x}
             y={TARGET.y}
-            label="WIN [LAB-HOST]"
-            sublabel="Windows 11 · target"
+            label="LOCAL FIXTURE"
+            sublabel="sandbox service"
             color={
               exploitStatus === 'vulnerable' ? '#f85149' :
               exploitStatus === 'blocked'    ? '#3fb950' :

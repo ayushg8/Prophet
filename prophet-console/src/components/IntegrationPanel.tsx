@@ -18,8 +18,11 @@ interface IntegrationPanelProps {
   manifest: IntegrationManifest | null;
   status: IntegrationStatus;
   error?: string;
+  downloadError?: string;
+  downloadingArtifact?: string | null;
   outputPath?: string;
   onExport: () => void;
+  onDownloadArtifact?: (artifactId: string) => void;
 }
 
 function shortHash(value?: string): string {
@@ -27,15 +30,51 @@ function shortHash(value?: string): string {
   return value.length > 18 ? `${value.slice(0, 18)}...` : value;
 }
 
+const ARTIFACT_LABELS: Record<string, string> = {
+  manifest: 'Manifest',
+  splunk_saved_search: 'Splunk',
+  elastic_detection_rule: 'Elastic',
+  sentinel_analytic_rule: 'Sentinel',
+  jira_ticket: 'Jira',
+  servicenow_task: 'ServiceNow',
+  operator_audit_event: 'Audit event',
+  review_checklist: 'Checklist',
+  review_zip: 'Review ZIP',
+};
+
+const ARTIFACT_ORDER = [
+  'manifest',
+  'splunk_saved_search',
+  'elastic_detection_rule',
+  'sentinel_analytic_rule',
+  'jira_ticket',
+  'servicenow_task',
+  'operator_audit_event',
+  'review_checklist',
+];
+
+function artifactEntries(files?: Record<string, string>): Array<[string, string]> {
+  const entries = Object.entries(files ?? {});
+  return entries.sort(([left], [right]) => {
+    const leftIndex = ARTIFACT_ORDER.indexOf(left);
+    const rightIndex = ARTIFACT_ORDER.indexOf(right);
+    return (leftIndex === -1 ? 99 : leftIndex) - (rightIndex === -1 ? 99 : rightIndex);
+  });
+}
+
 export function IntegrationPanel({
   manifest,
   status,
   error,
+  downloadError,
+  downloadingArtifact,
   outputPath,
   onExport,
+  onDownloadArtifact,
 }: IntegrationPanelProps) {
   const isGenerating = status === 'generating';
   const fileCount = Object.keys(manifest?.files ?? {}).length;
+  const downloads = artifactEntries(manifest?.files);
 
   return (
     <div className="integration-panel panel" aria-label="Integration handoff panel">
@@ -118,6 +157,50 @@ export function IntegrationPanel({
             <div className="integration-path">
               <span>Output</span>
               <strong>{outputPath}</strong>
+            </div>
+          )}
+
+          {onDownloadArtifact && downloads.length > 0 && (
+            <div className="integration-downloads" aria-label="Handoff artifact downloads">
+              <div className="integration-downloads-header">
+                <span>Review Downloads</span>
+                <strong>local only</strong>
+              </div>
+              <div className="integration-download-grid">
+                {downloads.map(([artifactId, relativePath]) => {
+                  const label = ARTIFACT_LABELS[artifactId] ?? artifactId;
+                  const isDownloading = downloadingArtifact === artifactId;
+                  return (
+                    <button
+                      key={artifactId}
+                      className="integration-download-btn"
+                      type="button"
+                      onClick={() => onDownloadArtifact(artifactId)}
+                      disabled={Boolean(downloadingArtifact)}
+                      aria-label={`Download ${label} handoff artifact`}
+                      title={relativePath}
+                    >
+                      <span>{label}</span>
+                      <small>{isDownloading ? 'downloading' : relativePath}</small>
+                    </button>
+                  );
+                })}
+                <button
+                  className="integration-download-btn integration-download-btn--zip"
+                  type="button"
+                  onClick={() => onDownloadArtifact('review_zip')}
+                  disabled={Boolean(downloadingArtifact)}
+                  aria-label="Download review ZIP handoff artifact"
+                >
+                  <span>{ARTIFACT_LABELS.review_zip}</span>
+                  <small>{downloadingArtifact === 'review_zip' ? 'downloading' : 'validated bundle'}</small>
+                </button>
+              </div>
+              {downloadError && (
+                <div className="integration-download-error" aria-live="polite">
+                  {downloadError}
+                </div>
+              )}
             </div>
           )}
         </div>

@@ -287,7 +287,7 @@ body {
   50% { opacity: 0.3; }
 }
 
-/* ── Mission Context strip (World-Side forecast above main layout) ─────── */
+/* ── Mission Context strip (forecast above main layout) ────────────────── */
 .mission-context {
   display: block;
   padding: 12px;
@@ -958,6 +958,161 @@ body {
   backdrop-filter: blur(2px);
 }
 
+/* ── Responsive evaluator capture layout ───────────────────────────────── */
+@media (max-width: 760px) {
+  html,
+  body,
+  #root {
+    min-height: 100%;
+    height: auto;
+  }
+
+  body {
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
+
+  .app {
+    min-height: 100vh;
+    height: auto;
+  }
+
+  .classification-banner {
+    padding: 0 12px;
+    font-size: 9px;
+    letter-spacing: 0.08em;
+  }
+
+  .header {
+    height: auto;
+    min-height: 0;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 8px 12px;
+    flex-wrap: wrap;
+  }
+
+  .header-left {
+    flex: 1 1 100%;
+    min-width: 0;
+  }
+
+  .header-title {
+    display: block;
+    font-size: 10px;
+    line-height: 1.25;
+    letter-spacing: 0.12em;
+    white-space: normal;
+  }
+
+  .header-center {
+    display: none;
+  }
+
+  .header-right {
+    width: 100%;
+    min-width: 0;
+    gap: 8px;
+    overflow-x: auto;
+    padding-bottom: 2px;
+  }
+
+  .status-pill,
+  .runbook-btn,
+  .run-btn,
+  .running-indicator {
+    font-size: 9px;
+    letter-spacing: 0.08em;
+  }
+
+  .runbook-btn,
+  .run-btn {
+    padding: 5px 8px;
+  }
+
+  .mission-context {
+    max-height: none;
+    overflow: visible;
+    padding: 10px 12px;
+  }
+
+  .main-layout {
+    display: flex;
+    flex: initial;
+    flex-direction: column;
+    min-height: 0;
+    overflow: visible;
+  }
+
+  .center-column {
+    order: 1;
+    min-height: 390px;
+    border-bottom: var(--border-w) solid var(--border);
+  }
+
+  .right-column {
+    order: 2;
+    border-left: 0;
+    border-top: var(--border-w) solid var(--border);
+    overflow: visible;
+  }
+
+  .left-column {
+    order: 3;
+    max-height: 520px;
+    border-right: 0;
+    border-top: var(--border-w) solid var(--border);
+    overflow-y: auto;
+  }
+
+  .phase-progress {
+    justify-content: flex-start;
+    gap: 0;
+    overflow-x: auto;
+    padding: 10px 12px;
+  }
+
+  .phase-node {
+    width: 22px;
+    height: 22px;
+  }
+
+  .phase-label {
+    margin: 0 4px 0 3px;
+    font-size: 8px;
+    letter-spacing: 0.14em;
+  }
+
+  .phase-connector {
+    width: 18px;
+    margin: 0 2px;
+  }
+
+  .agent-stream-header {
+    padding: 10px 12px 0;
+    font-size: 10px;
+    letter-spacing: 0.22em;
+  }
+
+  .agent-stream {
+    min-height: 320px;
+    max-height: 430px;
+    padding: 12px;
+  }
+
+  .panel-header {
+    padding: 9px 10px 8px;
+  }
+
+  .panel-header-title {
+    letter-spacing: 0.18em;
+  }
+
+  .live-ticker {
+    position: static;
+  }
+}
+
 .panel {
   display: flex;
   flex-direction: column;
@@ -1584,6 +1739,84 @@ body {
   color: var(--dim);
 }
 
+.evidence-asset-context {
+  min-width: 0;
+  border: var(--border-w) solid rgba(88, 166, 255, 0.2);
+  border-radius: var(--radius);
+  padding: 7px 8px;
+  background: rgba(88, 166, 255, 0.045);
+}
+
+.evidence-asset-context-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 7px;
+}
+
+.evidence-asset-context-header span,
+.evidence-asset-grid span,
+.evidence-asset-detail span {
+  display: block;
+  color: var(--faint);
+  font-family: var(--font-mono);
+  font-size: 8.5px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.evidence-asset-context-header strong {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--info);
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.evidence-asset-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+
+.evidence-asset-grid div,
+.evidence-asset-detail {
+  min-width: 0;
+}
+
+.evidence-asset-grid strong,
+.evidence-asset-detail strong {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--primary);
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  font-weight: 500;
+}
+
+.evidence-asset-detail {
+  margin-top: 6px;
+  border-top: var(--border-w) solid rgba(88, 166, 255, 0.12);
+  padding-top: 5px;
+}
+
+.evidence-asset-context p {
+  margin-top: 7px;
+  color: var(--dim);
+  font-family: var(--font-mono);
+  font-size: 9px;
+  line-height: 1.45;
+}
+
 .evidence-metrics {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -1805,6 +2038,98 @@ body {
   white-space: nowrap;
   color: var(--primary);
   font-weight: 500;
+}
+
+.integration-downloads {
+  border: var(--border-w) solid rgba(88, 166, 255, 0.18);
+  border-radius: var(--radius);
+  padding: 8px;
+  background: rgba(88, 166, 255, 0.045);
+}
+
+.integration-downloads-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 7px;
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+
+.integration-downloads-header span {
+  font-size: 8.5px;
+  color: var(--faint);
+}
+
+.integration-downloads-header strong {
+  font-size: 8.5px;
+  color: var(--info);
+}
+
+.integration-download-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.integration-download-btn {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  padding: 6px 7px;
+  border: var(--border-w) solid rgba(125, 133, 144, 0.18);
+  border-radius: var(--radius);
+  background: rgba(15, 20, 25, 0.78);
+  color: var(--text);
+  cursor: pointer;
+  text-align: left;
+}
+
+.integration-download-btn:hover:not(:disabled) {
+  border-color: rgba(88, 166, 255, 0.42);
+  background: rgba(88, 166, 255, 0.08);
+}
+
+.integration-download-btn:disabled {
+  cursor: wait;
+  opacity: 0.68;
+}
+
+.integration-download-btn span {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.integration-download-btn small {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: var(--font-mono);
+  font-size: 8px;
+  color: var(--faint);
+}
+
+.integration-download-btn--zip {
+  border-color: rgba(63, 185, 80, 0.28);
+}
+
+.integration-download-error {
+  margin-top: 7px;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  line-height: 1.4;
+  color: var(--danger);
 }
 
 /* Policy status panel */

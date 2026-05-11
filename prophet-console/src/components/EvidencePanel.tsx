@@ -16,7 +16,24 @@ export interface EvidenceAssetContext {
   matched_exposure_class?: string;
   affected_asset_count?: number;
   criticality_summary?: Record<string, number>;
+  package_cve_overlap_summary?: {
+    known_cve_overlaps?: Record<string, number>;
+    packages?: Record<string, number>;
+  };
   recommended_owner_queue?: string[];
+  context_statement?: string;
+  fixture_context?: boolean;
+}
+
+export interface EvidenceAssetSeedSummary {
+  asset_count?: number;
+  cve_seed_count?: number;
+  package_seed_count?: number;
+  exposure_classes?: string[];
+  owner_queues?: string[];
+  product_families?: string[];
+  basis_statement?: string;
+  fixture_context?: boolean;
 }
 
 export interface EvidenceOpenSourceSummary {
@@ -57,6 +74,7 @@ export interface EvidenceBundle {
   };
   open_source_summary?: EvidenceOpenSourceSummary;
   asset_context?: EvidenceAssetContext;
+  asset_seed_summary?: EvidenceAssetSeedSummary;
 }
 
 interface EvidencePanelProps {
@@ -209,6 +227,95 @@ function SourceFreshnessCard({ summary }: { summary?: EvidenceOpenSourceSummary 
   );
 }
 
+function formatRecordSummary(value?: Record<string, number>): string {
+  const entries = Object.entries(value ?? {});
+  if (!entries.length) return 'none';
+  return entries
+    .slice(0, 3)
+    .map(([key, count]) => `${key}: ${count}`)
+    .join(' / ');
+}
+
+function readableList(values?: string[], fallback = 'none'): string {
+  if (!values?.length) return fallback;
+  return values.slice(0, 3).join(', ');
+}
+
+function AssetContextCard({
+  context,
+  seedSummary,
+}: {
+  context?: EvidenceAssetContext;
+  seedSummary?: EvidenceAssetSeedSummary;
+}) {
+  if (!context && !seedSummary) return null;
+
+  const assetCount = context?.affected_asset_count ?? seedSummary?.asset_count ?? 0;
+  const exposureClass =
+    context?.matched_exposure_class ?? seedSummary?.exposure_classes?.[0] ?? 'not reported';
+  const ownerQueues = context?.recommended_owner_queue ?? seedSummary?.owner_queues ?? [];
+  const cveCount =
+    Object.values(context?.package_cve_overlap_summary?.known_cve_overlaps ?? {}).reduce(
+      (total, count) => total + count,
+      0,
+    ) || seedSummary?.cve_seed_count || 0;
+  const packageCount =
+    Object.values(context?.package_cve_overlap_summary?.packages ?? {}).reduce(
+      (total, count) => total + count,
+      0,
+    ) || seedSummary?.package_seed_count || 0;
+  const fixtureContext = context?.fixture_context ?? seedSummary?.fixture_context;
+  const inventoryLabel = context?.inventory_id ?? (seedSummary ? 'seedset summary' : 'unknown');
+
+  return (
+    <div className="evidence-asset-context" aria-label="Asset SBOM context">
+      <div className="evidence-asset-context-header">
+        <span>Asset/SBOM context</span>
+        <strong>{fixtureContext ? 'fixture metadata' : 'customer metadata'}</strong>
+      </div>
+
+      <div className="evidence-asset-grid">
+        <div>
+          <span>Inventory</span>
+          <strong>{inventoryLabel}</strong>
+        </div>
+        <div>
+          <span>Affected assets</span>
+          <strong>{assetCount} fictional assets</strong>
+        </div>
+        <div>
+          <span>Exposure class</span>
+          <strong>{exposureClass}</strong>
+        </div>
+        <div>
+          <span>Criticality</span>
+          <strong>{formatRecordSummary(context?.criticality_summary)}</strong>
+        </div>
+        <div>
+          <span>CVE seeds</span>
+          <strong>{cveCount}</strong>
+        </div>
+        <div>
+          <span>Package seeds</span>
+          <strong>{packageCount}</strong>
+        </div>
+      </div>
+
+      <div className="evidence-asset-detail">
+        <span>Owner queue</span>
+        <strong>{readableList(ownerQueues)}</strong>
+      </div>
+      <div className="evidence-asset-detail">
+        <span>Product family</span>
+        <strong>{readableList(seedSummary?.product_families)}</strong>
+      </div>
+      {(context?.context_statement || seedSummary?.basis_statement) && (
+        <p>{context?.context_statement ?? seedSummary?.basis_statement}</p>
+      )}
+    </div>
+  );
+}
+
 export function EvidencePanel({
   bundle,
   markdown,
@@ -277,6 +384,11 @@ export function EvidencePanel({
           </div>
 
           <SourceFreshnessCard summary={bundle.open_source_summary} />
+
+          <AssetContextCard
+            context={bundle.asset_context}
+            seedSummary={bundle.asset_seed_summary}
+          />
 
           <div className="evidence-metrics">
             <div>

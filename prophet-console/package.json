@@ -5,11 +5,14 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:evaluator": "VITE_PROPHET_EVALUATOR_MODE=1 vite",
+    "dev:operator": "VITE_PROPHET_EVALUATOR_MODE=0 vite",
     "dev:control": "node ./control-server.mjs",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "test:control:evidence": "node ./tests/control-evidence-smoke.mjs",
     "test:smoke": "playwright test",
+    "capture:screenshots": "cd .. && ./scripts/run-pilot-demo-smoke.sh && cd prophet-console && playwright test --config=playwright.screenshots.config.ts",
     "acceptance": "cd .. && ./scripts/run-pilot-demo-smoke.sh && cd prophet-console && npm run lint && npm run build && npm run test:control:evidence && npm run test:smoke",
     "preview": "vite preview"
   },

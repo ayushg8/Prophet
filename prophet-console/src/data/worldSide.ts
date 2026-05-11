@@ -1,5 +1,5 @@
 /**
- * World-Side data layer — types and typed constants derived from Stage 2
+ * Forecast data layer — types and typed constants derived from safe fixtures
  * forecaster fixtures and golden outputs.
  *
  * JSON data is inlined here rather than imported as JSON modules because the
@@ -8,7 +8,7 @@
  * zero new config changes.
  */
 
-// ── Direction-A types (Cyber Side → World Side) ────────────────────────────
+// ── Direction-A types (defense candidate input) ─────────────────────────────
 
 export type CandidateType =
   | 'known_cve'
@@ -90,7 +90,7 @@ export interface ExploitCandidate {
   source_refs: CandidateSourceRef[];
 }
 
-// ── Direction-B types (World Side → Cyber Side) ────────────────────────────
+// ── Direction-B types (forecaster output) ───────────────────────────────────
 
 export type LikelyObjective =
   | 'control'
@@ -205,11 +205,11 @@ const candidateEdgeAppliance: ExploitCandidate = {
   },
   rationale: {
     narrative:
-      'Cyber Side would flag this class because recent public reporting and the Prophet corpus both show state-linked actors using VPN, router, and other edge appliances as durable access points. World Side should use it to test PRC-style pre-positioning and diplomatic-event timing logic.',
+      'The defense evidence layer flags this class because recent public reporting and the Prophet corpus both show state-linked actors using VPN, router, and other edge appliances as durable access points. The forecaster uses it to test PRC-style pre-positioning and diplomatic-event timing logic.',
     confidence: 'medium',
     stage1_priority_score: 0.74,
     priority_score_notes:
-      'Fixture score for pipeline testing only; World Side computes geopolitical timing separately.',
+      'Fixture score for pipeline testing only; forecaster computes geopolitical timing separately.',
   },
   weaponization: {
     public_check_performed: true,
@@ -267,11 +267,11 @@ const candidateFinancialTheft: ExploitCandidate = {
   },
   rationale: {
     narrative:
-      'Cyber Side would flag this class when sanctions pressure or cryptocurrency-theft reporting suggests a revenue-motivated actor could spend access against financial workflows. World Side should use it to test DPRK/Lazarus-style sanctions and market-window timing logic.',
+      'The defense evidence layer flags this class when sanctions pressure or cryptocurrency-theft reporting suggests a revenue-motivated actor could spend access against financial workflows. The forecaster uses it to test DPRK/Lazarus-style sanctions and market-window timing logic.',
     confidence: 'medium',
     stage1_priority_score: 0.69,
     priority_score_notes:
-      'Fixture score for pipeline testing only; World Side computes geopolitical timing separately.',
+      'Fixture score for pipeline testing only; forecaster computes geopolitical timing separately.',
   },
   weaponization: {
     public_check_performed: true,
@@ -328,11 +328,11 @@ const candidateWiperShutdown: ExploitCandidate = {
   },
   rationale: {
     narrative:
-      'Cyber Side would flag this class when geopolitical triggers suggest an actor may prefer availability disruption over stealthy collection. World Side should use it to test Russia/GRU-style sanctions, anniversary, and kinetic-alignment timing logic.',
+      'The defense evidence layer flags this class when geopolitical triggers suggest an actor may prefer availability disruption over stealthy collection. The forecaster uses it to test Russia/GRU-style sanctions, anniversary, and kinetic-alignment timing logic.',
     confidence: 'medium',
     stage1_priority_score: 0.71,
     priority_score_notes:
-      'Fixture score for pipeline testing only; World Side computes geopolitical timing separately.',
+      'Fixture score for pipeline testing only; forecaster computes geopolitical timing separately.',
   },
   weaponization: {
     public_check_performed: true,
@@ -377,7 +377,7 @@ const forecastEdgeAppliance: StrikeForecast = {
       'US federal, defense-industrial, and critical-infrastructure perimeter services',
     geographic_scope: 'US federal and allied Indo-Pacific defense ecosystem',
     forecast_assumptions: [
-      'The Stage 1 candidate is an edge-appliance access class rather than a named CVE.',
+      'The forecast candidate is an edge-appliance access class rather than a named CVE.',
       'Forecasting is sector-level only and does not identify live targets.',
       'Current context includes May 2026 US-PRC and Indo-Pacific diplomatic events.',
     ],
@@ -490,7 +490,7 @@ const forecastEdgeAppliance: StrikeForecast = {
       why_this_vector:
         "CISA's Volt Typhoon reporting describes long-term access and living-off-the-land behavior in critical-infrastructure environments.",
       defensive_implication:
-        'Stage 3 can validate detections for anomalous administrative activity in a safe toy environment.',
+        'The localhost replay can validate detections for anomalous administrative activity in a safe toy environment.',
       source_ref_ids: ['src_cisa_aa24_038a', 'src_hist_8'],
     },
   ],
@@ -498,7 +498,7 @@ const forecastEdgeAppliance: StrikeForecast = {
     one_line:
       'For an edge-appliance candidate, the strongest forecast is PRC-style pre-positioning around May 2026 diplomatic and Indo-Pacific defense windows.',
     recommended_demo_path:
-      'Use a safe edge-service fixture and show how timing context prioritizes perimeter detection over payload generation.',
+      'Use a safe edge-service fixture and show how timing context prioritizes perimeter detection over unsafe output generation.',
     stage3_priority:
       'Validate a defensive block and alert around perimeter-service access indicators in a local demo environment.',
     analyst_notes: [
@@ -569,7 +569,7 @@ const forecastFinancialTheft: StrikeForecast = {
       'financial institutions, payment operations, and digital-asset custody workflows',
     geographic_scope: 'US and allied financial ecosystem',
     forecast_assumptions: [
-      'The Stage 1 candidate is a workflow-compromise class rather than a named CVE.',
+      'The forecast candidate is a workflow-compromise class rather than a named CVE.',
       'The forecast models theft risk at the sector level and does not include transaction instructions.',
       'Current context includes 2026 DPRK sanctions pressure and scheduled financial market events.',
     ],
@@ -672,13 +672,13 @@ const forecastFinancialTheft: StrikeForecast = {
       non_actionable_mechanism:
         'The vector remains at workforce-access and vendor-risk level without describing impersonation, onboarding, or access procedures.',
       candidate_fit:
-        'Fits the candidate when Stage 1 wants a non-CVE revenue-access scenario tied to sanctions pressure.',
+        'Fits the candidate when the workflow calls for a non-CVE revenue-access scenario tied to sanctions pressure.',
       confidence: 'medium',
       confidence_score: 0.58,
       why_this_vector:
         'The sanctions and indictment snapshots both identify DPRK IT-worker revenue schemes as active pressure points in 2025-2026.',
       defensive_implication:
-        'Stage 3 can demonstrate checks against synthetic contractor-access anomalies rather than exploit payloads.',
+        'The localhost replay can demonstrate checks against synthetic contractor-access anomalies rather than unsafe output material.',
       source_ref_ids: ['src_sanctions_dprk', 'src_indictments_dprk_it'],
     },
   ],
@@ -760,7 +760,7 @@ const forecastWiperShutdown: StrikeForecast = {
       'government, defense-industrial, and critical-infrastructure availability surfaces',
     geographic_scope: 'US, NATO, and Ukraine-aligned infrastructure',
     forecast_assumptions: [
-      'The Stage 1 candidate is a disruptive shutdown class rather than a payload description.',
+      'The forecast candidate is a disruptive shutdown class rather than an implementation description.',
       'Forecasting remains sector-level and defensive.',
       'Current context includes recent Russia sanctions pressure and upcoming NATO and symbolic-date windows.',
     ],

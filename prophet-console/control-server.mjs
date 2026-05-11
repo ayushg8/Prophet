@@ -80,9 +80,17 @@ const integrationRuntimeDir = path.join(
   repoRoot,
   'integrations/outputs/runtime/latest-edge-appliance',
 );
+const integrationReviewBundleZip = path.join(
+  repoRoot,
+  'integrations/outputs/runtime/latest-edge-appliance-review-bundle.zip',
+);
 const operatorAuditLog = process.env.PROPHET_OPERATOR_AUDIT_LOG
   ? path.resolve(repoRoot, process.env.PROPHET_OPERATOR_AUDIT_LOG)
   : path.join(repoRoot, 'evidence/outputs/runtime/operator-audit-log.jsonl');
+const pilotDemoOperatorAuditLog = path.join(
+  repoRoot,
+  'evidence/outputs/runtime/pilot-demo-operator-audit-log.jsonl',
+);
 const approvalRecordRuntimeJson = process.env.PROPHET_APPROVAL_RECORD_JSON
   ? path.resolve(repoRoot, process.env.PROPHET_APPROVAL_RECORD_JSON)
   : path.join(repoRoot, 'evidence/outputs/runtime/latest-approval-record.json');
@@ -93,7 +101,9 @@ const readinessEvidenceRuntimeMarkdown =
 const readinessIntegrationRuntimeManifest =
   process.env.PROPHET_READINESS_INTEGRATION_MANIFEST || integrationRuntimeManifest;
 const readinessOperatorAuditLog =
-  process.env.PROPHET_READINESS_OPERATOR_AUDIT_LOG || operatorAuditLog;
+  process.env.PROPHET_READINESS_OPERATOR_AUDIT_LOG
+    ? path.resolve(repoRoot, process.env.PROPHET_READINESS_OPERATOR_AUDIT_LOG)
+    : null;
 const forecastOut = path.join(
   repoRoot,
   'world-side/outputs/runtime/live-scraper-forecast-edge-appliance.json',
@@ -169,6 +179,36 @@ const server = createServer(async (req, res) => {
     return;
   }
 
+  if (
+    req.method === 'GET' &&
+    req.url?.startsWith('/api/integrations/review-artifact')
+  ) {
+    if (!isConsoleRequest(req, allowedOrigin)) {
+      writeForbidden(res);
+      return;
+    }
+
+    const url = new URL(req.url, 'http://127.0.0.1');
+    const artifactId = url.searchParams.get('artifact');
+    const artifact = await loadIntegrationReviewArtifact(artifactId);
+    if (!artifact.ok) {
+      writeJson(res, artifact.statusCode, {
+        ok: false,
+        status: artifact.status,
+        message: artifact.message,
+      });
+      return;
+    }
+
+    res.writeHead(200, {
+      'content-type': artifact.contentType,
+      'content-disposition': `attachment; filename="${artifact.fileName}"`,
+      'cache-control': 'no-store',
+    });
+    res.end(artifact.body);
+    return;
+  }
+
   if (req.method === 'POST' && req.url === '/api/scraper/run') {
     if (!isConsoleRequest(req, allowedOrigin)) {
       writeForbidden(res);
@@ -186,7 +226,7 @@ const server = createServer(async (req, res) => {
         status: 'policy_blocked',
         policy: policyPayload(policyContext),
         message:
-          'Pilot policy blocks live VM scraper workflows; use the fixture-backed demo refresh instead.',
+          'Pilot policy blocks live collection workflows; use the fixture-backed demo refresh instead.',
       });
       return;
     }
@@ -196,7 +236,7 @@ const server = createServer(async (req, res) => {
         ok: false,
         status: 'vm_scraper_disabled',
         message:
-          'Live scraper VM workflow is disabled. Set PROPHET_ENABLE_VM_SCRAPER=1 only after an approved isolated collection plan is ready.',
+          'Live collection workflow is disabled. Set PROPHET_ENABLE_VM_SCRAPER=1 only after an approved isolated collection plan is ready.',
       });
       return;
     }
@@ -205,7 +245,7 @@ const server = createServer(async (req, res) => {
       writeJson(res, 409, {
         ok: false,
         status: 'busy',
-        message: 'A scraper VM workflow is already running.',
+        message: 'A live collection workflow is already running.',
       });
       return;
     }
@@ -319,14 +359,14 @@ const server = createServer(async (req, res) => {
       writeJson(res, 200, {
         ok: true,
         status: 'prediction_portfolio_loaded',
-        message: 'Exploit prediction portfolio loaded from cyber-side/fixtures.',
+        message: 'Exposure-class portfolio loaded from defensive fixtures.',
         portfolio,
       });
     } catch (error) {
       writeJson(res, 500, {
         ok: false,
         status: 'prediction_portfolio_unreadable',
-        message: `Prediction portfolio could not be read: ${error.message}`,
+        message: `Exposure-class portfolio could not be read: ${error.message}`,
       });
     }
     return;
@@ -499,8 +539,8 @@ const server = createServer(async (req, res) => {
 
 server.listen(port, '127.0.0.1', () => {
   console.log(`Prophet control server listening on http://127.0.0.1:${port}`);
-  console.log(`Scraper target: ${process.env.SCRAPER_SSH_TARGET || 'prophet-scraper'}`);
-  console.log(`Live scraper VM workflow: ${vmScraperEnabled ? 'enabled' : 'disabled'}`);
+  console.log(`Source refresh target: ${process.env.SCRAPER_SSH_TARGET || 'not configured'}`);
+  console.log(`Live collection workflow: ${vmScraperEnabled ? 'enabled' : 'disabled'}`);
 });
 
 async function runWorkflow() {
@@ -556,7 +596,7 @@ async function runWorkflow() {
       startedAt,
       finishedAt,
       exitCode,
-      message: 'Scraper VM run completed and forecast was refreshed.',
+      message: 'Approved source refresh completed and forecast was refreshed.',
       forecast,
       stdoutTail: tail(stdout),
       stderrTail: tail(stderr),
@@ -1236,12 +1276,12 @@ async function appendAuditEvent(env, options) {
     args.push('--out-event', options.outEvent);
   }
 
-  const child = spawn('python3', args, {
-    cwd: repoRoot,
-    env,
-    stdio: ['ignore', 'pipe', 'pipe'],
-  });
-  const result = await collectChild(child);
+  let result = await runAuditAppend(args, env);
+  let recoveredLegacyAuditLog = false;
+  if (result.exitCode !== 0 && shouldResetLegacyAuditLog(result)) {
+    result = await runAuditAppend([...args, '--reset-log'], env);
+    recoveredLegacyAuditLog = result.exitCode === 0;
+  }
   if (result.exitCode !== 0) {
     return {
       ok: false,
@@ -1258,6 +1298,7 @@ async function appendAuditEvent(env, options) {
       event: JSON.parse(result.stdout),
       stdout: result.stdout,
       stderr: result.stderr,
+      recoveredLegacyAuditLog,
     };
   } catch (error) {
     return {
@@ -1268,6 +1309,20 @@ async function appendAuditEvent(env, options) {
       message: `Audit event was appended but could not be parsed: ${sanitizeMessage(error.message)}`,
     };
   }
+}
+
+async function runAuditAppend(args, env) {
+  const child = spawn('python3', args, {
+    cwd: repoRoot,
+    env,
+    stdio: ['ignore', 'pipe', 'pipe'],
+  });
+  return collectChild(child);
+}
+
+function shouldResetLegacyAuditLog(result) {
+  const combined = `${result.stderr || ''}\n${result.stdout || ''}`;
+  return /safety_attestation\.no_live_target_data_included must be true/i.test(combined);
 }
 
 async function loadPilotPolicyOrRespond(res) {
@@ -1360,10 +1415,10 @@ function buildPolicyActionGates(policy) {
     controlGate(
       policy,
       'live_vm_scraper',
-      'Live VM scraper',
+      'Live collection workflow',
       'live_vm_scraper_allowed',
-      'Policy blocks live VM scraper workflow; only sanitized fixture refresh is available.',
-      'Policy and environment allow an isolated scraper VM workflow.',
+      'Policy blocks live collection workflow; only sanitized fixture refresh is available.',
+      'Policy and environment allow an isolated source refresh workflow.',
       vmScraperEnabled,
     ),
     controlGate(
@@ -1372,7 +1427,7 @@ function buildPolicyActionGates(policy) {
       'Live target input',
       'live_targets_allowed',
       'Policy blocks live target input for this pilot.',
-      'Policy allows live target input.',
+      'Non-fixture target input requires separate written approval outside this pilot.',
     ),
   ];
 }
@@ -1530,7 +1585,7 @@ async function safetyBoundaryCheck(policyContext) {
       'safety_boundary',
       'Safety boundary',
       'warn',
-      'Live scraper VM flag is enabled; policy still blocks live VM workflows by default.',
+      'Live collection flag is enabled; policy still blocks live collection workflows by default.',
       false,
     );
   }
@@ -1539,7 +1594,7 @@ async function safetyBoundaryCheck(policyContext) {
     'safety_boundary',
     'Safety boundary',
     'pass',
-    'Live targets, payload generation, raw scraper text, credentials, and VM scraping are blocked by default.',
+    'Live targets, payload generation, raw source text, credentials, and live collection workflows are blocked by default.',
     true,
   );
 }
@@ -1648,18 +1703,18 @@ async function predictionPortfolioCheck() {
   if (!portfolio.ok) {
     return readinessCheck(
       'prediction_portfolio',
-      'Prediction portfolio',
+      'Exposure-class portfolio',
       'fail',
-      `Prediction portfolio fixture is unreadable: ${portfolio.error}`,
+      `Exposure-class portfolio fixture is unreadable: ${portfolio.error}`,
       true,
     );
   }
   if (portfolio.value?.schema_version !== 'exploit_prediction_portfolio.v0.1') {
     return readinessCheck(
       'prediction_portfolio',
-      'Prediction portfolio',
+      'Exposure-class portfolio',
       'fail',
-      'Prediction portfolio does not use exploit_prediction_portfolio.v0.1.',
+      'Exposure-class portfolio does not use exploit_prediction_portfolio.v0.1.',
       true,
     );
   }
@@ -1667,9 +1722,9 @@ async function predictionPortfolioCheck() {
   const oneDayCount = portfolio.value.one_day_predictions?.length ?? 0;
   return readinessCheck(
     'prediction_portfolio',
-    'Prediction portfolio',
+    'Exposure-class portfolio',
     'pass',
-    `${zeroDayCount} hypothesized zero-day class(es) and ${oneDayCount} one-day replay class(es).`,
+    `${zeroDayCount} defensive hypothesis class(es) and ${oneDayCount} known-pressure replay class(es).`,
     true,
   );
 }
@@ -1778,13 +1833,22 @@ async function integrationHandoffCheck() {
 }
 
 async function operatorAuditCheck() {
-  const existing = await readTextMaybe(readinessOperatorAuditLog);
-  if (!existing.ok) {
+  const candidates = readinessOperatorAuditCandidates();
+  let selectedLog = null;
+  for (const candidate of candidates) {
+    const existing = await readTextMaybe(candidate);
+    if (existing.ok) {
+      selectedLog = candidate;
+      break;
+    }
+  }
+
+  if (!selectedLog) {
     return readinessCheck(
       'operator_audit',
       'Operator audit log',
       'warn',
-      'No local operator audit log found yet; generating evidence creates a hash-chained approval record.',
+      'No local operator audit log found yet; running the pilot smoke or generating evidence creates a hash-chained approval record.',
       false,
     );
   }
@@ -1797,7 +1861,7 @@ async function operatorAuditCheck() {
   };
   const child = spawn(
     'python3',
-    ['-m', 'evidence.audit', 'validate', '--log', readinessOperatorAuditLog],
+    ['-m', 'evidence.audit', 'validate', '--log', selectedLog],
     {
       cwd: repoRoot,
       env,
@@ -1832,6 +1896,13 @@ async function operatorAuditCheck() {
       true,
     );
   }
+}
+
+function readinessOperatorAuditCandidates() {
+  if (readinessOperatorAuditLog) {
+    return [readinessOperatorAuditLog];
+  }
+  return [pilotDemoOperatorAuditLog, operatorAuditLog];
 }
 
 async function openBlockersCheck() {
@@ -1888,7 +1959,7 @@ function summarizeReadiness(checks, policyContext) {
     vmScraperEnabled,
     controlServer: 'localhost-only',
     aiMode: 'deterministic-fixture-replay',
-    safetyBoundary: 'live targets, payload generation, raw scraper text, credentials, and VM scraping blocked by default',
+    safetyBoundary: 'live targets, payload generation, raw source text, credentials, and live collection workflows blocked by default',
   };
 }
 
@@ -1916,6 +1987,112 @@ async function readTextMaybe(file) {
   } catch (error) {
     return { ok: false, error: sanitizeMessage(error.message) };
   }
+}
+
+async function loadIntegrationReviewArtifact(artifactId) {
+  const requestedId = String(artifactId || '').trim();
+  if (!requestedId) {
+    return {
+      ok: false,
+      statusCode: 400,
+      status: 'missing_artifact_id',
+      message: 'Choose a fixed handoff review artifact to download.',
+    };
+  }
+
+  if (requestedId === 'review_zip') {
+    return readReviewArtifactFile(
+      integrationReviewBundleZip,
+      'prophet-handoff-review-bundle.zip',
+      'application/zip',
+    );
+  }
+
+  const manifest = await readJsonMaybe(integrationRuntimeManifest);
+  if (!manifest.ok) {
+    return {
+      ok: false,
+      statusCode: 404,
+      status: 'integration_manifest_missing',
+      message:
+        'No runtime integration handoff manifest found yet; export handoff templates before downloading artifacts.',
+    };
+  }
+
+  const files = manifest.value.files ?? {};
+  const relativeFile = files[requestedId];
+  if (!relativeFile || typeof relativeFile !== 'string') {
+    return {
+      ok: false,
+      statusCode: 404,
+      status: 'unknown_review_artifact',
+      message: 'Requested handoff artifact is not listed in the runtime manifest.',
+    };
+  }
+
+  if (
+    relativeFile.includes('\\') ||
+    path.isAbsolute(relativeFile) ||
+    path.normalize(relativeFile).startsWith('..')
+  ) {
+    return {
+      ok: false,
+      statusCode: 400,
+      status: 'unsafe_review_artifact_path',
+      message: 'Runtime manifest contains an unsafe artifact path.',
+    };
+  }
+
+  const artifactPath = path.resolve(integrationRuntimeDir, relativeFile);
+  const artifactRelativeToDir = path.relative(integrationRuntimeDir, artifactPath);
+  if (artifactRelativeToDir.startsWith('..') || path.isAbsolute(artifactRelativeToDir)) {
+    return {
+      ok: false,
+      statusCode: 400,
+      status: 'unsafe_review_artifact_path',
+      message: 'Requested artifact must stay inside the integration runtime directory.',
+    };
+  }
+
+  return readReviewArtifactFile(
+    artifactPath,
+    path.basename(relativeFile),
+    contentTypeForReviewArtifact(relativeFile),
+  );
+}
+
+async function readReviewArtifactFile(file, fileName, contentType) {
+  try {
+    const body = await readFile(file);
+    return {
+      ok: true,
+      body,
+      fileName: safeDownloadFileName(fileName),
+      contentType,
+    };
+  } catch {
+    return {
+      ok: false,
+      statusCode: 404,
+      status: 'review_artifact_missing',
+      message: 'The requested handoff review artifact has not been generated yet.',
+    };
+  }
+}
+
+function contentTypeForReviewArtifact(file) {
+  if (file.endsWith('.json')) return 'application/json';
+  if (file.endsWith('.ndjson')) return 'application/x-ndjson';
+  if (file.endsWith('.md')) return 'text/markdown; charset=utf-8';
+  if (file.endsWith('.zip')) return 'application/zip';
+  return 'application/octet-stream';
+}
+
+function safeDownloadFileName(fileName) {
+  const cleaned = String(fileName || 'prophet-review-artifact')
+    .replace(/["\\/\x00-\x1F\x7F]/g, '-')
+    .slice(0, 160);
+  return cleaned || 'prophet-review-artifact';
 }
 
 function countOpenItems(text, startMarker, endMarker) {
@@ -2164,15 +2341,15 @@ function tail(text, max = 4000) {
 function summarizeFailure(stderr, stdout) {
   const combined = `${stderr}\n${stdout}`;
   if (/Permission denied|publickey|BatchMode|NumberOfPasswordPrompts/i.test(combined)) {
-    return 'Scraper VM SSH key auth is not ready. Add the public key to authorized_keys and retry.';
+    return 'Approved source-refresh host authentication is not ready. Verify the isolated host access configuration and retry.';
   }
   if (/Connection timed out|Operation timed out|No route to host|Could not resolve|Connection refused/i.test(combined)) {
-    return 'Scraper VM is not reachable from this network.';
+    return 'Approved source-refresh host is not reachable from this network.';
   }
   if (/virtualenv not found|bootstrap/i.test(combined)) {
-    return 'Scraper VM is reachable, but the scraper package needs deployment/bootstrap.';
+    return 'Approved source-refresh host is reachable, but the collection package needs deployment/bootstrap.';
   }
-  return 'Scraper VM workflow failed. Check stdout/stderr tails for details.';
+  return 'Approved source-refresh workflow failed. Check stdout/stderr tails for details.';
 }
 
 function summarizeEvidenceFailure(stderr, stdout) {

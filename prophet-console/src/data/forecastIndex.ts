@@ -1,5 +1,5 @@
 /**
- * forecastIndex.ts — lightweight lookup helpers for the World-Side data layer.
+ * forecastIndex.ts — lightweight lookup helpers for the forecast data layer.
  *
  * Downstream components import from here when they need a quick Record<id, …>
  * lookup rather than iterating over the full arrays in worldSide.ts.

@@ -4,7 +4,7 @@ const CONTROL_ORIGIN =
   import.meta.env.VITE_PROPHET_CONTROL_ORIGIN || 'http://127.0.0.1:8787';
 
 type LoadState = 'loading' | 'ok' | 'error';
-type PolicyGateStatus = 'allowed' | 'blocked';
+export type PolicyGateStatus = 'allowed' | 'blocked';
 
 interface PolicyActionGate {
   id: string;
@@ -13,7 +13,7 @@ interface PolicyActionGate {
   details: string;
 }
 
-interface PolicyStatusReport {
+export interface PolicyStatusReport {
   ok: boolean;
   status: string;
   generatedAt: string;
@@ -45,7 +45,7 @@ interface PolicyStatusReport {
 
 const CONTROL_LABELS: Record<string, string> = {
   live_targets_allowed: 'Live targets',
-  live_vm_scraper_allowed: 'Live VM scraper',
+  live_vm_scraper_allowed: 'Live collection workflow',
   arbitrary_target_input_allowed: 'Arbitrary target input',
   payload_generation_allowed: 'Payload generation',
   raw_scraper_text_allowed: 'Raw scraper text',
@@ -73,7 +73,11 @@ function formatGeneratedAt(value?: string): string {
   return date.toISOString().slice(11, 19).concat('Z');
 }
 
-export function PolicyStatusPanel() {
+interface PolicyStatusPanelProps {
+  onReport?: (report: PolicyStatusReport | null) => void;
+}
+
+export function PolicyStatusPanel({ onReport }: PolicyStatusPanelProps) {
   const [report, setReport] = useState<PolicyStatusReport | null>(null);
   const [loadState, setLoadState] = useState<LoadState>('loading');
   const [error, setError] = useState<string | null>(null);
@@ -95,12 +99,14 @@ export function PolicyStatusPanel() {
       const payload = await fetchPolicyStatus();
       setReport(payload);
       setLoadState('ok');
+      onReport?.(payload);
     } catch {
       setReport(null);
+      onReport?.(null);
       setError('Control server offline. Run npm run dev:control.');
       setLoadState('error');
     }
-  }, [fetchPolicyStatus]);
+  }, [fetchPolicyStatus, onReport]);
 
   useEffect(() => {
     let cancelled = false;
@@ -111,9 +117,11 @@ export function PolicyStatusPanel() {
         if (cancelled) return;
         setReport(payload);
         setLoadState('ok');
+        onReport?.(payload);
       } catch {
         if (cancelled) return;
         setReport(null);
+        onReport?.(null);
         setError('Control server offline. Run npm run dev:control.');
         setLoadState('error');
       }
@@ -123,7 +131,7 @@ export function PolicyStatusPanel() {
     return () => {
       cancelled = true;
     };
-  }, [fetchPolicyStatus]);
+  }, [fetchPolicyStatus, onReport]);
 
   const blockedControls = useMemo(
     () => report?.blockedControls.map(controlLabel) ?? [],
