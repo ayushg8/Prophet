@@ -212,8 +212,9 @@ operator board for the next buyer-pilot cycles.
   `LOG4SHELL_INSTRUCTIONS.md` password-like content in git history; decide
   cleanup/rotation/exception before any public release. Safe review path:
   `docs/SECRET_HISTORY_REVIEW.md`.
-- [x] True GitHub fresh-clone smoke passed on macOS for commit `d9a0d52` with
-  26 verified pilot hashes.
+- [x] True GitHub fresh-clone smoke passed on macOS for commit `1fc69be` with
+  26 verified pilot hashes; rerun before review, undraft, or merge if another
+  commit is pushed.
 - [ ] Linux fresh-clone smoke remains open; Docker is not installed on the
   current Mac, so it has not been honestly verified here.
 - [x] Pilot release notes identify the current smoke manifests, policy hash, and

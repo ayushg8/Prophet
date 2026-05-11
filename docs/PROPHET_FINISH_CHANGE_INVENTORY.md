@@ -384,9 +384,10 @@ Review focus:
   fields while allowing public source citations, and should verify
   policy-listed OSINT snapshot provenance manifests.
 - Pilot release tag and Linux fresh-clone smoke remain open. A true GitHub
-  fresh clone of the PR branch at commit `d9a0d52` passed on macOS with 26
-  verified pilot hashes. PR checks are green on the pushed head, but must be
-  rechecked before review, undraft, or merge.
+  fresh clone of the PR branch at commit `1fc69be` passed on macOS with 26
+  verified pilot hashes. Rerun true fresh-clone smoke if another commit is
+  pushed. PR checks are green on the pushed head, but must be rechecked before
+  review, undraft, or merge.
 - `make worktree-smoke` should remain a local pre-commit release-hygiene check:
   it may clone HEAD to `/tmp`, overlay non-ignored dirty files, and run the safe
   root smoke, but must not copy `validation/private/`, stage, commit, push, tag,
@@ -791,7 +792,8 @@ runtime output contents into the PR.
 - Full git-history secret archaeology remains unresolved; rotate/clean/except
   the historical `LOG4SHELL_INSTRUCTIONS.md` finding before public release.
 - Release tag and Linux fresh-clone smoke remain open. True GitHub fresh-clone
-  smoke passed on macOS for commit `d9a0d52`.
+  smoke passed on macOS for commit `1fc69be`; rerun it if another commit is
+  pushed before review, undraft, or merge.
 - PR `#5` has the finish-pass commits pushed and checks are green on the
   current pushed head; verify `gh pr checks 5` again before review, undraft, or
   merge.

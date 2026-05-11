@@ -161,9 +161,10 @@ After the default smoke passes, the main reviewer artifacts are:
   `./scripts/check-local-env.sh`, and passing the default smoke with 26
   verified hashes.
 - A true GitHub fresh clone of branch
-  `prophet-pilot-consolidation-2026-05-05` at commit `d9a0d52` passed on macOS
+  `prophet-pilot-consolidation-2026-05-05` at commit `1fc69be` passed on macOS
   on 2026-05-11 with `./scripts/check-local-env.sh` and
   `./scripts/run-pilot-demo-smoke.sh`, verifying 26 pilot hashes.
+  Rerun this check before review, undraft, or merge if another commit is pushed.
 - `make worktree-smoke` is now the repeatable local wrapper for that pre-commit
   worktree-overlay check. It clones HEAD to `/tmp`, overlays non-ignored dirty
   files, excludes ignored private validation files, and runs the safe root
