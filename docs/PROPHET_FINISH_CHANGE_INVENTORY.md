@@ -492,9 +492,6 @@ These files are generated for local operation and are intentionally ignored by
 - `validation/private/today-team-update.md`
 - `validation/private/today-weekly-review.json`
 - `validation/private/today-weekly-review.md`
-- `validation/private/send-copy-2026-05-10/`
-- `validation/private/send-copy-2026-05-10/README.md`
-- `validation/private/send-copy-2026-05-10/CHECKLIST.md`
 - `validation/private/send-copy-2026-05-11/`
 - `validation/private/send-copy-2026-05-11/README.md`
 - `validation/private/send-copy-2026-05-11/CHECKLIST.md`
@@ -615,7 +612,7 @@ Latest verification run for this inventory:
   copy-only send option and keeps the batch manifest with copy-file SHA-256
   values and outbound-boundary fields below the outbound boundary as private
   tracker/audit metadata alongside the batch checklist and batch README.
-- Ignored private validation outputs passed release-safety scanning over 40
+- Ignored private validation outputs passed release-safety scanning over 35
   paths and no-index whitespace checks, including the current next draft,
   copy-only send text, message pack, outreach status, aggregate-only team
   update, and weekly review report.
@@ -623,12 +620,11 @@ Latest verification run for this inventory:
   review JSON handoff fix; its private artifact count now ignores atomic
   `.tmp.` handoff files and `validation/private/today-weekly-review.json`
   reports `review_date: 2026-05-11`, `generated_for: 2026-05-11`,
-  `outreach_execution.state: ready`, `private_artifacts.file_count: 40`, and
+  `outreach_execution.state: ready`, `private_artifacts.file_count: 35`, and
   `private_artifacts.stale_file_count: 0`.
 - `make validation-prune-private DATE=2026-05-11` passed as a dry run and
-  reported one eligible generated ignored private artifact candidate,
-  `validation/private/send-copy-2026-05-10/`, without deleting anything.
-  Confirmed pruning remains gated on `CONFIRM_PRUNE=1` after operator review.
+  reported `Candidate count: 0` without deleting anything. Confirmed pruning
+  remains gated on `CONFIRM_PRUNE=1` after operator review.
 - Product validation plan docs coverage verifies that `pilot_pull_detected` is
   a design-partner conversion signal and only `build_next_slice` opens the
   production build gate.

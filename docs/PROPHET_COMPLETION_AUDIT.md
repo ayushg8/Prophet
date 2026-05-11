@@ -181,13 +181,10 @@ raw OSINT warehouse.
   `outreach_execution.state: ready`,
   private artifact counts for the local ignored workspace,
   `private_artifacts.stale_file_count: 0`, and
-  `private_artifacts.send_copy_warning_count: 8` for older ignored
-  `send-copy-2026-05-10` files that should not be used for today's outreach.
+  `private_artifacts.send_copy_warning_count: 0`.
 - Current private prune dry run:
-  `make validation-prune-private DATE=2026-05-11` reports one eligible
-  generated ignored private artifact candidate,
-  `validation/private/send-copy-2026-05-10/`, and does not delete anything
-  without `CONFIRM_PRUNE=1`.
+  `make validation-prune-private DATE=2026-05-11` reports `Candidate count: 0`
+  and does not delete anything without `CONFIRM_PRUNE=1`.
 - Current next draft: `validation/private/today-next-draft.md` is rendered for
   `target-dib-platform-001`; `validation/private/today-send-copy.txt` contains
   one subject line plus the message body, without target labels, tracker

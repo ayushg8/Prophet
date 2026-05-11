@@ -165,6 +165,7 @@ class FinishInventoryDocsTests(unittest.TestCase):
     def test_inventory_lists_copy_only_private_send_artifact(self) -> None:
         inventory = FINISH_INVENTORY.read_text(encoding="utf-8")
 
+        self.assertNotIn("`validation/private/send-copy-2026-05-10/`", inventory)
         self.assertIn("`validation/private/today-send-copy.txt`", inventory)
         self.assertIn("`validation/private/today-next-draft.md`", inventory)
         self.assertIn("`validation/private/today-message-pack.json`", inventory)
@@ -180,6 +181,7 @@ class FinishInventoryDocsTests(unittest.TestCase):
     def test_completion_audit_lists_current_copy_only_batch_boundary(self) -> None:
         audit = COMPLETION_AUDIT.read_text(encoding="utf-8")
 
+        self.assertNotIn("`validation/private/send-copy-2026-05-10/`", audit)
         self.assertIn("`validation/private/send-copy-2026-05-11/`", audit)
         self.assertIn("send_copy_batch_state: ready", audit)
         self.assertIn("send_copy_batch_matches_current_pack: true", audit)
