@@ -132,13 +132,22 @@ After the default smoke passes, the main reviewer artifacts are:
   evidence smoke, 5 Playwright console tests, and
   `npm audit --audit-level=moderate` with 0 vulnerabilities. The merge commit
   `04fb56b` has no tree diff from that verified PR head.
+- Latest validation/handoff implementation checkpoint
+  `6f005aaa6c343f62558cc6ee45034327fcf39464`
+  (`6f005aa Add batch guard to send-copy metadata`) passed GitHub `main` CI:
+  <https://github.com/Ayush1298567/Prophet/actions/runs/25672743585>.
+- `make pilot-ready-check-full DATE=2026-05-11` passed again at `6f005aa`,
+  including the environment check, default buyer pilot smoke, dated validation
+  dashboard, production-readiness summary, release-safety scan, console
+  lint/build, control evidence smoke, 5 Playwright console smoke tests, and
+  `npm audit --audit-level=moderate` with 0 vulnerabilities.
 - `cd prophet-console && npm run capture:screenshots` passed and generated 6
   redacted desktop/mobile evaluator screenshots under ignored
   `evidence/outputs/runtime/console-screenshots/`.
 - `make console-screenshot-check` passed against the generated screenshot
   manifest, verifying ignored runtime paths, PNG hashes, PNG dimensions, and
   the fixture-backed sharing boundary.
-- `python3 -m unittest discover -s scripts/tests -v` passed with 367 tests,
+- `python3 -m unittest discover -s scripts/tests -v` passed with 389 tests,
   including validation-gate, send-boundary, console-demo, documented
   exposure classification guide, pre-commit hook, and release-note guardrail
   coverage.
