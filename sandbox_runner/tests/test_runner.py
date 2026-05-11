@@ -1,13 +1,21 @@
 from __future__ import annotations
 
 import json
+import os
 import subprocess
 import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
-from sandbox_runner.runner import SandboxRunnerError, build_run_manifest, run_profile
+from sandbox_runner.runner import (
+    CUSTOMER_APPROVAL_SCHEMA_VERSION,
+    NON_FIXTURE_SANDBOX_APPROVAL,
+    SandboxRunnerError,
+    build_run_manifest,
+    run_profile,
+)
 from sandbox_runner.schema import (
     DEFAULT_SANDBOX_SCHEMA_PATH,
     SandboxArtifactSchemaError,
@@ -176,8 +184,104 @@ class SandboxRunnerTests(unittest.TestCase):
             )
 
     def test_container_mode_is_disabled_by_default(self) -> None:
-        with self.assertRaises(SandboxRunnerError):
+        with self.assertRaisesRegex(SandboxRunnerError, "customer approval record is required"):
             run_profile(profile="edge-appliance-fixture", mode="container")
+
+    def test_container_mode_requires_sanitized_customer_approval(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            approval_path = Path(tmp) / "approval.json"
+            approval_path.write_text(
+                json.dumps(
+                    {
+                        "schema_version": CUSTOMER_APPROVAL_SCHEMA_VERSION,
+                        "approval_id": "approval-edge-container-001",
+                        "profile": "edge-appliance-fixture",
+                        "mode": "container",
+                        "decision": "approved",
+                        "approved_for": [NON_FIXTURE_SANDBOX_APPROVAL],
+                        "safety_attestation": {
+                            "no_live_targets": True,
+                            "no_payloads": True,
+                            "no_credentials": True,
+                            "customer_boundary_reviewed": True,
+                            "policy_reviewed": True,
+                        },
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            with self.assertRaisesRegex(SandboxRunnerError, "disabled after customer approval"):
+                run_profile(
+                    profile="edge-appliance-fixture",
+                    mode="container",
+                    customer_approval_record=approval_path,
+                )
+
+    def test_container_mode_still_has_no_public_packaged_profile_after_approval(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            approval_path = Path(tmp) / "approval.json"
+            approval_path.write_text(
+                json.dumps(
+                    {
+                        "schema_version": CUSTOMER_APPROVAL_SCHEMA_VERSION,
+                        "approval_id": "approval-edge-container-001",
+                        "profile": "edge-appliance-fixture",
+                        "mode": "container",
+                        "decision": "approved",
+                        "approved_for": [NON_FIXTURE_SANDBOX_APPROVAL],
+                        "safety_attestation": {
+                            "no_live_targets": True,
+                            "no_payloads": True,
+                            "no_credentials": True,
+                            "customer_boundary_reviewed": True,
+                            "policy_reviewed": True,
+                        },
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            env = {**os.environ, "PROPHET_ENABLE_SANDBOX_RUNNER": "1"}
+            with patch.dict(os.environ, env, clear=True):
+                with self.assertRaisesRegex(SandboxRunnerError, "no container profiles are packaged"):
+                    run_profile(
+                        profile="edge-appliance-fixture",
+                        mode="container",
+                        customer_approval_record=approval_path,
+                    )
+
+    def test_customer_approval_record_rejects_sensitive_text(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            approval_path = Path(tmp) / "approval.json"
+            approval_path.write_text(
+                json.dumps(
+                    {
+                        "schema_version": CUSTOMER_APPROVAL_SCHEMA_VERSION,
+                        "approval_id": "approval-edge-container-001",
+                        "profile": "edge-appliance-fixture",
+                        "mode": "container",
+                        "decision": "approved",
+                        "approved_for": [NON_FIXTURE_SANDBOX_APPROVAL],
+                        "review_note": "Contact buyer@example.com for approval.",
+                        "safety_attestation": {
+                            "no_live_targets": True,
+                            "no_payloads": True,
+                            "no_credentials": True,
+                            "customer_boundary_reviewed": True,
+                            "policy_reviewed": True,
+                        },
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            with self.assertRaisesRegex(SandboxRunnerError, "email-like"):
+                run_profile(
+                    profile="edge-appliance-fixture",
+                    mode="container",
+                    customer_approval_record=approval_path,
+                )
 
 
 if __name__ == "__main__":

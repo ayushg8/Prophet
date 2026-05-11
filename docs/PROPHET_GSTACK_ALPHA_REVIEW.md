@@ -151,8 +151,8 @@ Non-negotiables:
 - No raw scraper output in the public repo.
 - No credentials, IPs, hostnames, SSH keys, or session files.
 - No console path that turns Prophet into a live exploit runner.
-- Live scraper VM remains blocked by policy and disabled unless explicitly
-  opted in with an approved isolated collection plan.
+- Live collection workflows remain blocked by policy and disabled unless
+  explicitly opted in with an approved isolated collection plan.
 
 Safety assessment:
 
@@ -241,7 +241,7 @@ or change control server run state.
 - [ ] Add export path display for generated handoff artifacts.
 - [ ] Add copy/download controls for SIEM and ticket outputs.
 - [ ] Add policy-blocked error states.
-- [ ] Add evaluator mode that hides non-demo controls.
+- [x] Add evaluator mode that hides non-demo controls.
 - [ ] Reduce lab-only wording in customer-facing panels.
 - [ ] Add keyboard and accessibility pass for core operator flow.
 
@@ -263,12 +263,13 @@ or change control server run state.
 - [ ] Add source freshness metadata to forecast and evidence.
 - [ ] Add source failure budget.
 - [ ] Add fail-closed behavior for required sources.
-- [ ] Add source license and terms notes.
+- [x] Add source license and terms notes.
 - [ ] Add duplicate-source collapse in evidence summaries.
 - [ ] Add more official vendor/security advisory sources.
-- [ ] Add customer-approved source allowlist.
-- [ ] Add raw-to-sanitized boundary diagrams.
-- [ ] Add snapshot provenance manifest for every runtime OSINT output.
+- [x] Add customer-approved source allowlist.
+- [x] Add raw-to-sanitized boundary diagrams.
+- [x] Add snapshot provenance manifest check for policy-listed default OSINT
+  runtime outputs.
 
 ### P7: Engineering Quality
 

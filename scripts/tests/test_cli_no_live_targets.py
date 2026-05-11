@@ -182,7 +182,7 @@ class CliNoLiveTargetTests(unittest.TestCase):
         )
 
         self.assertNotEqual(result.returncode, 0)
-        self.assertIn("container sandbox mode is disabled", result.stderr)
+        self.assertIn("customer approval record is required", result.stderr)
 
     def test_evidence_audit_cli_rejects_email_like_operator_label(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

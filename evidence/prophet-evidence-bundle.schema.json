@@ -178,6 +178,7 @@
             "target_sector",
             "likely_objective",
             "confidence",
+            "why_this_vector",
             "defensive_implication"
           ],
           "properties": {
@@ -200,6 +201,9 @@
               "type": "number",
               "minimum": 0,
               "maximum": 1
+            },
+            "why_this_vector": {
+              "$ref": "#/$defs/nonEmptyString"
             },
             "defensive_implication": {
               "$ref": "#/$defs/nonEmptyString"
@@ -534,6 +538,7 @@
         "raw_validation_logs_embedded",
         "raw_osint_records_embedded",
         "raw_asset_inventory_embedded",
+        "sandbox_run_manifest_embedded",
         "source_refs_emitted",
         "sanitized_validation_excerpts_emitted",
         "field_allowlist",
@@ -565,6 +570,9 @@
         },
         "raw_asset_inventory_embedded": {
           "const": false
+        },
+        "sandbox_run_manifest_embedded": {
+          "type": "boolean"
         },
         "source_refs_emitted": {
           "type": "integer",
@@ -649,6 +657,9 @@
           "$ref": "#/$defs/sha256"
         },
         "approval_record_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "sandbox_run_manifest_sha256": {
           "$ref": "#/$defs/sha256"
         },
         "bundle_body_sha256": {
@@ -739,6 +750,120 @@
         },
         "basis_statement": {
           "$ref": "#/$defs/nonEmptyString"
+        }
+      }
+    },
+    "sandbox_provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "manifest_id",
+        "run_id",
+        "profile",
+        "mode",
+        "artifact_id",
+        "artifact_schema_version",
+        "artifact_content_sha256",
+        "artifact_file_sha256",
+        "artifact_path",
+        "manifest_sha256",
+        "sanitized_logs_sha256",
+        "raw_logs_retained",
+        "stored_raw_log_bytes",
+        "stored_log_excerpt_count",
+        "policy_id",
+        "policy_sha256",
+        "localhost_only",
+        "fixture_backed",
+        "no_network_egress",
+        "no_live_targets",
+        "no_payloads",
+        "no_credentials",
+        "no_raw_logs"
+      ],
+      "properties": {
+        "schema_version": {
+          "const": "prophet.sandbox_run_manifest.v0.1"
+        },
+        "manifest_id": {
+          "$ref": "#/$defs/id"
+        },
+        "run_id": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "profile": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "mode": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "artifact_id": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "artifact_schema_version": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "artifact_content_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "artifact_file_sha256": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "artifact_path": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "manifest_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "sanitized_logs_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "raw_logs_retained": {
+          "const": false
+        },
+        "stored_raw_log_bytes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "stored_log_excerpt_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "policy_id": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "policy_sha256": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "localhost_only": {
+          "const": true
+        },
+        "fixture_backed": {
+          "const": true
+        },
+        "no_network_egress": {
+          "const": true
+        },
+        "no_live_targets": {
+          "const": true
+        },
+        "no_payloads": {
+          "const": true
+        },
+        "no_credentials": {
+          "const": true
+        },
+        "no_raw_logs": {
+          "const": true
         }
       }
     },

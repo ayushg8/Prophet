@@ -9,13 +9,17 @@ policy-bound, and localhost-only.
 - Confirm the repo is the intended Prophet workspace.
 - Confirm no customer secrets, raw scraper text, live IPs, private hostnames, or
   credential files were added to the working tree.
-- Confirm Python 3.11 or newer is available.
-- If the console will be shown, confirm Node 24 and npm are available.
+- Confirm Python 3.9 or newer is available.
+- If the console will be shown, confirm Node 24 or newer and npm are available.
 - Read `docs/EVALUATOR_START_HERE.md` and keep
   `docs/EVALUATOR_WORKSHEET.md` open for pass/fail notes.
 - Review the active pilot policy: `policy/prophet-pilot-policy.json`.
-- Do not enable VM scraping or any non-fixture validation mode for a standard
-  buyer review.
+- Use only safe local operator labels such as `fixture` or `local-console`;
+  see `docs/OPERATOR_IDENTITY_GUIDE.md`.
+- Do not enable live collection workflows or any non-fixture validation mode
+  for a standard buyer review. The sandbox runner requires a sanitized
+  customer approval record before any non-fixture mode is even considered, and
+  the public repo still ships no container execution profile.
 
 ## Preflight Commands
 
@@ -53,12 +57,29 @@ npm run dev:control
 
 ```bash
 cd prophet-console
-npm run dev
+npm run dev:evaluator
 ```
 
-Open `http://127.0.0.1:5173`. Keep the console local-only. Do not paste
-customer secrets, raw scraper text, hostnames, IP addresses, URLs, or
-unreviewed customer data into the UI.
+Open `http://127.0.0.1:5173`. Evaluator mode is the standard buyer-review
+mode; it shows fixture/demo controls and hides non-demo live collection
+controls even if an operator has a local collection environment configured.
+Keep the console local-only. Do not paste customer secrets, raw scraper text,
+hostnames, IP addresses, URLs, or unreviewed customer data into the UI.
+
+Before the buyer joins, run `make console-live-check` from the repo root while
+the console is still running. It verifies readiness plus the local evidence and
+integration endpoints, validates the runtime audit log, and writes only ignored
+runtime outputs.
+
+If the buyer asks for responsive visual follow-up, run
+`cd prophet-console && npm run capture:screenshots`, then
+`make console-screenshot-check`. Share screenshots only after the verifier
+passes and the buyer explicitly asked for redacted visual material.
+
+Use `npm run dev:operator` only for an internal, approved operator review. It
+does not enable live collection by itself; live collection still requires the
+separate `VITE_PROPHET_ENABLE_VM_SCRAPER=1` flag, control-server policy gates,
+and a written isolated collection plan.
 
 ## Three-Minute Talk Track
 
@@ -72,6 +93,9 @@ unreviewed customer data into the UI.
 - Explain that SIEM and ticketing outputs are review templates, not automatic
   production changes.
 - Show the policy-blocked report if the buyer asks how unsafe actions fail.
+- Use the policy-blocked evaluator action runbook in
+  `docs/PILOT_TROUBLESHOOTING.md` if the console or control API returns
+  `policy_blocked` / `HTTP 403` during review.
 
 ## Artifact Checkpoints
 
@@ -95,13 +119,15 @@ Stop and mark the worksheet as blocked if:
 - Any artifact contains credentials, private hostnames, live IPs, raw scraper
   text, or target-control instructions.
 - A buyer asks to test a live target during the standard public pilot review.
-- A non-fixture validation plan lacks written customer approval and a reviewed
-  policy.
+- A non-fixture validation plan lacks the sanitized sandbox customer approval
+  record, written customer approval, and a reviewed policy.
 
 ## After The Review
 
 - Record decisions and blockers in `docs/EVALUATOR_WORKSHEET.md`.
 - Share artifact paths and SHA-256 values, not raw customer-sensitive content.
+- Use `docs/CONSOLE_EXPECTED_SCREENSHOTS.md` before preparing any redacted
+  console visuals for follow-up.
 - Keep runtime outputs local unless the customer data-boundary agreement allows
   sharing.
 - Do not commit generated runtime outputs.

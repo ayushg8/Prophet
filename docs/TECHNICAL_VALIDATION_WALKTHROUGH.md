@@ -12,15 +12,16 @@ local edits, but generated runtime files must remain under ignored
 
 Required tools:
 
-- Python 3.11 or newer.
+- Python 3.9 or newer.
 - Bash-compatible shell.
-- Node 24 and npm if the evaluator runs console acceptance.
+- Node 24 or newer and npm if the evaluator runs console acceptance.
 
 If a required tool is missing, use `docs/PILOT_TROUBLESHOOTING.md` before
 changing commands or paths.
 
 Do not add target hosts, credentials, private hostnames, raw scraper text, or
-customer secrets. Do not enable VM scraping or any non-fixture sandbox mode.
+customer secrets. Do not enable live collection workflows or any non-fixture
+sandbox mode.
 
 ## Timeboxed Review
 

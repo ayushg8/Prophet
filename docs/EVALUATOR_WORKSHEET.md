@@ -44,6 +44,32 @@ or informal claims.
 | What evidence retention period does the customer require? | |
 | What would make the pilot a paid expansion? | |
 
+## CISO / Executive Review
+
+Use this section when the reviewer owns risk, budget, or security approval.
+Do not advance to a paid or sponsored pilot unless the reviewer can answer the
+decision questions with concrete evidence.
+
+| Question | Pass/Fail | Notes |
+|---|---|---|
+| Does the packet answer "why this first?" better than the current workflow? | | |
+| Can the reviewer identify the team that would use the evidence? | | |
+| Is the approved customer data boundary clear enough for security review? | | |
+| Are the safety boundaries clear: no live targets, no payloads, no raw telemetry, no production pushes? | | |
+| Are policy hash, approval hash, evidence hash, and handoff manifest hash reviewable outside the UI? | | |
+| Does the pilot have written success criteria and a named sponsor or budget path? | | |
+| Does the buyer want another scoped evidence workflow, not broad platform work? | | |
+| Does the validation dashboard still keep production build scope closed unless it reaches `build_next_slice`? | | |
+
+Executive go/no-go:
+
+| Outcome | Use When | Notes |
+|---|---|---|
+| Stop | The buyer cannot name a recent painful prioritization event or trusted reviewer. | |
+| Repeat narrowly | The pain is real but the selected asset/SBOM slice was wrong. | |
+| Convert design partner | The buyer wants another scoped workflow with written success criteria and a sponsor. | |
+| Build next slice | The dashboard reaches `build_next_slice` and the next slice maps to the proven evidence or integration gap. | |
+
 ## Safety Boundary
 
 Confirm before any customer-owned artifact is imported:

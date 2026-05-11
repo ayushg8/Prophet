@@ -19,6 +19,11 @@ allowed modes, allowed source IDs, allowed sandbox profiles, allowed integration
 exports, blocked controls, attestations, retention hints, and runtime output
 paths.
 
+Future signed policy review is documented in `docs/SIGNED_POLICY_DESIGN.md`.
+That design does not implement key handling or signature verification; it
+defines how a future buyer/security review could make policy files
+tamper-evident after a paid-pilot or `build_next_slice` gate.
+
 To validate against an explicit schema path:
 
 ```bash
@@ -106,6 +111,140 @@ add both `--delete-expired` and `--confirm-retention-delete`.
   boundary.
 - Any customer-specific policy comparison has no unexpected expanded modes,
   sources, sandbox profiles, export kinds, or retention windows.
+
+## Source Terms And License Review
+
+Prophet's default buyer pilot uses fixture-backed seeded OSINT and public source
+citations. The existence of a catalog entry or citation URL is not permission to
+collect, store, redistribute, or automate against that source in a customer
+pilot.
+
+Before enabling a new source or using a customer-requested source in a pilot,
+record a short review note that answers:
+
+- Source ID and catalog path.
+- Source owner or publisher.
+- Public documentation or terms URL reviewed.
+- Whether API keys, accounts, paid access, robots.txt, rate limits, or usage
+  restrictions apply.
+- Whether the source permits the intended collection mode, retention period,
+  and customer sharing path.
+- Whether raw bodies, diffs, comments, examples, screenshots, or full records
+  must be discarded after parsing.
+- Whether the sanitizer emits only approved fields, public citations, hashes,
+  and short analyst-safe summaries.
+- Whether the source can be represented with `retention.raw_collection_retained`
+  set to `false`.
+
+Do not treat this checklist as legal approval. If the terms are unclear,
+commercial, account-gated, personal-data-bearing, movement-tracking, or likely
+to expose target/victim details, leave the source disabled until legal/customer
+approval and sanitizer tests exist.
+
+## Customer-Approved Source Allowlist
+
+For a design-partner pilot, source approval should be explicit and narrow. A
+customer-approved source allowlist should contain only sanitized source IDs and
+review metadata, not credentials, raw exports, target lists, private URLs, or
+collector secrets.
+
+Minimum fields for a customer source allowlist note:
+
+```text
+source_id:
+source_class:
+customer_approval_owner:
+approval_date:
+approved_collection_mode:
+approved_retention_days:
+raw_collection_retained: false
+allowed_output_fields:
+prohibited_fields:
+sanitizer_or_parser:
+policy_id:
+policy_sha256:
+reviewer:
+```
+
+Rules:
+
+- Add the source ID to the pilot policy only after the customer approval note
+  exists and the sanitizer/parser has tests.
+- Keep credentials, API keys, account names, private URLs, and raw customer
+  exports out of the allowlist note.
+- Prefer fixture, seeded, or customer-provided metadata over live collection.
+- Keep live collection disabled unless a separate customer policy explicitly
+  authorizes the exact source, host, cadence, retention, and sanitized fields.
+- Re-run `policy.lint`, source-catalog allowlist checks, release-safety checks,
+  and the relevant sanitizer tests after every allowlist change.
+
+## Future Source Catalog Changes
+
+Every future enabled source catalog entry needs both policy and release-review
+coverage:
+
+1. Add or update the catalog entry in
+   `world-side/scraper/config/source_catalog.json`.
+2. Keep `enabled: false` until the terms, customer approval, and sanitizer
+   tests are complete.
+3. If the source becomes enabled, add its ID to
+   `policy/source-catalog-allowlist.json` with release-review intent only.
+4. Add the source ID to `allowed_source_ids` in the pilot or customer policy
+   only when the policy is meant to allow that source for that pilot.
+5. Run:
+
+   ```bash
+   PYTHONPATH=.:cyber-side:world-side python3 -m policy.lint \
+     --policy policy/prophet-pilot-policy.json
+
+   PYTHONPATH=.:cyber-side:world-side python3 scripts/check-release-safety.py \
+     --tracked --paths-only
+   ```
+
+6. Confirm runtime outputs still contain source citations and summaries only,
+   not raw records, private hostnames, live target URLs, credentials, or
+   payload/procedure material.
+
+The release allowlist is a safety review artifact. It does not grant live
+collection, bypass source terms, or authorize customer data handling.
+
+## Future Required-Source Failure Budgets
+
+The current buyer pilot summarizes source freshness and sanitized source
+failures in evidence, but it does not implement required-source failure budgets.
+Before any customer-specific policy depends on live or customer-approved source
+collection, define a fail-closed source budget in policy and tests.
+
+Minimum future policy fields:
+
+```text
+required_source_ids:
+required_source_classes:
+freshness_window_days:
+minimum_successful_required_sources:
+maximum_failed_required_sources:
+failure_action: block_forecast_and_evidence
+degraded_action: evidence_warning_only
+```
+
+Rules for future implementation:
+
+- If a required source is unavailable, stale beyond the approved freshness
+  window, missing from the sanitized manifest, or missing policy coverage,
+  forecast and evidence generation must fail closed before buyer sharing.
+- If optional sources fail, evidence may continue only when the policy allows a
+  degraded result and the evidence lists sanitized failure summaries.
+- Required-source failures must never echo raw source bodies, private URLs,
+  credentials, hostnames, IPs, or raw customer telemetry.
+- Failure budgets must be evaluated against sanitized manifests and source IDs,
+  not free-text scrape output.
+- Runtime artifacts must record the policy hash and the source-budget decision
+  so `policy.lint --verify-runtime-artifacts` or a future verifier can detect
+  drift.
+
+Implementation remains gated on buyer/security-review demand or
+`build_next_slice`; do not add live collection or customer source processing
+only to satisfy this design.
 
 ## Enforcement Points
 

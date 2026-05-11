@@ -65,8 +65,31 @@ except ImportError:  # pragma: no cover - asset enrichment is optional.
     summarize_asset_seedset = None  # type: ignore
     validate_asset_seedset = None  # type: ignore
 
+try:
+    from sandbox_runner.schema import validate_sandbox_run_manifest_schema  # type: ignore
+except ImportError:  # pragma: no cover - sandbox provenance is optional.
+    validate_sandbox_run_manifest_schema = None  # type: ignore
 
-BANNED_KEYS = set(PORTFOLIO_BANNED_KEYS) | set(ARTIFACT_BANNED_KEYS) | set(BANNED_VECTOR_KEYS)
+
+RAW_SOURCE_BANNED_KEYS = {
+    "message_text",
+    "raw_body",
+    "raw_content",
+    "raw_html",
+    "raw_scrape_output",
+    "raw_scraper_text",
+    "raw_source_text",
+    "raw_text",
+    "scraper_output",
+    "source_text",
+}
+
+BANNED_KEYS = (
+    set(PORTFOLIO_BANNED_KEYS)
+    | set(ARTIFACT_BANNED_KEYS)
+    | set(BANNED_VECTOR_KEYS)
+    | RAW_SOURCE_BANNED_KEYS
+)
 PROCEDURAL_PHRASES = tuple(
     sorted(set(PORTFOLIO_PROCEDURAL_PHRASES) | set(ARTIFACT_PROCEDURAL_PHRASES))
 )
@@ -83,6 +106,14 @@ PAYLOAD_TOKENS = tuple(
             "cmd.exe",
         }
     )
+)
+RAW_SOURCE_TEXT_MARKERS = (
+    "message_text:",
+    "raw scraper artifact:",
+    "raw source body:",
+    "raw_body:",
+    "raw_html:",
+    "unredacted source text:",
 )
 
 REQUIRED_SECTIONS = (
@@ -195,6 +226,7 @@ def build_evidence_bundle(
     asset_seedset: dict[str, Any] | None = None,
     policy: dict[str, Any] | None = None,
     approval_record: dict[str, Any] | None = None,
+    sandbox_run_manifest: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Build, hash, and validate an evidence bundle from validated artifacts."""
 
@@ -216,6 +248,13 @@ def build_evidence_bundle(
             approval_record,
             operator_label=operator_label,
             approval_decision=approval_decision,
+            policy_summary=policy_summary,
+        )
+    sandbox_provenance: dict[str, Any] | None = None
+    if sandbox_run_manifest is not None:
+        sandbox_provenance = _build_sandbox_provenance(
+            sandbox_run_manifest,
+            artifact=artifact,
             policy_summary=policy_summary,
         )
 
@@ -294,6 +333,9 @@ def build_evidence_bundle(
                 "likely_objective": _string(top_vector.get("likely_objective"), "unknown"),
                 "confidence": _string(top_vector.get("confidence"), "unknown"),
                 "confidence_score": top_vector.get("confidence_score"),
+                "why_this_vector": _sanitize_text(
+                    _string(top_vector.get("why_this_vector"), "No rationale supplied.")
+                ),
                 "defensive_implication": _sanitize_text(
                     _string(top_vector.get("defensive_implication"), "Not supplied.")
                 ),
@@ -397,6 +439,12 @@ def build_evidence_bundle(
         ]
         bundle["hashes"]["approval_record_sha256"] = approval_record_summary[
             "approval_record_hash"
+        ]
+
+    if sandbox_provenance is not None:
+        bundle["sandbox_provenance"] = sandbox_provenance
+        bundle["hashes"]["sandbox_run_manifest_sha256"] = sandbox_provenance[
+            "manifest_sha256"
         ]
 
     if open_source_summary["integrated"]:
@@ -524,6 +572,12 @@ def validate_evidence_bundle(bundle: dict[str, Any] | str) -> None:
         raise EvidenceBundleError("asset_context must be object when present")
     if "asset_seed_summary" in value and not isinstance(value["asset_seed_summary"], dict):
         raise EvidenceBundleError("asset_seed_summary must be object when present")
+    if "sandbox_provenance" in value:
+        _validate_sandbox_provenance(
+            value["sandbox_provenance"],
+            artifact_sha256=_string(value["hashes"].get("artifact_sha256"), ""),
+            policy_sha256=_string(value["hashes"].get("policy_sha256"), ""),
+        )
     if "policy" in value:
         policy_summary = value["policy"]
         if not isinstance(policy_summary, dict):
@@ -798,6 +852,160 @@ def _build_asset_seed_summary(seedset: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def _build_sandbox_provenance(
+    manifest: dict[str, Any],
+    *,
+    artifact: dict[str, Any],
+    policy_summary: dict[str, Any] | None,
+) -> dict[str, Any]:
+    if validate_sandbox_run_manifest_schema is not None:
+        validate_sandbox_run_manifest_schema(manifest)
+    elif manifest.get("schema_version") != "prophet.sandbox_run_manifest.v0.1":
+        raise EvidenceBundleError(
+            "sandbox_run_manifest.schema_version must be prophet.sandbox_run_manifest.v0.1"
+        )
+
+    artifact_summary = _object(manifest.get("artifact"))
+    log_evidence = _object(manifest.get("log_evidence"))
+    policy = _object(manifest.get("policy"))
+    safety = _object(manifest.get("safety"))
+    artifact_sha256 = _sha256_normalized(artifact)
+    manifest_artifact_sha256 = _string(artifact_summary.get("content_sha256"), "")
+    if manifest_artifact_sha256 != artifact_sha256:
+        raise EvidenceBundleError(
+            "sandbox run manifest artifact.content_sha256 must match evidence artifact"
+        )
+    artifact_id = _string(artifact.get("artifact_id"), "")
+    if _string(artifact_summary.get("artifact_id"), "") != artifact_id:
+        raise EvidenceBundleError(
+            "sandbox run manifest artifact.artifact_id must match evidence artifact"
+        )
+    if policy_summary is not None:
+        manifest_policy_sha = _string(policy.get("policy_sha256"), "")
+        if manifest_policy_sha and manifest_policy_sha != policy_summary["policy_sha256"]:
+            raise EvidenceBundleError(
+                "sandbox run manifest policy hash must match evidence policy"
+            )
+    for key in (
+        "localhost_only",
+        "fixture_backed",
+        "no_network_egress",
+        "no_live_targets",
+        "no_payloads",
+        "no_credentials",
+        "no_raw_logs",
+    ):
+        if safety.get(key) is not True:
+            raise EvidenceBundleError(f"sandbox run manifest safety.{key} must be true")
+    if log_evidence.get("raw_logs_retained") is not False:
+        raise EvidenceBundleError("sandbox run manifest must not retain raw logs")
+    if log_evidence.get("raw_log_path") is not None:
+        raise EvidenceBundleError("sandbox run manifest raw_log_path must be null")
+
+    return {
+        "schema_version": _string(manifest.get("schema_version"), ""),
+        "manifest_id": _string(manifest.get("manifest_id"), ""),
+        "run_id": _string(manifest.get("run_id"), ""),
+        "profile": _string(manifest.get("profile"), ""),
+        "mode": _string(manifest.get("mode"), ""),
+        "artifact_id": artifact_id,
+        "artifact_schema_version": _string(artifact_summary.get("schema_version"), ""),
+        "artifact_content_sha256": manifest_artifact_sha256,
+        "artifact_file_sha256": artifact_summary.get("file_sha256"),
+        "artifact_path": _sanitize_text(_string(artifact_summary.get("path"), "")),
+        "manifest_sha256": _sha256_normalized(manifest),
+        "sanitized_logs_sha256": _string(log_evidence.get("sanitized_logs_sha256"), ""),
+        "raw_logs_retained": False,
+        "stored_raw_log_bytes": _int_value(log_evidence.get("stored_raw_log_bytes")),
+        "stored_log_excerpt_count": _int_value(log_evidence.get("stored_log_excerpt_count")),
+        "policy_id": _string(policy.get("policy_id"), "not-supplied"),
+        "policy_sha256": policy.get("policy_sha256"),
+        "localhost_only": True,
+        "fixture_backed": True,
+        "no_network_egress": True,
+        "no_live_targets": True,
+        "no_payloads": True,
+        "no_credentials": True,
+        "no_raw_logs": True,
+    }
+
+
+def _validate_sandbox_provenance(
+    provenance: Any,
+    *,
+    artifact_sha256: str,
+    policy_sha256: str,
+) -> None:
+    if not isinstance(provenance, dict):
+        raise EvidenceBundleError("sandbox_provenance must be object")
+    for field in (
+        "schema_version",
+        "manifest_id",
+        "run_id",
+        "profile",
+        "mode",
+        "artifact_id",
+        "artifact_schema_version",
+        "artifact_content_sha256",
+        "artifact_path",
+        "manifest_sha256",
+        "sanitized_logs_sha256",
+        "policy_id",
+    ):
+        if not _string(provenance.get(field), ""):
+            raise EvidenceBundleError(f"sandbox_provenance.{field} must be non-empty")
+    if provenance["schema_version"] != "prophet.sandbox_run_manifest.v0.1":
+        raise EvidenceBundleError(
+            "sandbox_provenance.schema_version must be prophet.sandbox_run_manifest.v0.1"
+        )
+    for field in ("artifact_content_sha256", "manifest_sha256", "sanitized_logs_sha256"):
+        if not _is_sha256(_string(provenance.get(field), "")):
+            raise EvidenceBundleError(f"sandbox_provenance.{field} must be SHA-256")
+    artifact_file_sha = provenance.get("artifact_file_sha256")
+    if artifact_file_sha is not None and not _is_sha256(_string(artifact_file_sha, "")):
+        raise EvidenceBundleError("sandbox_provenance.artifact_file_sha256 must be SHA-256 or null")
+    policy_sha = provenance.get("policy_sha256")
+    if policy_sha is not None and not _is_sha256(_string(policy_sha, "")):
+        raise EvidenceBundleError("sandbox_provenance.policy_sha256 must be SHA-256 or null")
+    if artifact_sha256 and provenance["artifact_content_sha256"] != artifact_sha256:
+        raise EvidenceBundleError(
+            "sandbox_provenance.artifact_content_sha256 must match hashes.artifact_sha256"
+        )
+    if policy_sha256 and provenance.get("policy_sha256") != policy_sha256:
+        raise EvidenceBundleError(
+            "sandbox_provenance.policy_sha256 must match hashes.policy_sha256"
+        )
+    for key in (
+        "raw_logs_retained",
+        "localhost_only",
+        "fixture_backed",
+        "no_network_egress",
+        "no_live_targets",
+        "no_payloads",
+        "no_credentials",
+        "no_raw_logs",
+    ):
+        if not isinstance(provenance.get(key), bool):
+            raise EvidenceBundleError(f"sandbox_provenance.{key} must be boolean")
+    if provenance["raw_logs_retained"] is not False:
+        raise EvidenceBundleError("sandbox_provenance.raw_logs_retained must be false")
+    for key in (
+        "localhost_only",
+        "fixture_backed",
+        "no_network_egress",
+        "no_live_targets",
+        "no_payloads",
+        "no_credentials",
+        "no_raw_logs",
+    ):
+        if provenance[key] is not True:
+            raise EvidenceBundleError(f"sandbox_provenance.{key} must be true")
+    for field in ("stored_raw_log_bytes", "stored_log_excerpt_count"):
+        value = provenance.get(field)
+        if not isinstance(value, int) or isinstance(value, bool) or value < 0:
+            raise EvidenceBundleError(f"sandbox_provenance.{field} must be non-negative integer")
+
+
 def _build_validation_failure_evidence(validation: dict[str, Any]) -> dict[str, Any]:
     pre_status = _string(validation.get("pre_patch_status"), "unknown")
     post_status = _string(validation.get("post_patch_status"), "unknown")
@@ -962,6 +1170,7 @@ def _build_evidence_redaction_report(bundle: dict[str, Any]) -> dict[str, Any]:
         "raw_validation_logs_embedded": False,
         "raw_osint_records_embedded": False,
         "raw_asset_inventory_embedded": False,
+        "sandbox_run_manifest_embedded": "sandbox_provenance" in bundle,
         "source_refs_emitted": len(bundle.get("source_refs") or []),
         "sanitized_validation_excerpts_emitted": len(sanitized_excerpts),
         "field_allowlist": [
@@ -978,6 +1187,7 @@ def _build_evidence_redaction_report(bundle: dict[str, Any]) -> dict[str, Any]:
             "prediction_summary",
             "safety_attestation",
             "source_refs",
+            "sandbox_provenance summary",
             "validation_summary.failure_evidence",
             "validation_summary.sanitized_excerpts",
         ],
@@ -1019,6 +1229,7 @@ def _validate_evidence_redaction_report(
         "raw_validation_logs_embedded",
         "raw_osint_records_embedded",
         "raw_asset_inventory_embedded",
+        "sandbox_run_manifest_embedded",
         "operator_review_required",
     )
     for field in bool_fields:
@@ -1077,6 +1288,7 @@ def render_markdown(bundle: dict[str, Any]) -> str:
     hashes = bundle["hashes"]
     asset_context = bundle.get("asset_context")
     asset_seed_summary = bundle.get("asset_seed_summary")
+    sandbox_provenance = bundle.get("sandbox_provenance")
     policy_label = policy["policy_id"] if policy else "not supplied"
     approval_hash = approval.get("approval_record_hash", "not supplied")
     asset_summary = (
@@ -1152,7 +1364,10 @@ def render_markdown(bundle: dict[str, Any]) -> str:
         f"- Strike window: {window['start_date']} to {window['end_date']} ({window['confidence']} confidence)",
         f"- Vector: {vector['vector_class']} ({vector['confidence']} confidence)",
         f"- Target scope: {forecast['strategic_frame']['target_scope']}",
+        f"- Why this window: {window['why_this_window']}",
+        f"- Why this vector: {vector['why_this_vector']}",
         f"- Defensive implication: {vector['defensive_implication']}",
+        f"- Cited forecast source IDs: {', '.join(forecast['source_ref_ids'])}",
         "",
         "## Open Source Basis",
         "",
@@ -1233,42 +1448,65 @@ def render_markdown(bundle: dict[str, Any]) -> str:
         f"- Pre excerpt: {validation['sanitized_excerpts']['pre_patch']}",
         f"- Post excerpt: {validation['sanitized_excerpts']['post_patch']}",
         "",
-        "## Operator Approval",
-        "",
-        f"- Decision: `{approval['decision']}`",
-        f"- Operator label: `{approval['operator_label']}`",
-        f"- Approval mode: `{approval['approval_mode']}`",
-        f"- Timestamp: {approval['timestamp']}",
-        f"- Approval record hash: `{approval.get('approval_record_hash', 'not supplied')}`",
-        "",
-        "## Safety Attestation",
-        "",
-        f"- No live targets: `{str(safety['no_live_targets']).lower()}`",
-        f"- No live target data included: `{str(safety['no_live_target_data_included']).lower()}`",
-        f"- Data boundary: {safety['data_boundary_statement']}",
-        f"- No payloads: `{str(safety['no_payloads']).lower()}`",
-        f"- No credentials: `{str(safety['no_credentials']).lower()}`",
-        f"- Fixture backed: `{str(safety['fixture_backed']).lower()}`",
-        f"- Validation scope: {safety['validation_scope']}",
-        "",
-        "## Redaction Report",
-        "",
-        f"- Summary fields only: `{str(redaction['summary_fields_only']).lower()}`",
-        f"- Source documents embedded: `{str(redaction['source_documents_embedded']).lower()}`",
-        f"- Raw forecast embedded: `{str(redaction['raw_forecast_embedded']).lower()}`",
-        f"- Raw prediction portfolio embedded: `{str(redaction['raw_prediction_portfolio_embedded']).lower()}`",
-        f"- Raw defense artifact embedded: `{str(redaction['raw_defense_artifact_embedded']).lower()}`",
-        f"- Raw validation logs embedded: `{str(redaction['raw_validation_logs_embedded']).lower()}`",
-        f"- Raw OSINT records embedded: `{str(redaction['raw_osint_records_embedded']).lower()}`",
-        f"- Raw asset inventory embedded: `{str(redaction['raw_asset_inventory_embedded']).lower()}`",
-        f"- Source references emitted: {redaction['source_refs_emitted']}",
-        f"- Sanitized validation excerpts emitted: {redaction['sanitized_validation_excerpts_emitted']}",
-        f"- Field allowlist: {', '.join(redaction['field_allowlist'])}",
-        f"- Redacted fields: {', '.join(redaction['redacted_fields'])}",
-        f"- Blocked text classes: {', '.join(redaction['blocked_text_classes'])}",
-        f"- Operator review required: `{str(redaction['operator_review_required']).lower()}`",
-        "",
     ]
+
+    if isinstance(sandbox_provenance, dict):
+        lines.extend(
+            [
+                "## Sandbox Provenance",
+                "",
+                f"- Manifest: `{sandbox_provenance['manifest_id']}`",
+                f"- Profile: `{sandbox_provenance['profile']}`",
+                f"- Mode: `{sandbox_provenance['mode']}`",
+                f"- Artifact ID: `{sandbox_provenance['artifact_id']}`",
+                f"- Artifact content SHA-256: `{sandbox_provenance['artifact_content_sha256']}`",
+                f"- Manifest SHA-256: `{sandbox_provenance['manifest_sha256']}`",
+                f"- Sanitized logs SHA-256: `{sandbox_provenance['sanitized_logs_sha256']}`",
+                f"- Raw logs retained: `{str(sandbox_provenance['raw_logs_retained']).lower()}`",
+                f"- No network egress: `{str(sandbox_provenance['no_network_egress']).lower()}`",
+                "",
+            ]
+        )
+
+    lines.extend(
+        [
+            "## Operator Approval",
+            "",
+            f"- Decision: `{approval['decision']}`",
+            f"- Operator label: `{approval['operator_label']}`",
+            f"- Approval mode: `{approval['approval_mode']}`",
+            f"- Timestamp: {approval['timestamp']}",
+            f"- Approval record hash: `{approval.get('approval_record_hash', 'not supplied')}`",
+            "",
+            "## Safety Attestation",
+            "",
+            f"- No live targets: `{str(safety['no_live_targets']).lower()}`",
+            f"- No live target data included: `{str(safety['no_live_target_data_included']).lower()}`",
+            f"- Data boundary: {safety['data_boundary_statement']}",
+            f"- No payloads: `{str(safety['no_payloads']).lower()}`",
+            f"- No credentials: `{str(safety['no_credentials']).lower()}`",
+            f"- Fixture backed: `{str(safety['fixture_backed']).lower()}`",
+            f"- Validation scope: {safety['validation_scope']}",
+            "",
+            "## Redaction Report",
+            "",
+            f"- Summary fields only: `{str(redaction['summary_fields_only']).lower()}`",
+            f"- Source documents embedded: `{str(redaction['source_documents_embedded']).lower()}`",
+            f"- Raw forecast embedded: `{str(redaction['raw_forecast_embedded']).lower()}`",
+            f"- Raw prediction portfolio embedded: `{str(redaction['raw_prediction_portfolio_embedded']).lower()}`",
+            f"- Raw defense artifact embedded: `{str(redaction['raw_defense_artifact_embedded']).lower()}`",
+            f"- Raw validation logs embedded: `{str(redaction['raw_validation_logs_embedded']).lower()}`",
+            f"- Raw OSINT records embedded: `{str(redaction['raw_osint_records_embedded']).lower()}`",
+            f"- Raw asset inventory embedded: `{str(redaction['raw_asset_inventory_embedded']).lower()}`",
+            f"- Source references emitted: {redaction['source_refs_emitted']}",
+            f"- Sanitized validation excerpts emitted: {redaction['sanitized_validation_excerpts_emitted']}",
+            f"- Field allowlist: {', '.join(redaction['field_allowlist'])}",
+            f"- Redacted fields: {', '.join(redaction['redacted_fields'])}",
+            f"- Blocked text classes: {', '.join(redaction['blocked_text_classes'])}",
+            f"- Operator review required: `{str(redaction['operator_review_required']).lower()}`",
+            "",
+        ]
+    )
 
     if policy:
         lines.extend(
@@ -1346,6 +1584,8 @@ def render_markdown(bundle: dict[str, Any]) -> str:
         lines.append(f"- Asset seedset SHA-256: `{hashes['asset_seedset_sha256']}`")
     if "policy_sha256" in hashes:
         lines.append(f"- Policy SHA-256: `{hashes['policy_sha256']}`")
+    if "sandbox_run_manifest_sha256" in hashes:
+        lines.append(f"- Sandbox run manifest SHA-256: `{hashes['sandbox_run_manifest_sha256']}`")
     lines.extend(
         [
             f"- Bundle SHA-256: `{bundle['bundle_sha256']}`",
@@ -1387,6 +1627,9 @@ def main(argv: list[str] | None = None) -> int:
         asset_seedset = load_json(args.asset_seedset) if args.asset_seedset else None
         policy = load_policy(args.policy) if args.policy else None
         approval_record = load_json(args.approval_record) if args.approval_record else None
+        sandbox_run_manifest = (
+            load_json(args.sandbox_run_manifest) if args.sandbox_run_manifest else None
+        )
         bundle = build_evidence_bundle(
             forecast=forecast,
             portfolio=portfolio,
@@ -1395,6 +1638,7 @@ def main(argv: list[str] | None = None) -> int:
             asset_seedset=asset_seedset,
             policy=policy,
             approval_record=approval_record,
+            sandbox_run_manifest=sandbox_run_manifest,
             operator_label=args.operator_label,
             approval_decision=args.approval_decision,
             generated_at=args.generated_at,
@@ -1421,6 +1665,10 @@ def _build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--asset-seedset", help="Optional asset/SBOM OSINT seedset JSON")
     parser.add_argument("--policy", help="Optional prophet_pilot_policy.v0.1 JSON")
     parser.add_argument("--approval-record", help="Optional local operator audit event JSON")
+    parser.add_argument(
+        "--sandbox-run-manifest",
+        help="Optional prophet.sandbox_run_manifest.v0.1 JSON for provenance summary",
+    )
     parser.add_argument("--operator-label", required=True, help="Operator label for audit")
     parser.add_argument("--approval-decision", required=True, help="Operator approval decision")
     parser.add_argument("--generated-at", help="Override generated_at for deterministic output")
@@ -1920,6 +2168,9 @@ def _scan_text_safety(value: Any, path: str) -> None:
             _scan_text_safety(item, f"{path}[{idx}]")
     elif isinstance(value, str):
         lowered = value.lower()
+        for marker in RAW_SOURCE_TEXT_MARKERS:
+            if marker in lowered:
+                raise EvidenceBundleError(f"{path} contains raw source marker: {marker!r}")
         for phrase in PROCEDURAL_PHRASES:
             if phrase in lowered:
                 raise EvidenceBundleError(f"{path} contains procedural phrase: {phrase!r}")

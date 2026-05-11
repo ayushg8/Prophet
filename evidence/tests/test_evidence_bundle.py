@@ -8,6 +8,7 @@ from pathlib import Path
 from evidence.bundle import (
     DEFAULT_EVIDENCE_SCHEMA_PATH,
     REQUIRED_SECTIONS,
+    RAW_SOURCE_BANNED_KEYS,
     SCHEMA_VERSION,
     EvidenceBundleError,
     EvidenceBundleSchemaError,
@@ -22,6 +23,7 @@ from evidence.bundle import (
 )
 from evidence.audit import build_audit_event
 from forecaster.generator import assemble_forecast
+from sandbox_runner.runner import build_run_manifest, run_profile
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -134,10 +136,23 @@ class EvidenceBundleTests(unittest.TestCase):
         self.assertEqual(schema["required"], list(REQUIRED_SECTIONS))
         for section in REQUIRED_SECTIONS:
             self.assertIn(section, schema["properties"])
+        vector_schema = schema["properties"]["forecast_summary"]["properties"]["vector"]
+        self.assertIn("why_this_vector", vector_schema["required"])
+        self.assertIn("why_this_vector", vector_schema["properties"])
 
         bundle = self.build_bundle()
         self.assertEqual(bundle["schema_version"], SCHEMA_VERSION)
         validate_evidence_bundle_schema(bundle)
+
+    def test_evidence_schema_requires_vector_rationale(self) -> None:
+        bundle = self.build_bundle()
+        del bundle["forecast_summary"]["vector"]["why_this_vector"]
+
+        with self.assertRaisesRegex(
+            EvidenceBundleSchemaError,
+            "missing required.*why_this_vector",
+        ):
+            validate_evidence_bundle_schema(bundle)
 
     def test_published_evidence_fixture_validates_current_schema_version(self) -> None:
         bundle = load_json(EVIDENCE_FIXTURE_PATH)
@@ -213,13 +228,12 @@ class EvidenceBundleTests(unittest.TestCase):
             )
 
     def test_localhost_policy_allows_sandbox_runner_artifact(self) -> None:
-        from sandbox_runner.runner import run_profile
-
         localhost_policy = load_policy(LOCALHOST_POLICY_PATH)
         sandbox_artifact = run_profile(
             profile="edge-appliance-fixture",
             generated_at=FIXED_TIME,
             run_id="test-localhost-policy",
+            policy=LOCALHOST_POLICY_PATH,
         )
         bundle = build_evidence_bundle(
             forecast=copy.deepcopy(self.forecast),
@@ -234,6 +248,85 @@ class EvidenceBundleTests(unittest.TestCase):
             run_id="test-run-localhost-policy",
         )
         self.assertEqual(bundle["policy"]["policy_id"], "prophet-pilot-localhost-sandbox-v0.1")
+
+    def test_bundle_includes_sandbox_run_manifest_provenance(self) -> None:
+        localhost_policy = load_policy(LOCALHOST_POLICY_PATH)
+        sandbox_artifact = run_profile(
+            profile="edge-appliance-fixture",
+            generated_at=FIXED_TIME,
+            run_id="test-sandbox-provenance",
+            policy=LOCALHOST_POLICY_PATH,
+        )
+        manifest = build_run_manifest(
+            artifact=sandbox_artifact,
+            profile="edge-appliance-fixture",
+            artifact_path="cyber-side/outputs/runtime/latest-sandbox-artifact-edge-appliance.json",
+        )
+        bundle = build_evidence_bundle(
+            forecast=copy.deepcopy(self.forecast),
+            portfolio=copy.deepcopy(self.portfolio),
+            artifact=sandbox_artifact,
+            asset_inventory=copy.deepcopy(self.asset_inventory),
+            asset_seedset=copy.deepcopy(self.asset_seedset),
+            policy=localhost_policy,
+            sandbox_run_manifest=manifest,
+            operator_label="fixture",
+            approval_decision="bypassed_for_fixture",
+            generated_at=FIXED_TIME,
+            run_id="test-run-sandbox-provenance",
+        )
+
+        validate_evidence_bundle(bundle)
+        validate_evidence_bundle_schema(bundle)
+        provenance = bundle["sandbox_provenance"]
+        self.assertEqual(provenance["profile"], "edge-appliance-fixture")
+        self.assertEqual(provenance["mode"], "fixture")
+        self.assertEqual(provenance["artifact_id"], sandbox_artifact["artifact_id"])
+        self.assertEqual(
+            provenance["artifact_content_sha256"],
+            manifest["artifact"]["content_sha256"],
+        )
+        self.assertEqual(
+            bundle["hashes"]["sandbox_run_manifest_sha256"],
+            provenance["manifest_sha256"],
+        )
+        self.assertFalse(provenance["raw_logs_retained"])
+        self.assertTrue(provenance["no_network_egress"])
+        self.assertTrue(bundle["redaction_report"]["sandbox_run_manifest_embedded"])
+        markdown = render_markdown(bundle)
+        self.assertIn("## Sandbox Provenance", markdown)
+        self.assertIn("No network egress: `true`", markdown)
+        self.assertIn("Sandbox run manifest SHA-256", markdown)
+
+    def test_bundle_rejects_mismatched_sandbox_run_manifest(self) -> None:
+        localhost_policy = load_policy(LOCALHOST_POLICY_PATH)
+        sandbox_artifact = run_profile(
+            profile="edge-appliance-fixture",
+            generated_at=FIXED_TIME,
+            run_id="test-sandbox-provenance-mismatch",
+            policy=LOCALHOST_POLICY_PATH,
+        )
+        manifest = build_run_manifest(
+            artifact=sandbox_artifact,
+            profile="edge-appliance-fixture",
+            artifact_path="cyber-side/outputs/runtime/latest-sandbox-artifact-edge-appliance.json",
+        )
+        manifest["artifact"]["content_sha256"] = "0" * 64
+
+        with self.assertRaisesRegex(EvidenceBundleError, "content_sha256"):
+            build_evidence_bundle(
+                forecast=copy.deepcopy(self.forecast),
+                portfolio=copy.deepcopy(self.portfolio),
+                artifact=sandbox_artifact,
+                asset_inventory=copy.deepcopy(self.asset_inventory),
+                asset_seedset=copy.deepcopy(self.asset_seedset),
+                policy=localhost_policy,
+                sandbox_run_manifest=manifest,
+                operator_label="fixture",
+                approval_decision="bypassed_for_fixture",
+                generated_at=FIXED_TIME,
+                run_id="test-run-sandbox-provenance-mismatch",
+            )
 
     def test_failed_sandbox_validation_is_explicit_in_evidence(self) -> None:
         failed_artifact = load_json(DEFENSE_FAILED_ARTIFACT_PATH)
@@ -347,7 +440,8 @@ class EvidenceBundleTests(unittest.TestCase):
         self.assertEqual(first["bundle_sha256"], second["bundle_sha256"])
 
     def test_markdown_contains_required_sections(self) -> None:
-        markdown = render_markdown(self.build_bundle())
+        bundle = self.build_bundle()
+        markdown = render_markdown(bundle)
         for section in (
             "Executive Summary",
             "CISO Review Summary",
@@ -366,6 +460,10 @@ class EvidenceBundleTests(unittest.TestCase):
             "Hashes",
         ):
             self.assertIn(f"## {section}", markdown)
+        self.assertIn("why_this_vector", bundle["forecast_summary"]["vector"])
+        self.assertIn("- Why this window:", markdown)
+        self.assertIn("- Why this vector:", markdown)
+        self.assertIn("- Cited forecast source IDs:", markdown)
 
     def test_open_source_snapshot_summary_in_evidence(self) -> None:
         candidate = load_json(ROOT / "world-side/fixtures/exploit-candidate-edge-appliance.json")
@@ -575,6 +673,37 @@ class EvidenceBundleTests(unittest.TestCase):
         with self.assertRaises(EvidenceBundleError):
             validate_evidence_bundle(bundle)
 
+    def test_validator_rejects_raw_scraper_text_key(self) -> None:
+        for key in sorted(RAW_SOURCE_BANNED_KEYS):
+            with self.subTest(key=key):
+                bundle = self.build_bundle()
+                bundle["open_source_summary"][key] = "unredacted scraper content"
+
+                with self.assertRaisesRegex(EvidenceBundleError, "banned key"):
+                    validate_evidence_bundle(bundle)
+
+    def test_validator_rejects_raw_scraper_text_marker(self) -> None:
+        bundle = self.build_bundle()
+        bundle["open_source_summary"][
+            "basis_statement"
+        ] = "RAW SCRAPER ARTIFACT: unredacted post body copied from collection."
+
+        with self.assertRaisesRegex(EvidenceBundleError, "raw source marker"):
+            validate_evidence_bundle(bundle)
+
+    def test_generated_bundle_contains_no_raw_scraper_text_fields(self) -> None:
+        bundle = self.build_bundle()
+        validate_evidence_bundle(bundle)
+        self.assertFalse(_contains_any_key(bundle, RAW_SOURCE_BANNED_KEYS))
+        self.assertFalse(bundle["redaction_report"]["raw_osint_records_embedded"])
+        self.assertFalse(bundle["redaction_report"]["source_documents_embedded"])
+        self.assertTrue(bundle["safety_attestation"]["no_raw_scraper_text"])
+
+        markdown = render_markdown(bundle)
+        self.assertNotIn("RAW SCRAPER ARTIFACT:", markdown)
+        self.assertIn("Blocked text classes:", markdown)
+        self.assertIn("raw scraper text", markdown)
+
     def test_validator_rejects_missing_no_live_target_data_assertion(self) -> None:
         bundle = self.build_bundle()
         bundle["safety_attestation"]["no_live_target_data_included"] = False
@@ -666,6 +795,15 @@ class EvidenceBundleTests(unittest.TestCase):
                 approval_decision="bypassed_for_fixture",
                 generated_at=FIXED_TIME,
             )
+
+def _contains_any_key(value: object, keys: set[str]) -> bool:
+    if isinstance(value, dict):
+        for key, inner in value.items():
+            if str(key).lower() in keys or _contains_any_key(inner, keys):
+                return True
+    if isinstance(value, list):
+        return any(_contains_any_key(item, keys) for item in value)
+    return False
 
 
 if __name__ == "__main__":

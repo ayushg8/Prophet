@@ -14,6 +14,7 @@ import hashlib
 import json
 import re
 import sys
+import zipfile
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -39,6 +40,11 @@ except ImportError as exc:  # pragma: no cover - environment issue
 
 
 SCHEMA_VERSION = "prophet_integration_export.v0.1"
+CUSTOMER_PLACEHOLDER_VALIDATION_SCHEMA_VERSION = (
+    "prophet.customer_placeholder_validation.v0.1"
+)
+DEFAULT_ZIP_BUNDLE_ROOT = "prophet-handoff-review-bundle"
+ZIP_ENTRY_TIMESTAMP = (2026, 1, 1, 0, 0, 0)
 NO_LIVE_TARGET_DATA_ASSERTION = (
     "No live target data is included in this export; customer-owned telemetry "
     "placeholders must be filled by the customer."
@@ -52,9 +58,21 @@ OUTPUT_FILES = {
     "jira_ticket": "tickets/jira_remediation_ticket.json",
     "servicenow_task": "tickets/servicenow_remediation_task.json",
     "operator_audit_event": "audit/operator_approval_event.json",
+    "review_checklist": "review_checklist.md",
 }
 
-INTEGRATION_EXPORT_KEYS = tuple(key for key in OUTPUT_FILES if key != "manifest")
+INTEGRATION_EXPORT_KEYS = tuple(
+    key for key in OUTPUT_FILES if key not in {"manifest", "review_checklist"}
+)
+REQUIRED_REVIEW_CHECKLIST_FIELDS = {
+    "reviewer_role",
+    "evidence_hash_checked",
+    "policy_hash_checked",
+    "placeholders_mapped",
+    "telemetry_mapping_reviewed",
+    "customer_owner_approved",
+    "deployment_decision",
+}
 
 BANNED_EXPORT_KEYS = {
     "payload",
@@ -112,6 +130,7 @@ HOSTNAME_RE = re.compile(
     r"(?:com|net|org|mil|gov|edu|io|dev|local|lan|internal|corp)\b",
     re.IGNORECASE,
 )
+CUSTOMER_PLACEHOLDER_RE = re.compile(r"<[A-Za-z0-9_-]+>")
 
 
 class IntegrationExportError(ValueError):
@@ -155,6 +174,8 @@ def build_integration_export(
             "servicenow_task": _servicenow_task(bundle, resolved_export_id),
         },
         "operator_audit_event": _operator_audit_event(bundle, resolved_export_id, emitted_at),
+        "review_checklist": _review_checklist(bundle),
+        "customer_placeholder_validation": {},
         "safety_attestation": {
             "review_templates_only": True,
             "no_external_api_calls": True,
@@ -169,6 +190,7 @@ def build_integration_export(
         "hashes": {},
     }
 
+    export["customer_placeholder_validation"] = _customer_placeholder_validation(export)
     export["hashes"] = _artifact_hashes(export)
     export["hashes"]["export_body_sha256"] = _export_body_sha256(export)
     validate_integration_export(export)
@@ -194,6 +216,8 @@ def validate_integration_export(export: dict[str, Any] | str) -> None:
         "siem",
         "tickets",
         "operator_audit_event",
+        "review_checklist",
+        "customer_placeholder_validation",
         "safety_attestation",
         "hashes",
     ):
@@ -241,6 +265,12 @@ def validate_integration_export(export: dict[str, Any] | str) -> None:
     if not _str(safety.get("data_boundary_statement"), ""):
         raise IntegrationExportError("safety_attestation.data_boundary_statement must be non-empty")
 
+    _validate_review_checklist(_required_object(value, "review_checklist", "export"))
+    _validate_customer_placeholder_validation(
+        value,
+        _required_object(value, "customer_placeholder_validation", "export"),
+    )
+
     hashes = _required_object(value, "hashes", "export")
     expected_hashes = _artifact_hashes(value)
     for key, expected in expected_hashes.items():
@@ -256,16 +286,7 @@ def write_integration_export(export: dict[str, Any], out_dir: str | Path) -> dic
 
     validate_integration_export(export)
     root = Path(out_dir)
-    files = export["files"]
-    payloads: dict[str, str] = {
-        files["manifest"]: _pretty_json(export) + "\n",
-        files["splunk_saved_search"]: _pretty_json(export["siem"]["splunk_saved_search"]) + "\n",
-        files["elastic_detection_rule"]: _compact_json(export["siem"]["elastic_detection_rule"]) + "\n",
-        files["sentinel_analytic_rule"]: _pretty_json(export["siem"]["sentinel_analytic_rule"]) + "\n",
-        files["jira_ticket"]: _pretty_json(export["tickets"]["jira_ticket"]) + "\n",
-        files["servicenow_task"]: _pretty_json(export["tickets"]["servicenow_task"]) + "\n",
-        files["operator_audit_event"]: _pretty_json(export["operator_audit_event"]) + "\n",
-    }
+    payloads = _integration_export_payloads(export)
     written: dict[str, str] = {}
     for rel_path, payload in payloads.items():
         path = root / rel_path
@@ -273,6 +294,31 @@ def write_integration_export(export: dict[str, Any], out_dir: str | Path) -> dic
         path.write_text(payload, encoding="utf-8")
         written[rel_path] = _sha256_text(payload)
     return dict(sorted(written.items()))
+
+
+def write_integration_export_zip(
+    export: dict[str, Any],
+    zip_out: str | Path,
+    *,
+    bundle_root: str = DEFAULT_ZIP_BUNDLE_ROOT,
+) -> dict[str, str]:
+    """Write a deterministic review ZIP and return archive path to SHA-256 mapping."""
+
+    validate_integration_export(export)
+    root = _safe_zip_root(bundle_root)
+    zip_path = Path(zip_out)
+    zip_path.parent.mkdir(parents=True, exist_ok=True)
+    archive_hashes: dict[str, str] = {}
+    with zipfile.ZipFile(zip_path, mode="w", compression=zipfile.ZIP_STORED) as archive:
+        for rel_path, payload in _integration_export_payloads(export).items():
+            archive_path = f"{root}/{rel_path}"
+            _assert_safe_archive_path(archive_path)
+            info = zipfile.ZipInfo(archive_path, date_time=ZIP_ENTRY_TIMESTAMP)
+            info.compress_type = zipfile.ZIP_STORED
+            info.external_attr = 0o100644 << 16
+            archive.writestr(info, payload.encode("utf-8"))
+            archive_hashes[archive_path] = _sha256_text(payload)
+    return dict(sorted(archive_hashes.items()))
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -286,9 +332,18 @@ def main(argv: list[str] | None = None) -> int:
             export_id=args.export_id,
             policy=load_policy(args.policy) if args.policy else None,
         )
+        result: dict[str, Any] = {"ok": True}
         if args.out_dir:
             written = write_integration_export(export, args.out_dir)
-            print(_pretty_json({"ok": True, "out_dir": str(args.out_dir), "files": written}))
+            result["out_dir"] = str(args.out_dir)
+            result["files"] = written
+        if args.zip_out:
+            archive_files = write_integration_export_zip(export, args.zip_out)
+            result["zip_out"] = str(args.zip_out)
+            result["zip_sha256"] = _sha256_file(Path(args.zip_out))
+            result["zip_files"] = archive_files
+        if args.out_dir or args.zip_out:
+            print(_pretty_json(result))
         else:
             print(_pretty_json(export))
         return 0
@@ -304,6 +359,7 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument("--bundle", required=True, type=Path, help="Prophet evidence bundle JSON")
     parser.add_argument("--out-dir", type=Path, help="Directory for generated handoff files")
+    parser.add_argument("--zip-out", type=Path, help="Optional deterministic ZIP review bundle")
     parser.add_argument("--generated-at", help="ISO 8601 timestamp for deterministic output")
     parser.add_argument("--export-id", help="Explicit integration export id")
     parser.add_argument("--policy", type=Path, help="Optional prophet_pilot_policy.v0.1 gate")
@@ -561,6 +617,204 @@ def _operator_audit_event(
     }
 
 
+def _review_checklist(bundle: dict[str, Any]) -> dict[str, Any]:
+    refs = _evidence_refs(bundle)
+    return {
+        "schema_version": "prophet.handoff_review_checklist.v0.1",
+        "title": "Prophet handoff review checklist",
+        "evidence_refs": refs,
+        "checks": [
+            "Confirm manifest mode is review_template_only.",
+            "Confirm safety attestation says no external API calls were made.",
+            "Confirm evidence bundle hash matches the reviewed evidence bundle.",
+            "Confirm policy ID and policy SHA-256 match the approved pilot policy.",
+            "Confirm allowed integration exports match the approved review scope.",
+            "Map all customer placeholders inside the customer environment.",
+            "Tune query fields, tables, indexes, thresholds, owners, and queues against customer-owned telemetry.",
+            "Attach evidence hash, policy hash, and operator approval hash to the customer change record.",
+            "Have a human SOC or platform owner approve any final deployment inside the customer environment.",
+        ],
+        "signoff_fields": [
+            "reviewer_role",
+            "evidence_hash_checked",
+            "policy_hash_checked",
+            "placeholders_mapped",
+            "telemetry_mapping_reviewed",
+            "customer_owner_approved",
+            "deployment_decision",
+        ],
+        "stop_conditions": [
+            "The bundle includes live target names, private hostnames, IPs, credentials, raw logs, or payload text.",
+            "The manifest mode is not review_template_only.",
+            "The evidence, policy, approval, or export hashes do not match.",
+            "A generated template is treated as an approved production change without customer review.",
+        ],
+    }
+
+
+def _review_checklist_markdown(checklist: dict[str, Any]) -> str:
+    refs = _object(checklist.get("evidence_refs"))
+    lines = [
+        "# Prophet Handoff Review Checklist",
+        "",
+        "Use this checklist before adapting the generated SIEM or ticket templates inside a customer environment.",
+        "",
+        "## Evidence",
+        "",
+        f"- Bundle: {_str(refs.get('bundle_id'), 'unknown-bundle')}",
+        f"- Bundle SHA-256: {_str(refs.get('bundle_sha256'), 'unknown')}",
+    ]
+    policy_id = _str(refs.get("policy_id"), "")
+    policy_sha = _str(refs.get("policy_sha256"), "")
+    if policy_id:
+        lines.append(f"- Policy: {policy_id}")
+    if policy_sha:
+        lines.append(f"- Policy SHA-256: {policy_sha}")
+    approval_hash = _str(refs.get("approval_record_hash"), "")
+    if approval_hash:
+        lines.append(f"- Approval record SHA-256: {approval_hash}")
+    lines.extend(["", "## Checks", ""])
+    for item in _safe_list(checklist.get("checks")):
+        lines.append(f"- [ ] {item}")
+    lines.extend(["", "## Sign-Off Fields", ""])
+    for item in _safe_list(checklist.get("signoff_fields")):
+        lines.append(f"- {item}:")
+    lines.extend(["", "## Stop Conditions", ""])
+    for item in _safe_list(checklist.get("stop_conditions")):
+        lines.append(f"- {item}")
+    return "\n".join(lines) + "\n"
+
+
+def _validate_review_checklist(checklist: dict[str, Any]) -> None:
+    if checklist.get("schema_version") != "prophet.handoff_review_checklist.v0.1":
+        raise IntegrationExportError(
+            "review_checklist.schema_version must be prophet.handoff_review_checklist.v0.1"
+        )
+    for key in ("checks", "signoff_fields", "stop_conditions"):
+        values = checklist.get(key)
+        if not isinstance(values, list) or not all(
+            isinstance(item, str) and item.strip() for item in values
+        ):
+            raise IntegrationExportError(f"review_checklist.{key} must be list[str]")
+    signoff_fields = set(_string_list(checklist.get("signoff_fields")))
+    missing = sorted(REQUIRED_REVIEW_CHECKLIST_FIELDS - signoff_fields)
+    if missing:
+        raise IntegrationExportError(
+            "review_checklist.signoff_fields missing required fields: "
+            + ", ".join(missing)
+        )
+
+
+def _customer_placeholder_validation(export: dict[str, Any]) -> dict[str, Any]:
+    items = []
+    for rel_path, payload in _customer_placeholder_payloads(export).items():
+        placeholders = _customer_placeholders_in(payload)
+        if not placeholders:
+            continue
+        items.append(
+            {
+                "file": rel_path,
+                "placeholders": placeholders,
+                "required_customer_action": "Map every placeholder to customer-owned telemetry, owner, queue, or project metadata before use.",
+            }
+        )
+    return {
+        "schema_version": CUSTOMER_PLACEHOLDER_VALIDATION_SCHEMA_VERSION,
+        "status": "customer_mapping_required",
+        "review_template_only": True,
+        "review_signoff_field": "placeholders_mapped",
+        "items": items,
+        "stop_condition": "Do not deploy or import these templates until customer-owned placeholder mapping is complete and reviewed.",
+    }
+
+
+def _validate_customer_placeholder_validation(
+    export: dict[str, Any],
+    validation: dict[str, Any],
+) -> None:
+    if validation.get("schema_version") != CUSTOMER_PLACEHOLDER_VALIDATION_SCHEMA_VERSION:
+        raise IntegrationExportError(
+            "customer_placeholder_validation.schema_version must be "
+            + CUSTOMER_PLACEHOLDER_VALIDATION_SCHEMA_VERSION
+        )
+    if validation.get("status") != "customer_mapping_required":
+        raise IntegrationExportError(
+            "customer_placeholder_validation.status must be customer_mapping_required"
+        )
+    if validation.get("review_template_only") is not True:
+        raise IntegrationExportError(
+            "customer_placeholder_validation.review_template_only must be true"
+        )
+    if validation.get("review_signoff_field") != "placeholders_mapped":
+        raise IntegrationExportError(
+            "customer_placeholder_validation.review_signoff_field must be placeholders_mapped"
+        )
+    if not _str(validation.get("stop_condition"), ""):
+        raise IntegrationExportError("customer_placeholder_validation.stop_condition is required")
+    items = validation.get("items")
+    if not isinstance(items, list) or not items:
+        raise IntegrationExportError("customer_placeholder_validation.items must be a non-empty list")
+    expected = {
+        rel_path: placeholders
+        for rel_path, payload in _customer_placeholder_payloads(export).items()
+        if (placeholders := _customer_placeholders_in(payload))
+    }
+    actual: dict[str, list[str]] = {}
+    allowed_files = set(_customer_placeholder_payloads(export))
+    for index, item in enumerate(items):
+        if not isinstance(item, dict):
+            raise IntegrationExportError(
+                f"customer_placeholder_validation.items[{index}] must be an object"
+            )
+        rel_path = _required_str(item, "file", f"customer_placeholder_validation.items[{index}]")
+        if rel_path not in allowed_files:
+            raise IntegrationExportError(
+                "customer_placeholder_validation.items file is not a handoff template: "
+                + rel_path
+            )
+        placeholders = _string_list(item.get("placeholders"))
+        if not placeholders or not all(CUSTOMER_PLACEHOLDER_RE.fullmatch(p) for p in placeholders):
+            raise IntegrationExportError(
+                f"customer_placeholder_validation.items[{index}].placeholders must be placeholder tokens"
+            )
+        if not _str(item.get("required_customer_action"), ""):
+            raise IntegrationExportError(
+                f"customer_placeholder_validation.items[{index}].required_customer_action is required"
+            )
+        actual[rel_path] = sorted(set(placeholders))
+    if actual != expected:
+        raise IntegrationExportError(
+            "customer_placeholder_validation does not match discovered customer placeholders"
+        )
+
+
+def _customer_placeholder_payloads(export: dict[str, Any]) -> dict[str, Any]:
+    files = _object(export.get("files"))
+    siem = _object(export.get("siem"))
+    tickets = _object(export.get("tickets"))
+    return {
+        _str(files.get("splunk_saved_search"), OUTPUT_FILES["splunk_saved_search"]): _object(
+            siem.get("splunk_saved_search")
+        ),
+        _str(files.get("elastic_detection_rule"), OUTPUT_FILES["elastic_detection_rule"]): _object(
+            siem.get("elastic_detection_rule")
+        ),
+        _str(files.get("sentinel_analytic_rule"), OUTPUT_FILES["sentinel_analytic_rule"]): _object(
+            siem.get("sentinel_analytic_rule")
+        ),
+        _str(files.get("jira_ticket"), OUTPUT_FILES["jira_ticket"]): _object(
+            tickets.get("jira_ticket")
+        ),
+        _str(files.get("servicenow_task"), OUTPUT_FILES["servicenow_task"]): _object(
+            tickets.get("servicenow_task")
+        ),
+    }
+
+
+def _customer_placeholders_in(value: Any) -> list[str]:
+    return sorted(set(CUSTOMER_PLACEHOLDER_RE.findall(_compact_json(value))))
+
+
 def _ticket_description(bundle: dict[str, Any], summary: dict[str, Any]) -> str:
     refs = _evidence_refs(bundle)
     window = summary["strike_window"]
@@ -594,7 +848,38 @@ def _artifact_hashes(export: dict[str, Any]) -> dict[str, str]:
         "operator_audit_event_sha256": _sha256_normalized(
             _object(export.get("operator_audit_event"))
         ),
+        "review_checklist_sha256": _sha256_text(
+            _review_checklist_markdown(_object(export.get("review_checklist")))
+        ),
     }
+
+
+def _integration_export_payloads(export: dict[str, Any]) -> dict[str, str]:
+    files = export["files"]
+    return {
+        files["manifest"]: _pretty_json(export) + "\n",
+        files["splunk_saved_search"]: _pretty_json(export["siem"]["splunk_saved_search"]) + "\n",
+        files["elastic_detection_rule"]: _compact_json(export["siem"]["elastic_detection_rule"]) + "\n",
+        files["sentinel_analytic_rule"]: _pretty_json(export["siem"]["sentinel_analytic_rule"]) + "\n",
+        files["jira_ticket"]: _pretty_json(export["tickets"]["jira_ticket"]) + "\n",
+        files["servicenow_task"]: _pretty_json(export["tickets"]["servicenow_task"]) + "\n",
+        files["operator_audit_event"]: _pretty_json(export["operator_audit_event"]) + "\n",
+        files["review_checklist"]: _review_checklist_markdown(export["review_checklist"]),
+    }
+
+
+def _safe_zip_root(bundle_root: str) -> str:
+    root = bundle_root.strip().strip("/")
+    if not root:
+        raise IntegrationExportError("zip bundle root must be non-empty")
+    _assert_safe_archive_path(root)
+    return root
+
+
+def _assert_safe_archive_path(path: str) -> None:
+    candidate = Path(path)
+    if candidate.is_absolute() or ".." in candidate.parts:
+        raise IntegrationExportError(f"zip archive path is unsafe: {path}")
 
 
 def _scan_export_safety(value: Any, path: str) -> None:
@@ -679,6 +964,10 @@ def _sha256_normalized(value: Any) -> str:
 
 def _sha256_text(value: str) -> str:
     return hashlib.sha256(value.encode("utf-8")).hexdigest()
+
+
+def _sha256_file(path: Path) -> str:
+    return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
 def _canonical_json(value: Any) -> str:

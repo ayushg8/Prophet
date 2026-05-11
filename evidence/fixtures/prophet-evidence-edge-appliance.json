@@ -62,7 +62,7 @@
     "seedset_sha256": "ebd9ed51dbc9ab3b940fc1e1bd4d5238c8106bcde83ce6f1e505f26fa4fbf6f3"
   },
   "bundle_id": "peb-8195e8d2e7cf9717",
-  "bundle_sha256": "b035afaaccb351e526196571e741bf42aee565178f0ed347ef4a2e196b256a6f",
+  "bundle_sha256": "bc8328c9ef05ea539f9472be35e8aa2694c940ffc694385ce3ead3622a77c2a4",
   "defense_summary": {
     "patch_format": "unified_diff",
     "patch_summary": "Disable JNDI message lookups globally and harden the appender pattern; remove the lookup class as a defense-in-depth fallback.",
@@ -102,7 +102,8 @@
       "likely_objective": "persistence",
       "target_sector": "federal civilian agencies, defense contractors, and critical-infrastructure perimeter services",
       "vector_class": "edge-appliance initial access and persistence",
-      "vector_id": "vec_1"
+      "vector_id": "vec_1",
+      "why_this_vector": "Volt Typhoon and Ivanti anchors both show edge or perimeter appliance access as a recurring state-linked pattern against US and allied infrastructure."
     }
   },
   "generated_at": "2026-05-04T20:20:00Z",
@@ -110,7 +111,7 @@
     "artifact_sha256": "7a1c0da471d17d4f0fba63dfa4d7249e4f9cdf3f3d890f20f36c3988b912eca3",
     "asset_inventory_sha256": "cf50bb18c212e1dc4a316ac6011659f3b129472ac45d039ccb63b2bc2f61f119",
     "asset_seedset_sha256": "9369ef1bfe055a0b3417ac64d873ecf56b84c0153eb22cff4bb0b78ae15e019a",
-    "bundle_body_sha256": "b035afaaccb351e526196571e741bf42aee565178f0ed347ef4a2e196b256a6f",
+    "bundle_body_sha256": "bc8328c9ef05ea539f9472be35e8aa2694c940ffc694385ce3ead3622a77c2a4",
     "forecast_sha256": "0e8c85dceef66e176cb810d4a0707479a1309b674cd96b5ad257c1dbb5d390a4",
     "osint_snapshot_hashes": {
       "manifest_sha256": {
@@ -289,6 +290,7 @@
     "raw_osint_records_embedded": false,
     "raw_prediction_portfolio_embedded": false,
     "raw_validation_logs_embedded": false,
+    "sandbox_run_manifest_embedded": false,
     "redacted_fields": [
       "raw forecast artifact body",
       "raw prediction portfolio body",

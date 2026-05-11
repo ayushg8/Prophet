@@ -83,7 +83,12 @@ Required controls:
 - Policy hash verification before export.
 - Approval event hash chain.
 - Integration manifest hashes every emitted file.
-- Optional detached signature for evidence bundles.
+- Signed policy design, with implementation gated on buyer/security-review need
+  or `build_next_slice`.
+- Signed evidence manifest design, with optional detached signature support only
+  after a buyer/security-review gate.
+- Signed operator approval design, with implementation gated on authenticated
+  identity, RBAC, and buyer/security-review need.
 
 Acceptance tests:
 

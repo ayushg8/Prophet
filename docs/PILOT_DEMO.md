@@ -8,7 +8,8 @@ For the shortest evaluator path, use `docs/EVALUATOR_START_HERE.md`. For local
 setup failures, use `docs/PILOT_TROUBLESHOOTING.md`. For buyer notes and
 pass/fail review, use `docs/EVALUATOR_WORKSHEET.md`. For the operator running
 the review, use `docs/DEMO_OPERATOR_CHECKLIST.md`; for shared terminology, use
-`docs/GLOSSARY.md`.
+`docs/GLOSSARY.md`. For redacted example output snippets with packaged hashes,
+use `docs/PILOT_OUTPUT_SNIPPETS.md`.
 
 ## What Is Real Today
 
@@ -20,16 +21,20 @@ the review, use `docs/DEMO_OPERATOR_CHECKLIST.md`; for shared terminology, use
 - Asset inventory to safe asset/SBOM OSINT seedset generation.
 - Fixture-backed seeded OSINT snapshot generation from tracked public-source
   fixtures.
-- Safe 5+5 exploit-class prediction portfolio generation.
+- Safe non-operational exposure-class defense portfolio generation.
 - Deterministic `sandbox_runner` output for the edge-appliance and
   financial-workflow fixture profiles.
 - Sandbox run manifest with artifact hash, sanitized log hash, policy hash, and
   explicit proof that no raw logs were retained.
+- A fail-closed customer approval gate before any non-fixture sandbox mode is
+  considered. The public repo still has no packaged container execution profile.
 - Validated Direction C defense artifact with patch summary, Sigma summary,
   localhost-only validation status, and cyber-side validator coverage.
-- JSON and Markdown evidence bundle export with SHA-256 hashes and an explicit
-  no-live-target-data assertion, sandbox pass/failure/timeout evidence, and a
-  CISO review summary table.
+- JSON and Markdown evidence bundle export with SHA-256 hashes, an explicit
+  no-live-target-data assertion, sandbox profile/run-manifest provenance,
+  sandbox pass/failure/timeout evidence, and a CISO review summary table. The
+  Markdown forecast section includes the selected window rationale, vector
+  rationale, and cited forecast source IDs.
 - Hash-chained operator audit log validation and safe audit summary export with
   a machine-checkable redaction report.
 - Safe SIEM and ticketing handoff export from validated evidence. These are
@@ -62,7 +67,7 @@ the review, use `docs/DEMO_OPERATOR_CHECKLIST.md`; for shared terminology, use
 
 ## Disabled By Default
 
-- Live VM scraping.
+- Live collection workflows.
 - Live exploit validation.
 - Arbitrary target input.
 - Private research lab scaffolding.
@@ -98,7 +103,7 @@ PROPHET_CONFIRM_CLEAN_RUNTIME=clean-runtime ./scripts/run-pilot-demo-smoke.sh --
 ```
 
 The smoke command imports a safe CSV asset fixture, runs asset seedset
-generation, fixture-backed seeded OSINT, forecast refresh, safe portfolio
+generation, fixture-backed seeded OSINT, forecast refresh, safe defense portfolio
 generation, deterministic sandbox artifact generation, evidence bundle
 generation, audit export, artifact/log manifest generation, audit-retention
 reporting, SIEM/ticketing handoff export, local operator approval audit
@@ -168,8 +173,8 @@ operator audit, and SIEM/ticket handoff exports, use
 
 1. Explain the forecast: strike window, vector, source rail, and defensive
    implication.
-2. Show the exploit-class portfolio: 5 hypothesized zero-day classes and 5
-   one-day replay classes.
+2. Show the exposure-class portfolio: prioritized defensive classes and
+   known-pressure replay classes, with no payloads or live target steps.
 3. Run the full Prophet replay and pause at the human gate.
 4. Authorize the fixture-scoped validation.
 5. Show vulnerable-to-blocked transition, patch summary, and Sigma summary.
@@ -214,10 +219,47 @@ PYTHONPATH=.:cyber-side:world-side python3 -m policy.lint \
 ```
 
 ```bash
+(cd prophet-console && npm ci)
+make console-demo
+```
+
+This starts the localhost-only control API and evaluator UI in one terminal.
+Press `Ctrl-C` to stop both when the review is done.
+
+With the console running, verify the live local endpoints before the buyer
+joins:
+
+```bash
+make console-live-check
+```
+
+This calls only the localhost readiness, evidence demo-bundle, and integration
+demo-export endpoints. It writes ignored runtime evidence/handoff/audit outputs
+and confirms the audit events include the required no-live-target-data
+attestation.
+
+If a qualified reviewer asks for responsive visual handoff artifacts, run:
+
+```bash
 cd prophet-console
-npm ci
-npm run dev:control
-npm run dev
+npm run capture:screenshots
+cd ..
+make console-screenshot-check
+```
+
+Share screenshots only after the verifier passes and the reviewer explicitly
+asks for redacted visual material.
+
+If you prefer separate terminals:
+
+```bash
+make console-control
+```
+
+In a second terminal:
+
+```bash
+make console-ui
 ```
 
 Open `http://127.0.0.1:5173`.
@@ -240,6 +282,9 @@ missing, and added hash entries without exposing raw artifact text.
 The evidence Markdown now includes a dedicated source freshness and failure
 section so reviewers can see the seeded OSINT snapshot age, source health, and
 any sanitized source failures without exposing raw scraper text.
+The Forecast section also surfaces the selected window rationale, vector
+rationale, and cited forecast source IDs so reviewers can trace "why this
+first, why now" without opening the raw forecast JSON.
 It also includes a validation failure-evidence subsection that distinguishes
 passed, failed, and timeout outcomes using sanitized status fields only; no raw
 validation logs or target data are embedded.
@@ -256,23 +301,25 @@ first.
 | Asset seedset | `assets/outputs/runtime/demo-dib-edge-appliance-seedset.json` | `6663d5e478552f85ff818934087be4c04421a8fc71aae5086f854ef7d05d3e9e` |
 | Seeded OSINT snapshot | `world-side/outputs/runtime/demo-seeded-osint-snapshot-edge-appliance.jsonl` | `fc63bb35f1fe50e8b227667141d0402e5f5f219661c350383f5a7b53caa19aff` |
 | Seeded OSINT manifest | `world-side/outputs/runtime/demo-seeded-osint-snapshot-edge-appliance.manifest.json` | `e762cea08ad5d86d1de0cf10101d82e20b5ef907d29d3d2e9a7a095adda62486` |
-| Forecast | `world-side/outputs/runtime/demo-scraper-forecast-edge-appliance.json` | `656a409ba3938ee60320d8d5b92aabd20f28fa7de5a2b00d7c13ec653f4374e5` |
-| Prediction portfolio | `cyber-side/outputs/runtime/latest-prediction-portfolio-edge-appliance.json` | `17ccfce769448b2a0d6fa52ecd0072bfccdac18c54cfbc252078b7fdd4a15298` |
+| Forecast | `world-side/outputs/runtime/demo-scraper-forecast-edge-appliance.json` | `6fb56fdc9ffd3ac7ca1d0a593bc444e0b46c72d134e6785dd7a2ce4b981ed151` |
+| Exposure-class portfolio | `cyber-side/outputs/runtime/latest-prediction-portfolio-edge-appliance.json` | `17ccfce769448b2a0d6fa52ecd0072bfccdac18c54cfbc252078b7fdd4a15298` |
 | Sandbox artifact | `cyber-side/outputs/runtime/latest-sandbox-artifact-edge-appliance.json` | `11bbd7e9ce10cae33596cb8f482af2fa82866f6734e8130d29d08dc14d0666d9` |
-| Sandbox run manifest | `cyber-side/outputs/runtime/latest-sandbox-run-manifest-edge-appliance.json` | `bff98b16e4ae74d113cff64079c6c56e00c457bee59299197ba567d5f6f97017` |
+| Sandbox run manifest | `cyber-side/outputs/runtime/latest-sandbox-run-manifest-edge-appliance.json` | `bc85d0e9eb2d4caf9bf85a550b396b765ec522b26af6e2e78ea144ad852522f8` |
 | Operator audit log | `evidence/outputs/runtime/pilot-demo-operator-audit-log.jsonl` | `347fb8c83140feffed763691589f6a6eb2a04586e9041fb0912a0bbe0056a76a` |
 | Operator approval record | `evidence/outputs/runtime/pilot-demo-approval-record.json` | `08f0018221b89de2be8b503ae4b7c7d2e06e1d055243eb987a4b6a35cb25fe3c` |
 | Operator audit export | `evidence/outputs/runtime/pilot-demo-operator-audit-export.json` | `aed651d9fd244e6d55a9db7078079984e8d023ba8b699df22f784205e80caca7` |
 | Operator audit retention report | `evidence/outputs/runtime/pilot-demo-operator-audit-retention.json` | `e26c02e1543c809f9dfb3c3ac40f36c817092a40af0b4d0538fedafe043e249f` |
-| Evidence JSON | `evidence/outputs/runtime/latest-edge-appliance.json` | `61e8e5277afca667f9e88e00f269c094146cf0733cd689e159571b9f078ebfd8` |
-| Evidence Markdown | `evidence/outputs/runtime/latest-edge-appliance.md` | `f8899a373204dbc7f35c3f68a727d411de9ce48c700e97bc79173e800bc3e1fb` |
-| Integration manifest | `integrations/outputs/runtime/latest-edge-appliance/manifest.json` | `105c490f05669fc70a86b5d3fcf8c52a5b1cfa885c0b04777793ab8d36358e06` |
+| Evidence JSON | `evidence/outputs/runtime/latest-edge-appliance.json` | `9570017c12c2132f7b60fc2d8458bcfd9eef88683dc0b58a5905ba4c6bbe6e3c` |
+| Evidence Markdown | `evidence/outputs/runtime/latest-edge-appliance.md` | `e537d54dc6a365e8dfb682efe86da2eb5e23fc2270a2b550c869d3d8e63fa7b1` |
+| Integration manifest | `integrations/outputs/runtime/latest-edge-appliance/manifest.json` | `dfe1d31264779b5168b6f8bd3cb07eca641c901d795897dae882acf4a4da1d7f` |
 | Splunk handoff | `integrations/outputs/runtime/latest-edge-appliance/siem/splunk_saved_search.json` | `b589650ea4204854045aa5b74ca41d409e8c9da3354e6540b1391fdab6986080` |
 | Elastic handoff | `integrations/outputs/runtime/latest-edge-appliance/siem/elastic_detection_rule.ndjson` | `fa82bc122cf426b9126ccfd77efbd148b5736cc4626df33ddf0c8a46645ba362` |
 | Sentinel handoff | `integrations/outputs/runtime/latest-edge-appliance/siem/sentinel_analytic_rule.json` | `227982baeb8a8f70dd15d25f04f4ae7b2fdd6135c1fb9bc53b19191a299a1c54` |
-| Jira ticket handoff | `integrations/outputs/runtime/latest-edge-appliance/tickets/jira_remediation_ticket.json` | `db16db3e756a90a3495fb3cc951f6d45087aacc4728712d97db84d8e5621996e` |
-| ServiceNow task handoff | `integrations/outputs/runtime/latest-edge-appliance/tickets/servicenow_remediation_task.json` | `c637d7b0ae6a2a14f49ab0866f19a471b076410c887097507d4f788f1100864e` |
-| Operator audit event | `integrations/outputs/runtime/latest-edge-appliance/audit/operator_approval_event.json` | `167aab142f7e9072abc7c1f8b4e65d5cc6b026f7c1d5dc848265a543471c7741` |
+| Jira ticket handoff | `integrations/outputs/runtime/latest-edge-appliance/tickets/jira_remediation_ticket.json` | `e115e5d0127126de4f2951faa0e251de81d5c5247bdb2e9026be072848de7d0a` |
+| ServiceNow task handoff | `integrations/outputs/runtime/latest-edge-appliance/tickets/servicenow_remediation_task.json` | `65293c8c79f18b6e087735f5cf2321852c858b564131af00f6b73e80678cce93` |
+| Operator audit event | `integrations/outputs/runtime/latest-edge-appliance/audit/operator_approval_event.json` | `d2dcde2f37e5aa0572afc04588587600ddabfdfadef064c6bdf1ad15f06bf1d4` |
+| Handoff review checklist | `integrations/outputs/runtime/latest-edge-appliance/review_checklist.md` | `0e7429be2462071053988df1ec4ee42a8ac23e2104cdcde15814c45ccbd9a910` |
+| Handoff review ZIP | `integrations/outputs/runtime/latest-edge-appliance-review-bundle.zip` | `e676da036f9f5e4d8c2bbbe6306486654a6463dcba37f5985e9a8b1392e29280` |
 
 The evidence bundle includes the enforced pilot policy:
 

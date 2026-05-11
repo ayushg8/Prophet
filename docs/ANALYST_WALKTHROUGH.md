@@ -38,11 +38,12 @@ Terminal 2:
 
 ```bash
 cd prophet-console
-npm run dev
+npm run dev:evaluator
 ```
 
-Open `http://127.0.0.1:5173`. Keep the console local. Do not enable VM
-scraping, enter customer secrets, add target hosts, or paste raw scraper text.
+Open `http://127.0.0.1:5173`. Confirm the header says
+`EVALUATOR · DEMO ONLY`. Keep the console local. Do not enable live collection
+workflows, enter customer secrets, add target hosts, or paste raw scraper text.
 
 ## Timeboxed Review
 
@@ -92,3 +93,6 @@ buyer conversation is usually the gap analysis: which customer-owned asset or
 SBOM export can be imported safely, which source IDs should be allowlisted,
 which sandbox profile would be approved, and which SIEM/ticketing handoff
 format should be reviewed first.
+
+If screenshots are needed for a qualified follow-up, use
+`docs/CONSOLE_EXPECTED_SCREENSHOTS.md` as the redaction-safe visual checklist.

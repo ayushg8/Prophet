@@ -23,7 +23,7 @@ evidence, and safe handoff templates for SOC review.
 - Deterministic forecaster with reproducible fixture and seeded-OSINT inputs.
 - Fictional asset/SBOM inventory, safe CSV import, and safe seedset generation.
 - Fixture-backed public-source OSINT snapshot generation.
-- Safe exploit-class portfolio with non-actionable rationale.
+- Safe exposure-class defense portfolio with non-actionable rationale.
 - Deterministic sandbox runner artifact for the edge-appliance profile.
 - Direction C artifact validator that rejects payloads, target-control fields,
   credentials, live targets, and unsafe text.
@@ -72,7 +72,7 @@ Strong controls:
 
 - Lab exploit material is not part of the default product flow.
 - Runtime outputs are ignored and generated under `*/outputs/runtime/`.
-- Live VM scraping is blocked by policy and an environment gate.
+- Live collection workflows are blocked by policy and an environment gate.
 - Evidence and integration exporters validate hashes and reject unsafe keys or
   text.
 - The new policy linter rejects unknown modes, enabled live controls, missing
@@ -90,7 +90,7 @@ Remaining security gaps:
 
 ## Engineering Findings
 
-The repo now has the right contracts: world forecast, exploit-class portfolio,
+The repo now has the right contracts: world forecast, exposure-class portfolio,
 Direction C artifact, evidence bundle, integration manifest, policy file, and
 validators. That is the right defense-tech shape because every interface can be
 shown to a buyer and every artifact can be hashed.

@@ -15,7 +15,7 @@ operators. Use these words consistently in buyer reviews and documentation.
 | Defense artifact | The reviewable defensive output: patch summary, detection summary, validation status, and safety metadata. |
 | Evidence bundle | JSON and Markdown files that collect the forecast, asset seed summary, source refs, defense artifact, validation result, policy hash, approval record hash, and artifact hashes. |
 | Fixture-backed | Based on checked-in fictional or sanitized fixtures, not live customer systems. This is the default pilot mode. |
-| Forecast | Prophet's defensive prediction record: likely strike window, likely strike vector, confidence, source refs, and rationale. |
+| Forecast | Prophet's defensive prioritization record: likely strike window, likely strike vector, confidence, source refs, and rationale. |
 | Integration handoff | SIEM and ticketing review templates generated from validated evidence. They are files for customer review, not automatic production deployment. |
 | Localhost-only | Runs on the evaluator's machine and talks only to local services such as `127.0.0.1`. It does not contact live targets. |
 | Policy | A JSON file that defines allowed modes, approved source IDs, sandbox profiles, blocked controls, retention hints, and allowed handoff exports. |
@@ -28,8 +28,8 @@ operators. Use these words consistently in buyer reviews and documentation.
 | Strike vector | The likely attack method category, such as edge-appliance initial access. Prophet keeps this at defensive class level. |
 | Strike window | The time frame when a target class may need extra defensive attention because external pressure and historical patterns line up. |
 | Validation failure evidence | Sanitized evidence that a defensive candidate failed or timed out in fixture validation. It helps buyers see unsuccessful outcomes without raw logs. |
-| Zero-day defense | A defensive patch, configuration, detection, or response recommendation prepared for a predicted exploit class before public exploitation pressure peaks. |
-| Zero-day exploit | In Prophet documentation, this means the predicted exploit class an adversary might seek. The public pilot does not provide exploit procedures, payloads, or live validation against real targets. |
+| Exposure-class recommendation | Prophet's reviewable recommendation for the defensive class to harden first. It is not a claim that Prophet discovered a new vulnerability. |
+| Preemptive defense | A patch, configuration, detection, or response recommendation prepared before pressure peaks, based on public context and approved fixture or metadata evidence. |
 
 ## Preferred Language
 
@@ -37,6 +37,7 @@ operators. Use these words consistently in buyer reviews and documentation.
 - Say "exposure class" instead of "target."
 - Say "defense artifact" instead of "exploit output" when discussing buyer
   evidence.
+- Say "exposure-class recommendation" instead of "zero-day prediction."
 - Say "integration handoff" instead of "deployment" unless a customer has
   explicitly approved a separate production process.
 - Say "policy-blocked" when a control refuses an unsafe or out-of-scope action.

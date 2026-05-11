@@ -10,6 +10,7 @@ import argparse
 import hashlib
 import json
 import os
+import re
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
@@ -46,6 +47,32 @@ PROFILES = {
 }
 
 RUN_MANIFEST_SCHEMA_VERSION = "prophet.sandbox_run_manifest.v0.1"
+CUSTOMER_APPROVAL_SCHEMA_VERSION = "prophet_sandbox_customer_approval.v0.1"
+NON_FIXTURE_SANDBOX_APPROVAL = "non_fixture_sandbox_mode"
+CUSTOMER_APPROVAL_ATTESTATIONS = (
+    "no_live_targets",
+    "no_payloads",
+    "no_credentials",
+    "customer_boundary_reviewed",
+    "policy_reviewed",
+)
+SAFE_APPROVAL_ID_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_.-]{0,120}$")
+EMAIL_RE = re.compile(r"[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}")
+IP_RE = re.compile(
+    r"\b(?:(?:25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}"
+    r"(?:25[0-5]|2[0-4]\d|[01]?\d\d?)\b"
+)
+HOSTNAME_RE = re.compile(
+    r"\b(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+"
+    r"(?:com|net|org|mil|gov|edu|io|dev|local|lan|internal|corp)\b",
+    re.IGNORECASE,
+)
+URL_RE = re.compile(r"https?://|ssh://|sftp://", re.IGNORECASE)
+SECRET_RE = re.compile(
+    r"(?:-----BEGIN [A-Z ]*PRIVATE KEY-----|"
+    r"\b(?:password|passwd|secret|api[_-]?key|access[_-]?token|token)\s*[:=])",
+    re.IGNORECASE,
+)
 
 
 class SandboxRunnerError(ValueError):
@@ -59,15 +86,22 @@ def run_profile(
     run_id: str | None = None,
     mode: str = "fixture",
     policy: str | Path | None = None,
+    customer_approval_record: str | Path | None = None,
 ) -> dict[str, Any]:
     if profile not in PROFILES:
         raise SandboxRunnerError(f"unknown sandbox profile: {profile}")
     policy_context = enforce_profile_policy(policy, profile=profile) if policy is not None else None
-    if mode != "fixture" and os.environ.get("PROPHET_ENABLE_SANDBOX_RUNNER") != "1":
-        raise SandboxRunnerError(
-            "container sandbox mode is disabled; set PROPHET_ENABLE_SANDBOX_RUNNER=1 only for approved profiles"
-        )
     if mode != "fixture":
+        validate_customer_approval_record(
+            customer_approval_record,
+            profile=profile,
+            mode=mode,
+        )
+        if os.environ.get("PROPHET_ENABLE_SANDBOX_RUNNER") != "1":
+            raise SandboxRunnerError(
+                "container sandbox mode is disabled after customer approval; "
+                "set PROPHET_ENABLE_SANDBOX_RUNNER=1 only for approved profiles"
+            )
         raise SandboxRunnerError("no container profiles are packaged in the public repo")
 
     emitted_at = _generated_at(generated_at)
@@ -208,6 +242,13 @@ def main(argv: list[str] | None = None) -> int:
     run_parser.add_argument("--generated-at", help="ISO timestamp for deterministic output")
     run_parser.add_argument("--run-id", help="Optional run id")
     run_parser.add_argument("--policy", help="Optional prophet_pilot_policy.v0.1 gate")
+    run_parser.add_argument(
+        "--customer-approval-record",
+        help=(
+            "Sanitized prophet_sandbox_customer_approval.v0.1 JSON required "
+            "before any non-fixture sandbox mode is considered."
+        ),
+    )
     run_parser.add_argument("--out", help="Output JSON path; stdout when omitted")
     run_parser.add_argument(
         "--manifest-out",
@@ -222,6 +263,7 @@ def main(argv: list[str] | None = None) -> int:
             generated_at=args.generated_at,
             run_id=args.run_id,
             policy=args.policy,
+            customer_approval_record=args.customer_approval_record,
         )
         output = json.dumps(artifact, indent=2, sort_keys=True) + "\n"
         if args.out:
@@ -282,9 +324,82 @@ def enforce_profile_policy(policy_path: str | Path, *, profile: str) -> dict[str
     return policy
 
 
+def validate_customer_approval_record(
+    approval_path: str | Path | None,
+    *,
+    profile: str,
+    mode: str,
+) -> dict[str, Any]:
+    """Validate the sanitized customer gate required for non-fixture sandbox modes."""
+
+    if approval_path is None:
+        raise SandboxRunnerError(
+            "customer approval record is required before non-fixture sandbox mode"
+        )
+    approval = _load_json(Path(approval_path))
+    _scan_customer_approval_safe(approval)
+    if approval.get("schema_version") != CUSTOMER_APPROVAL_SCHEMA_VERSION:
+        raise SandboxRunnerError(
+            f"customer approval schema_version must be {CUSTOMER_APPROVAL_SCHEMA_VERSION}"
+        )
+    approval_id = _str(approval.get("approval_id"), "")
+    if not SAFE_APPROVAL_ID_RE.match(approval_id):
+        raise SandboxRunnerError("customer approval approval_id is required")
+    if approval.get("profile") != profile:
+        raise SandboxRunnerError("customer approval profile does not match requested profile")
+    if approval.get("mode") != mode:
+        raise SandboxRunnerError("customer approval mode does not match requested mode")
+    if approval.get("decision") != "approved":
+        raise SandboxRunnerError("customer approval decision must be approved")
+    approved_for = _string_list(approval.get("approved_for"))
+    if NON_FIXTURE_SANDBOX_APPROVAL not in approved_for:
+        raise SandboxRunnerError(
+            f"customer approval approved_for must include {NON_FIXTURE_SANDBOX_APPROVAL}"
+        )
+    attestations = _object(approval.get("safety_attestation"))
+    missing = [
+        key
+        for key in CUSTOMER_APPROVAL_ATTESTATIONS
+        if attestations.get(key) is not True
+    ]
+    if missing:
+        raise SandboxRunnerError(
+            "customer approval safety_attestation must set true: " + ", ".join(missing)
+        )
+    return approval
+
+
+def _scan_customer_approval_safe(value: Any, context: str = "customer_approval") -> None:
+    if isinstance(value, dict):
+        for key, item in value.items():
+            _scan_customer_approval_safe(item, f"{context}.{key}")
+        return
+    if isinstance(value, list):
+        for index, item in enumerate(value):
+            _scan_customer_approval_safe(item, f"{context}[{index}]")
+        return
+    if not isinstance(value, str):
+        return
+    if EMAIL_RE.search(value):
+        raise SandboxRunnerError(f"{context} contains email-like text")
+    if URL_RE.search(value):
+        raise SandboxRunnerError(f"{context} contains URL-like text")
+    if IP_RE.search(value):
+        raise SandboxRunnerError(f"{context} contains live IP-like text")
+    if HOSTNAME_RE.search(value):
+        raise SandboxRunnerError(f"{context} contains hostname-like text")
+    if SECRET_RE.search(value):
+        raise SandboxRunnerError(f"{context} contains secret-like text")
+
+
 def _sha256_normalized(value: Any) -> str:
     return hashlib.sha256(
-        json.dumps(value, sort_keys=True, separators=(",", ":")).encode("utf-8")
+        json.dumps(
+            value,
+            sort_keys=True,
+            separators=(",", ":"),
+            ensure_ascii=False,
+        ).encode("utf-8")
     ).hexdigest()
 
 
