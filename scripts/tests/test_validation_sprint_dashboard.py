@@ -17,6 +17,7 @@ NEXT_DRAFT_SCRIPT = ROOT / "scripts" / "validation-next-draft.py"
 STATUS_SCRIPT = ROOT / "scripts" / "validation-outreach-status.py"
 TARGET_UPDATE_SCRIPT = ROOT / "scripts" / "validation-target-update.py"
 BATCH_SCRIPT = ROOT / "scripts" / "validation-send-copy-batch.py"
+CONTACT_FORM_SCRIPT = ROOT / "scripts" / "validation-contact-form-copy.py"
 SPEC = importlib.util.spec_from_file_location("validation_sprint_dashboard", SCRIPT)
 assert SPEC and SPEC.loader
 dashboard = importlib.util.module_from_spec(SPEC)
@@ -355,6 +356,7 @@ class ValidationSprintDashboardTests(unittest.TestCase):
         outreach_block = _load_module("dashboard_outreach_block_batch_ready", OUTREACH_SCRIPT)
         message_pack = _load_module("dashboard_message_pack_batch_ready", MESSAGE_SCRIPT)
         send_copy_batch = _load_module("dashboard_send_copy_batch_ready", BATCH_SCRIPT)
+        contact_form_copy = _load_module("dashboard_contact_form_copy_ready", CONTACT_FORM_SCRIPT)
         block = outreach_block.build_outreach_block(targets, run_date="2026-05-10")
         pack = message_pack.build_message_pack(block)
 
@@ -364,6 +366,8 @@ class ValidationSprintDashboardTests(unittest.TestCase):
             pack_path = tmp_path / "today-message-pack.json"
             batch_dir = tmp_path / "send-copy-2026-05-10"
             manifest_path = batch_dir / "manifest.json"
+            contact_dir = tmp_path / "contact-form-copy-2026-05-10"
+            contact_manifest_path = contact_dir / "manifest.json"
             targets_path.write_text(json.dumps(targets), encoding="utf-8")
             pack_path.write_text(json.dumps(pack), encoding="utf-8")
             manifest = send_copy_batch.write_send_copy_batch(
@@ -375,6 +379,17 @@ class ValidationSprintDashboardTests(unittest.TestCase):
             manifest["manifest_path"] = str(manifest_path)
             manifest_path.write_text(
                 json.dumps(manifest, indent=2, sort_keys=True) + "\n",
+                encoding="utf-8",
+            )
+            contact_manifest = contact_form_copy.write_contact_form_copy(
+                pack,
+                targets,
+                out_dir=contact_dir,
+                require_date="2026-05-10",
+            )
+            contact_manifest["manifest_path"] = str(contact_manifest_path)
+            contact_manifest_path.write_text(
+                json.dumps(contact_manifest, indent=2, sort_keys=True) + "\n",
                 encoding="utf-8",
             )
             summary = dashboard.build_dashboard(
@@ -395,6 +410,76 @@ class ValidationSprintDashboardTests(unittest.TestCase):
         self.assertTrue(summary["outreach_execution"]["send_copy_batch_matches_current_pack"])
         self.assertEqual(summary["outreach_execution"]["send_copy_batch_state"], "ready")
         self.assertEqual(summary["outreach_execution"]["send_copy_batch_copy_file_count"], 8)
+        self.assertTrue(summary["outreach_execution"]["contact_form_copy_exists"])
+        self.assertTrue(summary["outreach_execution"]["contact_form_copy_manifest_exists"])
+        self.assertTrue(summary["outreach_execution"]["contact_form_copy_readme_exists"])
+        self.assertTrue(summary["outreach_execution"]["contact_form_copy_checklist_exists"])
+        self.assertTrue(summary["outreach_execution"]["contact_form_copy_index_exists"])
+        self.assertTrue(summary["outreach_execution"]["contact_form_copy_do_not_send_exists"])
+        self.assertTrue(summary["outreach_execution"]["contact_form_copy_matches_current_pack"])
+        self.assertEqual(summary["outreach_execution"]["contact_form_copy_state"], "ready")
+        self.assertEqual(summary["outreach_execution"]["contact_form_copy_file_count"], 8)
+
+    def test_stale_contact_form_copy_must_be_refreshed(self) -> None:
+        targets = json.loads(
+            (ROOT / "docs/validation-targets.example.json").read_text(encoding="utf-8")
+        )
+        outreach_block = _load_module("dashboard_outreach_block_contact_stale", OUTREACH_SCRIPT)
+        message_pack = _load_module("dashboard_message_pack_contact_stale", MESSAGE_SCRIPT)
+        send_copy_batch = _load_module("dashboard_send_copy_batch_contact_stale", BATCH_SCRIPT)
+        contact_form_copy = _load_module("dashboard_contact_form_copy_stale", CONTACT_FORM_SCRIPT)
+        block = outreach_block.build_outreach_block(targets, run_date="2026-05-10")
+        pack = message_pack.build_message_pack(block)
+
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_path = Path(tmp)
+            targets_path = tmp_path / "validation-targets.json"
+            pack_path = tmp_path / "today-message-pack.json"
+            batch_dir = tmp_path / "send-copy-2026-05-10"
+            manifest_path = batch_dir / "manifest.json"
+            contact_dir = tmp_path / "contact-form-copy-2026-05-10"
+            contact_manifest_path = contact_dir / "manifest.json"
+            targets_path.write_text(json.dumps(targets), encoding="utf-8")
+            pack_path.write_text(json.dumps(pack), encoding="utf-8")
+            manifest = send_copy_batch.write_send_copy_batch(
+                pack,
+                targets,
+                out_dir=batch_dir,
+                require_date="2026-05-10",
+            )
+            manifest["manifest_path"] = str(manifest_path)
+            manifest_path.write_text(
+                json.dumps(manifest, indent=2, sort_keys=True) + "\n",
+                encoding="utf-8",
+            )
+            contact_manifest = contact_form_copy.write_contact_form_copy(
+                pack,
+                targets,
+                out_dir=contact_dir,
+                require_date="2026-05-10",
+            )
+            contact_manifest["manifest_path"] = str(contact_manifest_path)
+            contact_manifest_path.write_text(
+                json.dumps(contact_manifest, indent=2, sort_keys=True) + "\n",
+                encoding="utf-8",
+            )
+            (contact_dir / "01.txt").write_text("stale\n", encoding="utf-8")
+
+            summary = dashboard.build_dashboard(
+                log_path=ROOT / "docs/customer-validation-log.example.json",
+                targets_path=targets_path,
+                message_pack_path=pack_path,
+                require_date="2026-05-10",
+                scripts_dir=ROOT / "scripts",
+            )
+
+        self.assertEqual(summary["outreach_execution"]["send_copy_batch_state"], "ready")
+        self.assertEqual(summary["outreach_execution"]["contact_form_copy_state"], "stale")
+        self.assertFalse(summary["outreach_execution"]["contact_form_copy_matches_current_pack"])
+        self.assertIn(
+            "contact-form copy",
+            summary["outreach_execution"]["contact_form_copy_mismatch_reason"],
+        )
 
     def test_missing_send_copy_batch_checklist_must_be_refreshed(self) -> None:
         targets = json.loads(

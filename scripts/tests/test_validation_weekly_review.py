@@ -19,6 +19,7 @@ PRUNE_SCRIPT = ROOT / "scripts" / "validation-prune-private.py"
 OUTREACH_SCRIPT = ROOT / "scripts" / "validation-outreach-block.py"
 MESSAGE_SCRIPT = ROOT / "scripts" / "validation-message-pack.py"
 BATCH_SCRIPT = ROOT / "scripts" / "validation-send-copy-batch.py"
+CONTACT_FORM_SCRIPT = ROOT / "scripts" / "validation-contact-form-copy.py"
 EXAMPLE_TARGETS = ROOT / "docs" / "validation-targets.example.json"
 EXAMPLE_LOG = ROOT / "docs" / "customer-validation-log.example.json"
 
@@ -37,6 +38,7 @@ validation_prune = _load_module("validation_prune_private_for_weekly_review", PR
 outreach_block = _load_module("validation_outreach_block_for_weekly_review", OUTREACH_SCRIPT)
 message_pack = _load_module("validation_message_pack_for_weekly_review", MESSAGE_SCRIPT)
 send_copy_batch = _load_module("validation_send_copy_batch_for_weekly_review", BATCH_SCRIPT)
+contact_form_copy = _load_module("validation_contact_form_copy_for_weekly_review", CONTACT_FORM_SCRIPT)
 
 
 class ValidationWeeklyReviewTests(unittest.TestCase):
@@ -76,6 +78,9 @@ class ValidationWeeklyReviewTests(unittest.TestCase):
             self.assertFalse(review["outreach_execution"]["send_copy_batch_copy_index_exists"])
             self.assertFalse(review["outreach_execution"]["send_copy_batch_subject_order_exists"])
             self.assertFalse(review["outreach_execution"]["send_copy_batch_do_not_send_exists"])
+            self.assertEqual(review["outreach_execution"]["contact_form_copy_state"], "missing")
+            self.assertEqual(review["outreach_execution"]["contact_form_copy_file_count"], 0)
+            self.assertFalse(review["outreach_execution"]["contact_form_copy_matches_current_pack"])
             self.assertEqual(review["private_artifacts"]["send_copy_warning_count"], 0)
             self.assertEqual(review["private_artifacts"]["send_copy_warnings"], [])
             self.assertEqual(review["pruning_candidates"]["overdue_follow_ups"], [])
@@ -92,6 +97,8 @@ class ValidationWeeklyReviewTests(unittest.TestCase):
             pack = json.loads(pack_path.read_text(encoding="utf-8"))
             batch_dir = private_dir / "send-copy-2026-05-10"
             manifest_path = batch_dir / "manifest.json"
+            contact_dir = private_dir / "contact-form-copy-2026-05-10"
+            contact_manifest_path = contact_dir / "manifest.json"
             manifest = send_copy_batch.write_send_copy_batch(
                 pack,
                 targets,
@@ -101,6 +108,17 @@ class ValidationWeeklyReviewTests(unittest.TestCase):
             manifest["manifest_path"] = str(manifest_path)
             manifest_path.write_text(
                 json.dumps(manifest, indent=2, sort_keys=True) + "\n",
+                encoding="utf-8",
+            )
+            contact_manifest = contact_form_copy.write_contact_form_copy(
+                pack,
+                targets,
+                out_dir=contact_dir,
+                require_date="2026-05-10",
+            )
+            contact_manifest["manifest_path"] = str(contact_manifest_path)
+            contact_manifest_path.write_text(
+                json.dumps(contact_manifest, indent=2, sort_keys=True) + "\n",
                 encoding="utf-8",
             )
 
@@ -124,9 +142,13 @@ class ValidationWeeklyReviewTests(unittest.TestCase):
             self.assertTrue(outreach["send_copy_batch_subject_order_exists"])
             self.assertTrue(outreach["send_copy_batch_do_not_send_exists"])
             self.assertTrue(outreach["send_copy_batch_matches_current_pack"])
+            self.assertEqual(outreach["contact_form_copy_state"], "ready")
+            self.assertEqual(outreach["contact_form_copy_file_count"], 8)
+            self.assertTrue(outreach["contact_form_copy_matches_current_pack"])
             self.assertEqual(review["private_artifacts"]["send_copy_warning_count"], 0)
             rendered = weekly_review.render_markdown(review)
             self.assertIn("Batch DO_NOT_SEND guard exists: true", rendered)
+            self.assertIn("Contact-form copy state: ready", rendered)
 
     def test_flags_unsafe_or_outdated_private_send_copy_files(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

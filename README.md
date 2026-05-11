@@ -212,6 +212,8 @@ checks, including `next_pending_target_label` and the exact next dry-run /
 `outreach_execution.next_draft_matches_next_pending`, plus
 `outreach_execution.send_copy_state` and
 `outreach_execution.send_copy_matches_next_pending`, plus
+`outreach_execution.contact_form_copy_state`,
+`outreach_execution.contact_form_copy_matches_current_pack`, and
 `outreach_execution.next_pending_pre_send_check_command`; treat the already-rendered
 `validation/private/today-next-draft.md` as tracker context, then send from
 `validation/private/today-send-copy.txt` only when both the draft and copy-only
@@ -242,9 +244,11 @@ checklist, copy index, subject-order helper, DO_NOT_SEND guard, or batch README.
 `.txt` files under `validation/private/contact-form-copy-YYYY-MM-DD/` for
 public contact forms that need compact copy. Run
 `make validation-contact-form-copy-check DATE=YYYY-MM-DD` before relying on an
-existing contact-form copy directory. Only the numbered file contents are
-outbound copy; the manifest, checklist, index, README, and DO_NOT_SEND guard
-stay private.
+existing contact-form copy directory; the dashboard also reports
+`outreach_execution.contact_form_copy_state` and
+`outreach_execution.contact_form_copy_matches_current_pack`. Only the numbered
+file contents are outbound copy; the manifest, checklist, index, README, and
+DO_NOT_SEND guard stay private.
 `make validation-pre-send-check TARGET=... DATE=YYYY-MM-DD` is the dry-run
 pre-send wrapper: it runs the dashboard, existing send-copy batch check, fresh
 contact-form copy check when that directory exists, weekly review, prune

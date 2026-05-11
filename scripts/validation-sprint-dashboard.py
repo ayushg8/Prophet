@@ -15,6 +15,7 @@ from typing import Any
 
 DASHBOARD_SCHEMA_VERSION = "prophet_validation_sprint_dashboard.v0.1"
 SEND_COPY_BATCH_SCHEMA_VERSION = "prophet_validation_send_copy_batch.v0.1"
+CONTACT_FORM_COPY_SCHEMA_VERSION = "prophet_validation_contact_form_copy.v0.1"
 BUILD_VERDICTS = {"build_next_slice"}
 DEFAULT_LOG = Path("validation/private/customer-validation-log.json")
 DEFAULT_TARGETS = Path("validation/private/validation-targets.json")
@@ -219,6 +220,12 @@ def render_text(dashboard: dict[str, Any]) -> str:
                 f"- Send-copy batch state: {outreach.get('send_copy_batch_state', 'unknown')}",
                 f"- Send-copy batch files: {outreach.get('send_copy_batch_copy_file_count', 0)}",
                 f"- Send-copy batch matches current pack: {str(outreach.get('send_copy_batch_matches_current_pack', False)).lower()}",
+                f"- Contact-form copy dir: {outreach.get('contact_form_copy_dir') or 'none'}",
+                f"- Contact-form copy command: {outreach.get('contact_form_copy_command') or 'none'}",
+                f"- Contact-form copy check command: {outreach.get('contact_form_copy_check_command') or 'none'}",
+                f"- Contact-form copy state: {outreach.get('contact_form_copy_state', 'unknown')}",
+                f"- Contact-form copy files: {outreach.get('contact_form_copy_file_count', 0)}",
+                f"- Contact-form copy matches current pack: {str(outreach.get('contact_form_copy_matches_current_pack', False)).lower()}",
                 f"- Next target: {outreach.get('next_pending_target_label') or 'none'}",
                 f"- Next group: {outreach.get('next_pending_group') or 'none'}",
                 f"- Pending send/update: {counts['pending_send_or_update']}",
@@ -311,6 +318,9 @@ def render_team_update(dashboard: dict[str, Any]) -> str:
                 f"- Send-copy batch do-not-send guard exists: {str(outreach.get('send_copy_batch_do_not_send_exists', False)).lower()}",
                 f"- Send-copy batch files: {outreach.get('send_copy_batch_copy_file_count', 0)}",
                 f"- Send-copy batch matches current pack: {str(outreach.get('send_copy_batch_matches_current_pack', False)).lower()}",
+                f"- Contact-form copy state: {outreach.get('contact_form_copy_state', 'unknown')}",
+                f"- Contact-form copy files: {outreach.get('contact_form_copy_file_count', 0)}",
+                f"- Contact-form copy matches current pack: {str(outreach.get('contact_form_copy_matches_current_pack', False)).lower()}",
             ]
         )
     else:
@@ -548,6 +558,14 @@ def _outreach_execution(
     send_copy_batch_copy_index_path = send_copy_batch_dir / "COPY_ONLY_INDEX.md"
     send_copy_batch_subject_order_path = send_copy_batch_dir / "SUBJECT_ORDER.md"
     send_copy_batch_do_not_send_path = send_copy_batch_dir / "DO_NOT_SEND.md"
+    contact_form_copy_dir = message_pack_path.with_name(
+        f"contact-form-copy-{status['generated_for']}"
+    )
+    contact_form_copy_manifest_path = contact_form_copy_dir / "manifest.json"
+    contact_form_copy_readme_path = contact_form_copy_dir / "README.md"
+    contact_form_copy_checklist_path = contact_form_copy_dir / "CHECKLIST.md"
+    contact_form_copy_index_path = contact_form_copy_dir / "CONTACT_FORM_INDEX.md"
+    contact_form_copy_do_not_send_path = contact_form_copy_dir / "DO_NOT_SEND.md"
     next_pending = _next_verified_pending_item(status)
     next_pending_label = next_pending["target_label"] if next_pending is not None else None
     counts = status["counts"]
@@ -583,6 +601,15 @@ def _outreach_execution(
         generated_for=status["generated_for"],
         scripts_dir=scripts_dir,
     )
+    contact_form_copy_check = _contact_form_copy_check(
+        contact_form_copy_dir=contact_form_copy_dir,
+        manifest_path=contact_form_copy_manifest_path,
+        pending_count=int(counts["pending_send_or_update"]),
+        status=status,
+        pack=pack,
+        generated_for=status["generated_for"],
+        scripts_dir=scripts_dir,
+    )
     return {
         "available": True,
         "message_pack_path": str(message_pack_path),
@@ -595,6 +622,12 @@ def _outreach_execution(
         "send_copy_batch_copy_index_path": str(send_copy_batch_copy_index_path),
         "send_copy_batch_subject_order_path": str(send_copy_batch_subject_order_path),
         "send_copy_batch_do_not_send_path": str(send_copy_batch_do_not_send_path),
+        "contact_form_copy_dir": str(contact_form_copy_dir),
+        "contact_form_copy_manifest_path": str(contact_form_copy_manifest_path),
+        "contact_form_copy_readme_path": str(contact_form_copy_readme_path),
+        "contact_form_copy_checklist_path": str(contact_form_copy_checklist_path),
+        "contact_form_copy_index_path": str(contact_form_copy_index_path),
+        "contact_form_copy_do_not_send_path": str(contact_form_copy_do_not_send_path),
         "send_copy_exists": send_copy_check["exists"],
         "send_copy_matches_next_pending": send_copy_check["matches"],
         "send_copy_state": send_copy_check["state"],
@@ -610,6 +643,22 @@ def _outreach_execution(
         "send_copy_batch_state": send_copy_batch_check["state"],
         "send_copy_batch_copy_file_count": send_copy_batch_check["copy_file_count"],
         "send_copy_batch_mismatch_reason": send_copy_batch_check["mismatch_reason"],
+        "contact_form_copy_exists": contact_form_copy_check["exists"],
+        "contact_form_copy_manifest_exists": contact_form_copy_check["manifest_exists"],
+        "contact_form_copy_readme_exists": contact_form_copy_check["readme_exists"],
+        "contact_form_copy_checklist_exists": contact_form_copy_check["checklist_exists"],
+        "contact_form_copy_index_exists": contact_form_copy_check["index_exists"],
+        "contact_form_copy_do_not_send_exists": contact_form_copy_check["do_not_send_exists"],
+        "contact_form_copy_matches_current_pack": contact_form_copy_check["matches"],
+        "contact_form_copy_state": contact_form_copy_check["state"],
+        "contact_form_copy_file_count": contact_form_copy_check["copy_file_count"],
+        "contact_form_copy_mismatch_reason": contact_form_copy_check["mismatch_reason"],
+        "contact_form_copy_command": (
+            f"make validation-contact-form-copy DATE={status['generated_for']}"
+        ),
+        "contact_form_copy_check_command": (
+            f"make validation-contact-form-copy-check DATE={status['generated_for']}"
+        ),
         "next_draft_exists": next_draft_exists,
         "next_draft_target_label": next_draft_target_label,
         "next_draft_generated_for": next_draft_metadata["generated_for"],
@@ -1234,6 +1283,120 @@ def _send_copy_batch_check(
             result["state"] = "stale"
             result["mismatch_reason"] = (
                 "send-copy batch manifest does not match current verified drafts"
+            )
+            return result
+    result["matches"] = True
+    result["state"] = "ready"
+    return result
+
+
+def _contact_form_copy_check(
+    *,
+    contact_form_copy_dir: Path,
+    manifest_path: Path,
+    pending_count: int,
+    status: dict[str, Any],
+    pack: dict[str, Any],
+    generated_for: str,
+    scripts_dir: Path,
+) -> dict[str, Any]:
+    result = {
+        "exists": contact_form_copy_dir.is_dir(),
+        "manifest_exists": manifest_path.exists(),
+        "readme_exists": (contact_form_copy_dir / "README.md").exists(),
+        "checklist_exists": (contact_form_copy_dir / "CHECKLIST.md").exists(),
+        "index_exists": (contact_form_copy_dir / "CONTACT_FORM_INDEX.md").exists(),
+        "do_not_send_exists": (contact_form_copy_dir / "DO_NOT_SEND.md").exists(),
+        "matches": False,
+        "state": "missing",
+        "copy_file_count": 0,
+        "mismatch_reason": None,
+    }
+    if pending_count == 0:
+        result["state"] = "not_needed"
+        return result
+    if not contact_form_copy_dir.exists():
+        result["mismatch_reason"] = "contact-form copy directory is missing"
+        return result
+    if not manifest_path.exists():
+        result["state"] = "stale"
+        result["mismatch_reason"] = "contact-form copy manifest is missing"
+        return result
+
+    contact_form_module = _load_module(
+        scripts_dir / "validation-contact-form-copy.py",
+        "validation_contact_form_copy_dashboard_module",
+    )
+    try:
+        check_summary = contact_form_module.check_contact_form_copy_directory(
+            contact_form_copy_dir,
+            require_date=generated_for,
+        )
+    except Exception as exc:
+        result["state"] = "stale"
+        result["mismatch_reason"] = f"contact-form copy check failed: {exc}"
+        return result
+    result["copy_file_count"] = int(check_summary.get("copy_file_count", 0))
+    try:
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        result["state"] = "stale"
+        result["mismatch_reason"] = f"could not read contact-form copy manifest: {exc}"
+        return result
+    if not isinstance(manifest, dict):
+        result["state"] = "stale"
+        result["mismatch_reason"] = "contact-form copy manifest must be a JSON object"
+        return result
+    if manifest.get("schema_version") != CONTACT_FORM_COPY_SCHEMA_VERSION:
+        result["state"] = "stale"
+        result["mismatch_reason"] = "contact-form copy manifest schema_version is unsupported"
+        return result
+    if result["copy_file_count"] != pending_count:
+        result["state"] = "stale"
+        result["mismatch_reason"] = "contact-form copy file count does not match pending drafts"
+        return result
+    pending_items = [
+        item for item in status["items"] if item["state"] == "pending_send_or_update"
+    ]
+    files_by_target = {
+        str(file["target_label"]): file
+        for file in manifest.get("files", [])
+        if isinstance(file, dict) and file.get("target_label")
+    }
+    max_chars = manifest.get("contact_form_max_chars", 650)
+    if not isinstance(max_chars, int):
+        result["state"] = "stale"
+        result["mismatch_reason"] = "contact-form copy manifest max characters is invalid"
+        return result
+    for item in pending_items:
+        target_label = item["target_label"]
+        file = files_by_target.get(target_label)
+        if file is None:
+            result["state"] = "stale"
+            result["mismatch_reason"] = (
+                f"contact-form copy manifest has no file for {target_label}"
+            )
+            return result
+        path = Path(str(file.get("path") or ""))
+        if not path.exists():
+            result["state"] = "stale"
+            result["mismatch_reason"] = f"contact-form copy file is missing: {path}"
+            return result
+        try:
+            actual_text = path.read_text(encoding="utf-8")
+        except OSError as exc:
+            result["state"] = "stale"
+            result["mismatch_reason"] = f"could not read contact-form copy file: {exc}"
+            return result
+        expected_text = contact_form_module.expected_contact_form_text(
+            pack,
+            target_label=target_label,
+            max_chars=max_chars,
+        )
+        if actual_text != expected_text:
+            result["state"] = "stale"
+            result["mismatch_reason"] = (
+                "contact-form copy text does not match current verified drafts"
             )
             return result
     result["matches"] = True

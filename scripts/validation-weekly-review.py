@@ -182,6 +182,9 @@ def render_markdown(review: dict[str, Any]) -> str:
                 f"- Batch subject order exists: {str(outreach['send_copy_batch_subject_order_exists']).lower()}",
                 f"- Batch DO_NOT_SEND guard exists: {str(outreach['send_copy_batch_do_not_send_exists']).lower()}",
                 f"- Batch matches current pack: {str(outreach['send_copy_batch_matches_current_pack']).lower()}",
+                f"- Contact-form copy state: {outreach['contact_form_copy_state']}",
+                f"- Contact-form copy files: {outreach['contact_form_copy_file_count']}",
+                f"- Contact-form copy matches current pack: {str(outreach['contact_form_copy_matches_current_pack']).lower()}",
             ]
         )
     elif outreach.get("reason"):
@@ -325,6 +328,9 @@ def _outreach_execution_summary(
             "send_copy_batch_subject_order_exists": False,
             "send_copy_batch_do_not_send_exists": False,
             "send_copy_batch_matches_current_pack": False,
+            "contact_form_copy_state": "missing",
+            "contact_form_copy_file_count": 0,
+            "contact_form_copy_matches_current_pack": False,
         }
     dashboard_module = _load_script_module("validation_sprint_dashboard")
     try:
@@ -354,13 +360,18 @@ def _outreach_execution_summary(
             "send_copy_batch_subject_order_exists": False,
             "send_copy_batch_do_not_send_exists": False,
             "send_copy_batch_matches_current_pack": False,
+            "contact_form_copy_state": "unknown",
+            "contact_form_copy_file_count": 0,
+            "contact_form_copy_matches_current_pack": False,
         }
     outreach = dashboard["outreach_execution"]
+    contact_form_state = outreach["contact_form_copy_state"]
     return {
         "available": True,
         "state": "ready"
         if outreach.get("send_copy_batch_state") == "ready"
         and outreach.get("send_copy_batch_matches_current_pack") is True
+        and contact_form_state in {"missing", "not_needed", "ready"}
         else "not_ready",
         "counts": outreach["counts"],
         "dry_run_verified_count": outreach["dry_run_verified_count"],
@@ -373,6 +384,9 @@ def _outreach_execution_summary(
         "send_copy_batch_subject_order_exists": outreach["send_copy_batch_subject_order_exists"],
         "send_copy_batch_do_not_send_exists": outreach["send_copy_batch_do_not_send_exists"],
         "send_copy_batch_matches_current_pack": outreach["send_copy_batch_matches_current_pack"],
+        "contact_form_copy_state": contact_form_state,
+        "contact_form_copy_file_count": outreach["contact_form_copy_file_count"],
+        "contact_form_copy_matches_current_pack": outreach["contact_form_copy_matches_current_pack"],
     }
 
 
