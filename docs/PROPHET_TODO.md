@@ -220,6 +220,10 @@ operator board for the next buyer-pilot cycles.
   release tagging if a later release tag moves beyond this commit.
 - [x] Documentation-only commit `ad5eb5c` passed GitHub `main` CI on
   2026-05-11, including the Linux fresh-clone pilot smoke.
+- [x] Documentation-only commit `04f2951` passed GitHub `main` CI and local
+  handoff gates: `make release-hygiene`,
+  `make pilot-ready-check-full DATE=2026-05-11`, `make console-live-check`, and
+  `make validation-send-copy-check DATE=2026-05-11`.
 - [x] Linux fresh-clone smoke is covered by the Ubuntu GitHub Actions `python`
   job through the named `Linux fresh-clone pilot smoke preflight` and
   `Linux fresh-clone pilot smoke` steps.
