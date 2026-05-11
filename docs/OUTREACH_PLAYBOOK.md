@@ -196,6 +196,9 @@ commands, or status metadata.
 When sending from the rendered draft, copy the generated subject/body as-is, or
 personalize only in the outreach channel after pasting. Do not store recipient
 names, private contact details, or new claims in repo files.
+The repo intentionally does not store recipient names, emails, LinkedIn URLs,
+or outbound channel details. The external outreach channel and real contact
+must come from outside the repo before sending any copy-only draft.
 To render a specific draft, use
 `make validation-draft TARGET=target-dib-platform-004 DATE=YYYY-MM-DD`; it
 rejects packs that do not match the requested outreach date.

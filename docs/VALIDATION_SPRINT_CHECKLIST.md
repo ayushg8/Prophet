@@ -121,6 +121,9 @@ Do not add production platform scope while this checklist is red.
 - [ ] Copy the generated subject/body as-is, or personalize only in the
   outreach channel after pasting. Do not store recipient names, private contact
   details, or new claims in repo files.
+- [ ] Confirm the real contact and outreach channel were selected outside the
+  repo. The repo intentionally does not store recipient names, emails,
+  LinkedIn URLs, or outbound channel details.
 - [ ] Render individual drafts with `--target-label` and `--require-date` when
   sending one ask at a time, or use
   `make validation-draft TARGET=target-dib-platform-004 DATE=YYYY-MM-DD`.

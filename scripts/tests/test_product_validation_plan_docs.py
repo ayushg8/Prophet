@@ -63,6 +63,9 @@ class ProductValidationPlanDocsTests(unittest.TestCase):
                 self.assertIn("copy the generated subject/body as-is", text)
                 self.assertIn("personalize only in the outreach channel", text)
                 self.assertIn("Do not store recipient", text)
+                self.assertIn("does not store recipient names", text)
+                self.assertIn("external outreach channel", text)
+                self.assertIn("real contact\nmust come from outside the repo", text)
                 self.assertNotIn("replace only the recipient name", text)
                 self.assertNotIn("<first name>", text)
 

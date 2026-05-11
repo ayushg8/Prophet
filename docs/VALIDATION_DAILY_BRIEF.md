@@ -178,6 +178,9 @@ next-pending send-copy match.
 When sending from the rendered draft, copy the generated subject/body as-is, or
 personalize only in the outreach channel after pasting. Do not store recipient
 names, private contact details, or new claims in repo files.
+The repo intentionally does not store recipient names, emails, LinkedIn URLs,
+or outbound channel details. The external outreach channel and real contact
+must come from outside the repo before sending any copy-only draft.
 
 Before sending, dry-run the generated tracker update with:
 
