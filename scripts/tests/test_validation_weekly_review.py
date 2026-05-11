@@ -15,6 +15,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 WEEKLY_SCRIPT = ROOT / "scripts" / "validation-weekly-review.py"
+PRUNE_SCRIPT = ROOT / "scripts" / "validation-prune-private.py"
 OUTREACH_SCRIPT = ROOT / "scripts" / "validation-outreach-block.py"
 MESSAGE_SCRIPT = ROOT / "scripts" / "validation-message-pack.py"
 BATCH_SCRIPT = ROOT / "scripts" / "validation-send-copy-batch.py"
@@ -32,6 +33,7 @@ def _load_module(name: str, path: Path):
 
 
 weekly_review = _load_module("validation_weekly_review", WEEKLY_SCRIPT)
+validation_prune = _load_module("validation_prune_private_for_weekly_review", PRUNE_SCRIPT)
 outreach_block = _load_module("validation_outreach_block_for_weekly_review", OUTREACH_SCRIPT)
 message_pack = _load_module("validation_message_pack_for_weekly_review", MESSAGE_SCRIPT)
 send_copy_batch = _load_module("validation_send_copy_batch_for_weekly_review", BATCH_SCRIPT)
@@ -151,6 +153,26 @@ class ValidationWeeklyReviewTests(unittest.TestCase):
             self.assertIn("Send-copy warning count: 1", rendered)
             self.assertIn("Private send-copy warnings:", rendered)
             self.assertIn("placeholder_text", rendered)
+
+            plan = validation_prune.build_prune_plan(
+                review,
+                private_dir=private_dir,
+                review_date="2026-05-10",
+            )
+            self.assertTrue(plan["dry_run"])
+            self.assertEqual(plan["candidate_count"], 1)
+            self.assertEqual(Path(plan["candidates"][0]["path"]).resolve(), old_dir.resolve())
+            self.assertEqual(plan["candidates"][0]["kind"], "outdated_send_copy_batch")
+            self.assertIn("--confirm-prune", validation_prune.render_markdown(plan))
+            original_is_ignored = validation_prune._is_ignored
+            try:
+                validation_prune._is_ignored = lambda _path: True
+                applied = validation_prune.apply_prune_plan(plan, private_dir=private_dir)
+            finally:
+                validation_prune._is_ignored = original_is_ignored
+            self.assertFalse(old_dir.exists())
+            self.assertFalse(applied["dry_run"])
+            self.assertEqual(applied["removed_count"], 1)
 
     def test_build_gate_requires_target_backed_validation(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

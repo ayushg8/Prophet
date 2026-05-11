@@ -496,6 +496,12 @@ send-copy batch README/checklist/copy-index state, stale private artifacts, and
 unsafe or outdated private send-copy warnings, and pruning candidates, and does
 not delete files or mutate trackers/logs.
 
+After reviewing that report, use `make validation-prune-private
+DATE=YYYY-MM-DD` to dry-run pruning for generated ignored private artifacts
+only. Add `CONFIRM_PRUNE=1` only after you have reviewed the plan and confirmed
+the current dated send-copy batch is ready. The pruning helper protects private
+trackers, logs, templates, and README files.
+
 ## Decision Rule
 
 - `insufficient_data`: keep booking calls.

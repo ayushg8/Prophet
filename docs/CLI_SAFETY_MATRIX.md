@@ -54,6 +54,7 @@ outreach happened when it did not.
 | `python3 scripts/validation-targets-scorecard.py` | Validates anonymized outreach targets, duplicate labels, top-level and target date fields, due follow-ups with due dates, cleared follow-up dates for advanced statuses, and sensitive text. |
 | `python3 scripts/validation-sprint-dashboard.py` | Combines validation scorecards, keeps `pilot_pull_detected` separate from `build_next_slice`, requires `target_backed_validation` to reach `build_next_slice` before opening production scope, counts only interviews tied to anonymized targets in `call_booked` or `completed` with matching segment/persona metadata for that gate, supports `--require-date` for date-mismatched private message packs, reports `next_draft_state`, `send_copy_state`, `send_copy_batch_state`, `send_copy_batch_readme_exists`, `send_copy_batch_checklist_exists`, and `send_copy_batch_copy_index_exists`, verifies the existing next draft's target/date/status/body through `next_draft_matches_next_pending`, verifies the copy-only send text through `send_copy_matches_next_pending`, verifies whole-block copy files, manifest fields, manifest operator notes, manifest outbound-boundary fields, copy-file SHA-256 values, batch README body, batch checklist body, and neutral copy-index body through `send_copy_batch_matches_current_pack` before treating the batch path as usable, points operators to the one-draft outreach path plus exact Make dry-run/`CONFIRM_SENT=1` commands when a private message pack exists, and supports `--format team` for sanitized aggregate-only shared updates that omit target labels, commands, message bodies, and private validation paths while showing gate-counted buyer evidence before any raw example-seed counts. |
 | `python3 scripts/validation-weekly-review.py` | Builds a read-only private weekly review, validates the private tracker/log, reports message-pack age, date-guarded outreach execution readiness, send-copy batch README/checklist/copy-index state, ignored private artifact counts, stale private artifacts, and pruning candidates, and does not delete files or mutate trackers/logs. |
+| `python3 scripts/validation-prune-private.py` | Builds a dry-run pruning plan from the weekly review for generated ignored private validation artifacts only, protects validation trackers/logs/templates/README files, requires matching `--review-date`, and removes eligible artifacts only with `--confirm-prune`; the Make wrapper writes only with `CONFIRM_PRUNE=1`. |
 
 The `make validation-resume DATE=YYYY-MM-DD` wrapper is a no-write recovery aid:
 it runs the dashboard with the date guard, prints the copy-only send text only
@@ -90,8 +91,10 @@ temporary file and preserves the previous saved update if rendering fails.
 `make validation-weekly-review DATE=YYYY-MM-DD` writes read-only private weekly
 review JSON/Markdown under `validation/private/` for pruning review; it does
 not send, delete, or confirm-update anything.
+`make validation-prune-private DATE=YYYY-MM-DD` dry-runs the generated-artifact
+prune plan and writes only with `CONFIRM_PRUNE=1` after review.
 Make confirmation wrappers fail closed unless the value is exactly `1`:
-`CONFIRM_SENT=1`, `CONFIRM_TARGET=1`, `CONFIRM_LOG=1`, and
+`CONFIRM_SENT=1`, `CONFIRM_TARGET=1`, `CONFIRM_LOG=1`, `CONFIRM_PRUNE=1`, and
 `REFRESH_README=1`.
 
 ## Related Release Utilities

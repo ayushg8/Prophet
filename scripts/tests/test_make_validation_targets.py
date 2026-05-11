@@ -62,6 +62,9 @@ class MakeValidationTargetsTests(unittest.TestCase):
         self.assertIn("sanitized aggregate-only validation update", completed.stdout)
         self.assertIn("make validation-weekly-review", completed.stdout)
         self.assertIn("read-only private weekly review report", completed.stdout)
+        self.assertIn("make validation-prune-private", completed.stdout)
+        self.assertIn("Dry-run pruning of generated ignored private artifacts", completed.stdout)
+        self.assertIn("CONFIRM_PRUNE=1", completed.stdout)
         self.assertIn(
             "use today-send-copy.txt for outbound text only after today-next-draft.md matches the next pending target/date/status/body",
             completed.stdout,

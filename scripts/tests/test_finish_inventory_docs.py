@@ -103,7 +103,7 @@ class FinishInventoryDocsTests(unittest.TestCase):
         for text in (audit, inventory):
             with self.subTest(document=("audit" if text == audit else "inventory")):
                 self.assertIn("check-release-safety.py --tracked --paths-only", text)
-                self.assertIn("344 tracked", text)
+                self.assertIn("345 tracked", text)
                 self.assertIn("policy.lint --policy policy/prophet-pilot-policy.json", text)
                 self.assertIn("check-default-output-safety.py", text)
                 self.assertIn("117 URLs", text)

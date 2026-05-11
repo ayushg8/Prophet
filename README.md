@@ -189,6 +189,7 @@ make validation-dashboard DATE=YYYY-MM-DD
 make validation-team-update DATE=YYYY-MM-DD
 make validation-team-update-save DATE=YYYY-MM-DD
 make validation-weekly-review DATE=YYYY-MM-DD
+make validation-prune-private DATE=YYYY-MM-DD
 make validation-resume DATE=YYYY-MM-DD
 make goal-resume DATE=YYYY-MM-DD
 make python-tests
@@ -247,10 +248,13 @@ send-boundary summary and `--format team` for the aggregate update.
 `make validation-weekly-review` writes a read-only private weekly review under
 `validation/private/`; it reports the validation gate, message-pack age, stale
 private artifacts, and pruning candidates, but does not delete files, send
-messages, or mutate trackers/logs.
+messages, or mutate trackers/logs. `make validation-prune-private` dry-runs a
+confirmation-gated plan for generated ignored private artifacts only; add
+`CONFIRM_PRUNE=1` only after reviewing the plan.
 Validation Make confirmation variables are exact write guards: only
-`CONFIRM_SENT=1`, `CONFIRM_TARGET=1`, and `CONFIRM_LOG=1` can write. Values
-such as `0`, `false`, `yes`, or `1 0` fail closed.
+`CONFIRM_SENT=1`, `CONFIRM_TARGET=1`, `CONFIRM_LOG=1`, and
+`CONFIRM_PRUNE=1` can write. Values such as `0`, `false`, `yes`, or `1 0`
+fail closed.
 For replies, run `make validation-reply-triage TARGET=... REPLY=... DATE=...`
 with only the sanitized classification (`book_call`, `disqualify`, `keep_pending`, or
 `manual_review`). It wraps `scripts/validation-reply-triage.py`, does not accept

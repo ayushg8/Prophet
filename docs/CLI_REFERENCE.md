@@ -708,6 +708,25 @@ as the dashboard, message-pack age, date-guarded outreach execution readiness,
 ignored private file count, stale private artifacts, and pruning candidates. It
 does not delete files, send messages, or mutate trackers/logs.
 
+After reading the weekly review, build a confirmation-gated prune plan for
+generated ignored private artifacts:
+
+```bash
+make validation-prune-private DATE=2026-05-11
+
+python3 scripts/validation-prune-private.py \
+  --weekly-review validation/private/today-weekly-review.json \
+  --private-dir validation/private \
+  --review-date 2026-05-11 \
+  --format markdown
+```
+
+The prune helper is dry-run by default. It only considers generated private
+validation artifacts such as outdated `send-copy-YYYY-MM-DD` batches or unsafe
+copy-only send text flagged by the weekly review. It protects validation
+trackers, logs, templates, and README files. Use `CONFIRM_PRUNE=1` or
+`--confirm-prune` only after reviewing the plan.
+
 The interview log appender validates and prints the projected scorecard summary
 without writing by default. Use `--confirm-log` only after the sanitized record
 is reviewed. Normal confirmed raw writes require
@@ -798,6 +817,7 @@ python3 scripts/customer-validation-scorecard.py --help
 python3 scripts/validation-targets-scorecard.py --help
 python3 scripts/validation-sprint-dashboard.py --help
 python3 scripts/validation-weekly-review.py --help
+python3 scripts/validation-prune-private.py --help
 python3 scripts/check-release-safety.py --help
 python3 scripts/production-readiness-scorecard.py --help
 ```

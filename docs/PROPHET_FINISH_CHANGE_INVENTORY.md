@@ -78,6 +78,7 @@ Files:
 - `scripts/validation-outreach-status.py`
 - `scripts/validation-reply-triage.py`
 - `scripts/validation-weekly-review.py`
+- `scripts/validation-prune-private.py`
 - `scripts/validation-target-update.py`
 - `scripts/validation-prepare-interview.py`
 - `scripts/init-validation-sprint.py`
@@ -122,6 +123,10 @@ Review focus:
   artifacts and pruning candidates, but must not delete files or mutate
   trackers/logs. The JSON report should expose a stable `review_date` field so
   machine-readable handoffs do not have to infer the date from Markdown.
+- The private prune helper should default to a dry-run plan, protect
+  validation trackers/logs/templates/README files, verify `validation/private/`
+  is gitignored before deletion, and require `--confirm-prune` /
+  `CONFIRM_PRUNE=1` before removing generated ignored private artifacts.
 - `--target-label` should render one source-aware draft without mutating private
   trackers.
 - `--target-label ... --format send-text` and `make validation-draft-copy`
@@ -558,6 +563,10 @@ Latest verification run for this inventory:
   reports `review_date: 2026-05-11`, `generated_for: 2026-05-11`,
   `outreach_execution.state: ready`, `private_artifacts.file_count: 40`, and
   `private_artifacts.stale_file_count: 0`.
+- `make validation-prune-private DATE=2026-05-11` passed as a dry run and
+  reported one eligible generated ignored private artifact candidate,
+  `validation/private/send-copy-2026-05-10/`, without deleting anything.
+  Confirmed pruning remains gated on `CONFIRM_PRUNE=1` after operator review.
 - Product validation plan docs coverage verifies that `pilot_pull_detected` is
   a design-partner conversion signal and only `build_next_slice` opens the
   production build gate.
@@ -668,7 +677,7 @@ Latest verification run for this inventory:
 - `PYTHONPATH=.:cyber-side:world-side python3 scripts/check-release-safety.py --diff`:
   passed over 0 paths in the clean committed worktree.
 - `PYTHONPATH=.:cyber-side:world-side python3 scripts/check-release-safety.py --tracked --paths-only`:
-  passed over 344 tracked paths, including release-bound policy-hash coverage
+  passed over 345 tracked paths, including release-bound policy-hash coverage
   checks.
 - `python3 -m policy.lint --policy policy/prophet-pilot-policy.json`:
   passed and reported policy ID `prophet-pilot-fixture-localhost-v0.1` with

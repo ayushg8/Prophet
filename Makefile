@@ -22,12 +22,14 @@ REQUIRE_DATE_ARG := --require-date $(VALIDATION_RUN_DATE)
 CONFIRM_SENT_VALUE := $(strip $(CONFIRM_SENT))
 CONFIRM_TARGET_VALUE := $(strip $(CONFIRM_TARGET))
 CONFIRM_LOG_VALUE := $(strip $(CONFIRM_LOG))
+CONFIRM_PRUNE_VALUE := $(strip $(CONFIRM_PRUNE))
 REPLACE_EXAMPLE_SEED_VALUE := $(strip $(REPLACE_EXAMPLE_SEED))
 REFRESH_README_VALUE := $(strip $(REFRESH_README))
 CONFIRM_SENT_ARG = $(if $(CONFIRM_SENT_VALUE),$(if $(filter-out 1,$(CONFIRM_SENT_VALUE)),$(error CONFIRM_SENT must be 1 when set),--confirm-sent),)
 CONFIRM_SENT_COPY_ARG = $(if $(CONFIRM_SENT_VALUE),--require-copy-artifact --send-copy $(VALIDATION_SEND_COPY_TXT) --send-copy-batch-manifest $(VALIDATION_SEND_COPY_BATCH_MANIFEST_JSON),)
 CONFIRM_TARGET_ARG = $(if $(CONFIRM_TARGET_VALUE),$(if $(filter-out 1,$(CONFIRM_TARGET_VALUE)),$(error CONFIRM_TARGET must be 1 when set),--confirm-target),--dry-run)
 CONFIRM_LOG_ARG = $(if $(CONFIRM_LOG_VALUE),$(if $(filter-out 1,$(CONFIRM_LOG_VALUE)),$(error CONFIRM_LOG must be 1 when set),--confirm-log),)
+CONFIRM_PRUNE_ARG = $(if $(CONFIRM_PRUNE_VALUE),$(if $(filter-out 1,$(CONFIRM_PRUNE_VALUE)),$(error CONFIRM_PRUNE must be 1 when set),--confirm-prune),)
 REPLACE_EXAMPLE_SEED_ARG = $(if $(REPLACE_EXAMPLE_SEED_VALUE),$(if $(filter-out 1,$(REPLACE_EXAMPLE_SEED_VALUE)),$(error REPLACE_EXAMPLE_SEED must be 1 when set),--replace-example-seed),)
 REFRESH_README_ARG = $(if $(REFRESH_README_VALUE),$(if $(filter-out 1,$(REFRESH_README_VALUE)),$(error REFRESH_README must be 1 when set),--refresh-readme),)
 
@@ -70,6 +72,7 @@ help:
 		'  make validation-team-update  Print sanitized aggregate-only validation update; optional DATE=YYYY-MM-DD.' \
 		'  make validation-team-update-save Write sanitized aggregate-only update under validation/private/; optional DATE=YYYY-MM-DD.' \
 		'  make validation-weekly-review Write read-only private weekly review report; optional DATE=YYYY-MM-DD.' \
+		'  make validation-prune-private Dry-run pruning of generated ignored private artifacts; optional DATE=YYYY-MM-DD, CONFIRM_PRUNE=1 after review.' \
 		'  make validation-resume        Run dashboard and print existing next draft when present; optional DATE=YYYY-MM-DD.' \
 		'  make goal-resume              Alias for validation-resume after a lost /goal session; optional DATE=YYYY-MM-DD.' \
 		'  Restore path: run make validation-dashboard DATE=YYYY-MM-DD first; use today-send-copy.txt for outbound text only after today-next-draft.md matches the next pending target/date/status/body.' \
@@ -420,6 +423,15 @@ validation-weekly-review:
 		--review-date $(VALIDATION_RUN_DATE) \
 		--format markdown \
 		--out $(VALIDATION_WEEKLY_REVIEW_MD)
+
+.PHONY: validation-prune-private
+validation-prune-private:
+	@python3 scripts/validation-prune-private.py \
+		--weekly-review $(VALIDATION_WEEKLY_REVIEW_JSON) \
+		--private-dir $(VALIDATION_DIR) \
+		--review-date $(VALIDATION_RUN_DATE) \
+		$(CONFIRM_PRUNE_ARG) \
+		--format markdown
 
 .PHONY: validation-resume
 validation-resume:

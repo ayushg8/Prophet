@@ -24,6 +24,7 @@ VALIDATION_CLIS = [
     "scripts/validation-targets-scorecard.py",
     "scripts/validation-sprint-dashboard.py",
     "scripts/validation-weekly-review.py",
+    "scripts/validation-prune-private.py",
 ]
 
 
@@ -63,6 +64,7 @@ class CliSafetyMatrixDocsTests(unittest.TestCase):
             "make validation-team-update",
             "make validation-team-update-save",
             "make validation-weekly-review",
+            "make validation-prune-private",
             "make validation-reply-triage",
             "make validation-resume",
             "make goal-resume",
@@ -85,6 +87,10 @@ class CliSafetyMatrixDocsTests(unittest.TestCase):
             "--require-target-status call_booked",
             "read-only private weekly review",
             "does not delete files or mutate trackers/logs",
+            "--confirm-prune",
+            "CONFIRM_PRUNE=1",
+            "generated ignored private validation artifacts only",
+            "protects validation trackers/logs/templates/README files",
             "accepts only a sanitized classification",
             "never reply text",
         ]
