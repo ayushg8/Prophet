@@ -94,6 +94,8 @@ class CliReferenceDocsTests(unittest.TestCase):
         self.assertIn("make release-tag-preflight", text)
         self.assertIn("git-history secret scan", text)
         self.assertIn("real buyer validation has opened `build_next_slice`", text)
+        self.assertIn("reports both the full secret-history result", text)
+        self.assertIn("all current blockers in one run", text)
         self.assertIn("does not create or push", text)
         self.assertIn("--format team", text)
         self.assertIn("aggregate send-copy readiness", text)

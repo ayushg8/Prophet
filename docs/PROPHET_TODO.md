@@ -218,6 +218,8 @@ operator board for the next buyer-pilot cycles.
   unresolved full-history secret archaeology, staged-path safety failures, or a
   closed real-validation build gate:
   `make release-tag-preflight DATE=YYYY-MM-DD`.
+  After release hygiene passes, it reports both the secret-history result and
+  the real-validation build-gate result before exiting.
 - [ ] Full secrets archaeology and public release review currently flag
   historical
   `LOG4SHELL_INSTRUCTIONS.md` password-like content in git history; decide

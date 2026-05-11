@@ -59,7 +59,9 @@ git config core.hooksPath .githooks
 - [ ] `make release-tag-preflight DATE=YYYY-MM-DD` passes before creating a
   public pilot tag. This read-only guard runs release hygiene, full
   git-history secret archaeology, staged-path safety, and the real-validation
-  build gate.
+  build gate. When hygiene passes but release is still blocked, it reports both
+  the full secret-history result and the real-validation build-gate result
+  before exiting.
 - [ ] `make secrets-archaeology` has been run before public release, and any
   historical findings have an explicit cleanup, rotation, or false-positive
   decision. Use `docs/SECRET_HISTORY_REVIEW.md` for the current finding and
@@ -104,7 +106,8 @@ git config core.hooksPath .githooks
   `make secrets-archaeology` has unresolved git-history findings.
 - [ ] Do not bypass `make release-tag-preflight DATE=YYYY-MM-DD`; it is
   expected to fail closed while the historical secret-history finding remains
-  unresolved or validation is still `insufficient_data`.
+  unresolved or validation is still `insufficient_data`, and it should show
+  both blockers in the same run after hygiene passes.
 - [ ] Resolve the historical `LOG4SHELL_INSTRUCTIONS.md` finding through
   `docs/SECRET_HISTORY_REVIEW.md` before tagging the public fixture/hash set.
 - [ ] Record the owner/reviewer decision without pasting the matched line or

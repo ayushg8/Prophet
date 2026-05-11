@@ -79,7 +79,9 @@ positive is reviewed.
 gate. It fails closed unless the worktree is clean, release hygiene passes,
 full git-history secrets archaeology passes, staged-path safety passes, and
 real buyer validation has opened `build_next_slice`. It does not create or push
-tags.
+tags. After release hygiene passes, it reports both the full secret-history result
+and the real-validation build-gate result before exiting, so release owners can
+see all current blockers in one run.
 
 `make console-demo` starts the localhost-only control API and evaluator UI in
 one terminal. On a fresh checkout, run `cd prophet-console && npm ci` first. If
