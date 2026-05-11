@@ -469,11 +469,13 @@ The dashboard verifies the directory through
 `outreach_execution.send_copy_batch_do_not_send_exists`; the
 match check covers numbered copy files, manifest fields, manifest operator
 notes, manifest outbound-boundary fields, copy-file SHA-256 values, the batch
-README body, the batch checklist body, neutral copy-index body, and
+README body, the batch checklist body with per-draft pre-send commands, neutral copy-index body, and
 subject-order body, and DO_NOT_SEND guard. Rerun
 the batch command before using the directory if the state is not ready or any
 ready/check boolean is not true. The dated directory convention is
 `validation/private/send-copy-YYYY-MM-DD/`.
+Use the private batch checklist to run each target's pre-send check command
+immediately before sending that numbered copy file.
 `make validation-send-copy-check` directly verifies the existing numbered
 `.txt` files against the private manifest: neutral filenames, one `Subject:`
 line each, SHA-256 matches, no target labels, no tracker commands, and no
@@ -673,8 +675,10 @@ actual send. The
 `send_copy_batch_subject_order_exists`, and `send_copy_batch_do_not_send_exists`
 are true; the match check also verifies
 manifest operator notes, manifest outbound-boundary fields, copy-file SHA-256
-values, the batch README body, the batch checklist body, and the neutral
-copy-index body, subject-order body, and DO_NOT_SEND guard.
+values, the batch README body, the batch checklist body with per-draft pre-send commands, and the neutral
+copy-index body, subject-order body, and DO_NOT_SEND guard. The private batch
+checklist includes each target's pre-send check command; run it immediately
+before sending that numbered copy file.
 `make validation-pre-send-check TARGET=... DATE=YYYY-MM-DD` runs the dated
 dashboard, send-copy batch check, fresh private weekly review, prune dry-run,
 and tracker-update dry run, and it refuses `CONFIRM_*` write guards.

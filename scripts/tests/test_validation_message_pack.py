@@ -55,6 +55,10 @@ class ValidationMessagePackTests(unittest.TestCase):
             "make validation-apply-draft TARGET=target-dib-platform-001 DATE=2026-05-10",
         )
         self.assertEqual(
+            first_draft["pre_send_check_command"],
+            "make validation-pre-send-check TARGET=target-dib-platform-001 DATE=2026-05-10",
+        )
+        self.assertEqual(
             first_draft["confirmed_apply_command"],
             (
                 "make validation-apply-draft TARGET=target-dib-platform-001 "
@@ -68,6 +72,10 @@ class ValidationMessagePackTests(unittest.TestCase):
         self.assertTrue(first_draft["tracker_update_command"].endswith("--dry-run"))
         self.assertIn(
             "make validation-status DATE=2026-05-10",
+            "\n".join(pack["operator_notes"]),
+        )
+        self.assertIn(
+            "Run the pre-send check command immediately before sending.",
             "\n".join(pack["operator_notes"]),
         )
         self.assertEqual(first_draft["source"], "warm_intro_needed")
@@ -128,15 +136,24 @@ class ValidationMessagePackTests(unittest.TestCase):
         self.assertIn("Execution Checklist", rendered)
         self.assertIn("- [ ] target-dib-platform-001", rendered)
         self.assertIn("run `make validation-apply-draft", rendered)
-        self.assertIn("`, send copy-only text, then run `make validation-apply-draft", rendered)
+        self.assertIn("run `make validation-pre-send-check", rendered)
+        self.assertIn(
+            "` immediately before sending, send copy-only text, then run `make validation-apply-draft",
+            rendered,
+        )
         self.assertIn("confirming the message was sent", rendered)
         self.assertIn(
             "make validation-apply-draft TARGET=target-dib-platform-001 DATE=2026-05-10",
             rendered,
         )
+        self.assertIn(
+            "make validation-pre-send-check TARGET=target-dib-platform-001 DATE=2026-05-10",
+            rendered,
+        )
         self.assertIn("DATE=2026-05-10 CONFIRM_SENT=1", rendered)
         self.assertIn("Source: warm intro needed", rendered)
         self.assertIn("Safe dry-run apply command:", rendered)
+        self.assertIn("Pre-send check command:", rendered)
         self.assertIn("Confirmed-send apply command:", rendered)
         self.assertIn("Subject options:", rendered)
         self.assertIn("Tracker update command:", rendered)

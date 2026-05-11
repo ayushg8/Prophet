@@ -69,6 +69,7 @@ def build_message_pack(block: dict[str, Any]) -> dict[str, Any]:
             "Do not store recipient names or private contact details in repo files.",
             "Do not add customer names, emails, URLs, hostnames, IPs, screenshots, or raw artifacts.",
             "Use the Make dry-run command before sending and before writing tracker changes.",
+            "Run the pre-send check command immediately before sending.",
             "Use the CONFIRM_SENT=1 command only after the message was actually sent.",
             f"Rerun make validation-status DATE={run_date} after confirmed tracker updates.",
             "If a buyer asks for live testing or offensive capability, disqualify rather than promise it.",
@@ -121,7 +122,9 @@ def render_markdown(pack: dict[str, Any]) -> str:
         lines.append(
             "- [ ] "
             f"{draft['target_label']} ({draft['group']}): run "
-            f"`{draft['dry_run_apply_command']}`, send copy-only text, then run "
+            f"`{draft['dry_run_apply_command']}`, run "
+            f"`{draft['pre_send_check_command']}` immediately before sending, "
+            "send copy-only text, then run "
             f"`{draft['confirmed_apply_command']}` only after confirming the "
             "message was sent."
         )
@@ -143,6 +146,7 @@ def render_markdown(pack: dict[str, Any]) -> str:
                 f"- Operator angle: {draft['operator_angle']}",
                 f"- Next tracker action: {draft['next_action']}",
                 f"- Safe dry-run apply command: `{draft['dry_run_apply_command']}`",
+                f"- Pre-send check command: `{draft['pre_send_check_command']}`",
                 f"- Confirmed-send apply command: `{draft['confirmed_apply_command']}`",
                 f"- Tracker update command: `{draft['tracker_update_command']}`",
                 "",
@@ -274,6 +278,10 @@ def _draft_for_target(
         "body": body,
         "dry_run_apply_command": (
             "make validation-apply-draft "
+            f"TARGET={target['target_label']} DATE={run_date}"
+        ),
+        "pre_send_check_command": (
+            "make validation-pre-send-check "
             f"TARGET={target['target_label']} DATE={run_date}"
         ),
         "confirmed_apply_command": (

@@ -229,7 +229,7 @@ reports `outreach_execution.send_copy_batch_state` and
 and copy only their contents when those fields are ready/true. Do not attach
 the files. The match check covers the numbered copy files, manifest fields,
 manifest operator notes, manifest outbound-boundary fields, copy-file SHA-256
-values, batch README body, batch checklist body, neutral copy-index body,
+values, batch README body, batch checklist body with per-draft pre-send commands, neutral copy-index body,
 subject-order body, and DO_NOT_SEND guard; do not send the private manifest,
 checklist, copy index, subject-order helper, DO_NOT_SEND guard, or batch README.
 `make validation-pre-send-check TARGET=... DATE=YYYY-MM-DD` is the dry-run
@@ -608,9 +608,10 @@ dashboard reports `outreach_execution.send_copy_batch_state: ready` and
 `outreach_execution.send_copy_batch_subject_order_exists: true`, and
 `outreach_execution.send_copy_batch_do_not_send_exists: true`; the match check
 also verifies the manifest operator notes, manifest outbound-boundary fields,
-copy-file SHA-256 values, batch README body, batch checklist body, neutral
+copy-file SHA-256 values, batch README body, batch checklist body with per-draft pre-send commands, neutral
 copy-index body, subject-order body, and DO_NOT_SEND guard. Do not attach the
-files.
+files. Use the private batch checklist to run each target's pre-send check
+immediately before that numbered copy file is sent.
 Before sending, use
 `make validation-apply-draft TARGET=target-dib-platform-001 DATE=YYYY-MM-DD`
 to dry-run the generated tracker update; then, after a confirmed send, rerun it

@@ -130,11 +130,13 @@ DATE=YYYY-MM-DD` only after the dashboard reports
 `outreach_execution.send_copy_batch_do_not_send_exists: true`; the match check
 covers the numbered copy files, manifest fields, manifest operator notes,
 manifest outbound-boundary fields, copy-file SHA-256 values, batch README body,
-batch checklist body, neutral copy-index body, subject-order body, and
+batch checklist body with per-draft pre-send commands, neutral copy-index body, subject-order body, and
 DO_NOT_SEND guard. Open the generated `.txt` files and copy only their contents
 into the outreach channel. Do not attach the files, and do not send the private
 manifest, checklist, copy index, subject-order helper, DO_NOT_SEND guard, or
-batch README. For the next single send, the dashboard also reports
+batch README. Use the private batch checklist to run each target's pre-send
+check immediately before sending that numbered copy file. For the next single
+send, the dashboard also reports
 `outreach_execution.next_pending_pre_send_check_command`.
 
 The next operational loop is:
@@ -154,7 +156,8 @@ The next operational loop is:
 6. If sending the whole block, run `make validation-send-copy-batch
    DATE=YYYY-MM-DD` and copy only the generated `.txt` file contents after the
    dashboard reports the batch state is ready and matches the current pack. Do
-   not attach the files.
+   not attach the files. Use the private checklist's pre-send command for each
+   target immediately before that file is sent.
 7. Run `make validation-pre-send-check TARGET=<target-label>
    DATE=YYYY-MM-DD` immediately before sending. It is dry-run only and refuses
    `CONFIRM_SENT`, `CONFIRM_TARGET`, `CONFIRM_LOG`, or `CONFIRM_PRUNE`.

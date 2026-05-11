@@ -185,6 +185,8 @@ class CliReferenceDocsTests(unittest.TestCase):
                 self.assertIn("neutral copy-index body", text)
                 self.assertIn("subject-order body", text)
                 self.assertIn("DO_NOT_SEND guard", text)
+                self.assertIn("per-draft pre-send commands", text)
+                self.assertIn("private batch checklist", text)
                 self.assertIn("private manifest", text)
                 self.assertIn("checklist, copy index", text)
                 self.assertIn("subject-order helper", text)

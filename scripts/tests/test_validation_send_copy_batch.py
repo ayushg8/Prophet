@@ -60,12 +60,20 @@ class ValidationSendCopyBatchTests(unittest.TestCase):
             )
             self.assertEqual(manifest["copy_file_count"], 8)
             self.assertEqual(manifest["dry_run_verified_count"], 8)
+            self.assertIn(
+                "Run the matching pre-send check command immediately before each send.",
+                manifest["operator_notes"],
+            )
             first = manifest["files"][0]
             self.assertEqual(first["target_label"], "target-dib-platform-001")
             self.assertIn("subject", first)
             self.assertEqual(
                 first["path"],
                 str(out_dir / "01.txt"),
+            )
+            self.assertEqual(
+                first["pre_send_check_command"],
+                "make validation-pre-send-check TARGET=target-dib-platform-001 DATE=2026-05-10",
             )
             self.assertEqual(manifest["do_not_send_path"], str(out_dir / "DO_NOT_SEND.md"))
             rendered = Path(first["path"]).read_text(encoding="utf-8")
@@ -98,6 +106,7 @@ class ValidationSendCopyBatchTests(unittest.TestCase):
             self.assertIn("SHA-256", readme)
             self.assertIn("make validation-send-copy-check DATE=2026-05-10", readme)
             self.assertIn("make validation-status DATE=2026-05-10", readme)
+            self.assertIn("pre-send check command immediately before sending", readme)
             self.assertIn("personalize only in the outreach channel", readme)
             self.assertIn("Do not store recipient names", readme)
             self.assertNotIn("target-dib-platform-001", readme)
@@ -112,6 +121,10 @@ class ValidationSendCopyBatchTests(unittest.TestCase):
             self.assertIn("`target-dib-platform-001`", checklist)
             self.assertIn(
                 "`make validation-apply-draft TARGET=target-dib-platform-001 DATE=2026-05-10`",
+                checklist,
+            )
+            self.assertIn(
+                "`make validation-pre-send-check TARGET=target-dib-platform-001 DATE=2026-05-10`",
                 checklist,
             )
             self.assertIn(

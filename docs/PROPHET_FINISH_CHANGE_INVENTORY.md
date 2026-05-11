@@ -585,7 +585,7 @@ Latest verification run for this inventory:
   `send_copy_batch_subject_order_exists: true`,
   `send_copy_batch_do_not_send_exists: true`, and 8 copy files.
   The dashboard now checks copy-file SHA-256 values, manifest outbound-boundary
-  fields, batch README body, batch checklist body, neutral copy-index body,
+  fields, batch README body, batch checklist body with per-draft pre-send commands, neutral copy-index body,
   subject-order body, DO_NOT_SEND guard, and
   manifest operator notes, not only file existence.
 - Direct outbound copy checks found no target labels, validation commands,

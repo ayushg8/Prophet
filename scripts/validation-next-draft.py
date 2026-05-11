@@ -78,6 +78,11 @@ def build_next_draft(
             "make validation-apply-draft "
             f"TARGET={selected['target_label']} DATE={status['generated_for']}"
         ),
+        "pre_send_check_command": draft.get(
+            "pre_send_check_command",
+            "make validation-pre-send-check "
+            f"TARGET={selected['target_label']} DATE={status['generated_for']}",
+        ),
         "confirmed_apply_command": (
             "make validation-apply-draft "
             f"TARGET={selected['target_label']} DATE={status['generated_for']} "
@@ -89,6 +94,7 @@ def build_next_draft(
             "Copy the generated subject/body as-is, or personalize only in the outreach channel after pasting.",
             "Do not store recipient names or private contact details in repo files.",
             "Run the Make dry-run command before sending or writing tracker changes.",
+            "Run the pre-send check command immediately before sending.",
             "Send the copy-only text before applying the confirmed tracker update.",
             "Run the CONFIRM_SENT=1 command only after the message was actually sent.",
             f"Rerun make validation-status DATE={status['generated_for']} after updating the private tracker.",
@@ -126,6 +132,12 @@ def render_markdown(next_draft: dict[str, Any]) -> str:
         "",
         "```bash",
         next_draft["dry_run_apply_command"],
+        "```",
+        "",
+        "Pre-send check immediately before sending:",
+        "",
+        "```bash",
+        next_draft["pre_send_check_command"],
         "```",
         "",
         "After the message has actually been sent:",

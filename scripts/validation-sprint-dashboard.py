@@ -1223,6 +1223,7 @@ def _send_copy_batch_check(
                 "subject": file["subject"],
                 "sha256": file["sha256"],
                 "dry_run_apply_command": file["dry_run_apply_command"],
+                "pre_send_check_command": file["pre_send_check_command"],
                 "confirmed_apply_command": file["confirmed_apply_command"],
             }
             for file in expected_files
@@ -1245,6 +1246,7 @@ def _expected_send_copy_batch_operator_notes(generated_for: str) -> list[str]:
         "Each file contains only one subject line and body text; copy the contents, do not attach the file.",
         "Do not paste target labels, tracker commands, the manifest, the batch checklist, the copy index, the subject order helper, the do-not-send guard, or the batch README to buyers.",
         "Run the matching dry-run command before sending each file's contents.",
+        "Run the matching pre-send check command immediately before each send.",
         "Run the matching CONFIRM_SENT=1 command only after that message was actually sent.",
         f"Rerun make validation-status DATE={generated_for} after confirmed tracker updates.",
     ]
@@ -1276,6 +1278,7 @@ def _expected_send_copy_batch_readme(*, generated_for: str, copy_file_count: int
             f"- Before using an existing batch, run `make validation-send-copy-check DATE={generated_for}`.",
             "- The manifest records a SHA-256 for each copy-only `.txt` file.",
             "- Run each matching dry-run command from the manifest before sending.",
+            "- Run each matching pre-send check command immediately before sending.",
             "- Run each matching confirmed command only after that message was actually sent.",
             f"- Rerun `make validation-status DATE={generated_for}` after confirmed tracker updates.",
             "",
@@ -1300,11 +1303,12 @@ def _expected_send_copy_batch_checklist(
         "For each row:",
         "",
         "1. Run the dry-run command.",
-        "2. Open the numbered `.txt` file and send only its contents.",
-        "3. Run the confirmed command only after the message was actually sent.",
+        "2. Run the pre-send check command immediately before sending.",
+        "3. Open the numbered `.txt` file and send only its contents.",
+        "4. Run the confirmed command only after the message was actually sent.",
         "",
-        "| Sent | File | Group | Target | Dry-run command | Confirmed-send command |",
-        "|---|---|---|---|---|---|",
+        "| Sent | File | Group | Target | Dry-run command | Pre-send check command | Confirmed-send command |",
+        "|---|---|---|---|---|---|---|",
     ]
     for file in files:
         lines.append(
@@ -1313,6 +1317,7 @@ def _expected_send_copy_batch_checklist(
             f"| `{file['group']}` "
             f"| `{file['target_label']}` "
             f"| `{file['dry_run_apply_command']}` "
+            f"| `{file['pre_send_check_command']}` "
             f"| `{file['confirmed_apply_command']}` |"
         )
     lines.extend(
@@ -1467,6 +1472,11 @@ def _expected_send_copy_batch_files(
                 "subject": subject,
                 "sha256": hashlib.sha256(text.encode("utf-8")).hexdigest(),
                 "dry_run_apply_command": item.get("dry_run_apply_command"),
+                "pre_send_check_command": draft.get(
+                    "pre_send_check_command",
+                    "make validation-pre-send-check "
+                    f"TARGET={item['target_label']} DATE={status['generated_for']}",
+                ),
                 "confirmed_apply_command": item.get("confirmed_apply_command"),
             }
         )

@@ -49,6 +49,10 @@ class ValidationNextDraftTests(unittest.TestCase):
             "make validation-apply-draft TARGET=target-dib-platform-001 DATE=2026-05-10",
         )
         self.assertEqual(
+            selected["pre_send_check_command"],
+            "make validation-pre-send-check TARGET=target-dib-platform-001 DATE=2026-05-10",
+        )
+        self.assertEqual(
             selected["confirmed_apply_command"],
             (
                 "make validation-apply-draft TARGET=target-dib-platform-001 "
@@ -65,6 +69,10 @@ class ValidationNextDraftTests(unittest.TestCase):
         self.assertIn("Do not store recipient names", "\n".join(selected["operator_notes"]))
         self.assertIn(
             "before sending or writing tracker changes",
+            "\n".join(selected["operator_notes"]),
+        )
+        self.assertIn(
+            "Run the pre-send check command immediately before sending.",
             "\n".join(selected["operator_notes"]),
         )
         self.assertIn(
@@ -90,6 +98,11 @@ class ValidationNextDraftTests(unittest.TestCase):
         self.assertIn("Dry-run before sending or writing", rendered)
         self.assertIn(
             "make validation-apply-draft TARGET=target-dib-platform-001 DATE=2026-05-10",
+            rendered,
+        )
+        self.assertIn("Pre-send check immediately before sending", rendered)
+        self.assertIn(
+            "make validation-pre-send-check TARGET=target-dib-platform-001 DATE=2026-05-10",
             rendered,
         )
         self.assertIn("CONFIRM_SENT=1", rendered)
