@@ -14,10 +14,10 @@ It does not tag, deploy, or mark the product complete.
 - Critical open readiness items: `24`.
 - Outreach status: 8 pending send/update items, 0 attention errors.
 - Latest implementation checkpoint is
-  `951a3c16204139cad1c67e6deaa13d7802d689a2`
-  (`951a3c1 Report all release preflight blockers`); the GitHub
+  `2f3c85c89b6dc1d4ab8efb6701fafb6eb4016916`
+  (`2f3c85c Add sanitized SBOM fixture import`); the GitHub
   `main` CI run for that checkpoint completed successfully at
-  <https://github.com/Ayush1298567/Prophet/actions/runs/25683725814>.
+  <https://github.com/Ayush1298567/Prophet/actions/runs/25685489633>.
   Future product/workflow commits after that checkpoint must rerun GitHub
   `main` CI and the relevant local handoff gates before being treated as
   current.
@@ -527,7 +527,7 @@ sanitized examples.
 
 Latest verification run for this inventory:
 
-- `python3 -m unittest discover -s scripts/tests -v`: 405 tests passed after
+- `python3 -m unittest discover -s scripts/tests -v`: 406 tests passed after
   the NIST/CMMC security packet docs guard, send-boundary dashboard, copy-only resume boundary, CLI-reference,
   validation-resume, goal-resume, validation-team-update, validation-weekly-review,
   validation-next-action handoff generation, weekly-review `review_date`,
@@ -845,10 +845,10 @@ Latest verification run for this inventory:
 - `python3 scripts/production-readiness-scorecard.py`: readiness `37.8%`,
   24 critical open items.
 - Latest implementation checkpoint:
-  `951a3c16204139cad1c67e6deaa13d7802d689a2`
-  (`951a3c1 Report all release preflight blockers`). GitHub `main`
+  `2f3c85c89b6dc1d4ab8efb6701fafb6eb4016916`
+  (`2f3c85c Add sanitized SBOM fixture import`). GitHub `main`
   CI completed successfully at
-  <https://github.com/Ayush1298567/Prophet/actions/runs/25683725814>. This
+  <https://github.com/Ayush1298567/Prophet/actions/runs/25685489633>. This
   checkpoint makes `make release-tag-preflight DATE=YYYY-MM-DD` report both
   current release blockers after hygiene: the historical secret-history owner
   decision and the closed real-validation build gate. It does not open
@@ -904,11 +904,11 @@ runtime output contents into the PR.
   `main` CI, the dated validation dashboard, full-batch pre-send checking, and
   single-target pre-send checking; checkpoint `4d9565c` passed GitHub `main`
   CI and `make validation-resume DATE=2026-05-11`; and latest implementation
-  checkpoint `951a3c1` passed GitHub `main` CI,
+  checkpoint `2f3c85c` passed GitHub `main` CI,
   `python3 -m unittest discover -s scripts/tests -v`, `make release-hygiene`,
   and `make release-tag-preflight DATE=2026-05-11` failed closed while
   reporting both current blockers.
-- `python3 -m unittest discover -s scripts/tests -v` passed with 405 tests.
+- `python3 -m unittest discover -s scripts/tests -v` passed with 406 tests.
 - `make release-hygiene` passed.
 - `make console-live-check` passed against the running local demo.
 - `make console-screenshot-check` passed against the generated screenshot
@@ -941,9 +941,9 @@ runtime output contents into the PR.
   documentation-only commits; rerun it before release tagging if a later release
   tag moves beyond this commit.
   Linux fresh-clone smoke is covered by the Ubuntu CI pilot smoke steps.
-- Latest implementation checkpoint is `951a3c1`, and the GitHub `main` CI run
+- Latest implementation checkpoint is `2f3c85c`, and the GitHub `main` CI run
   for that checkpoint completed successfully:
-  <https://github.com/Ayush1298567/Prophet/actions/runs/25683725814>.
+  <https://github.com/Ayush1298567/Prophet/actions/runs/25685489633>.
   Future product/workflow commits after that checkpoint must rerun GitHub
   `main` CI and the relevant local handoff gates before being treated as
   current.

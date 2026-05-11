@@ -91,6 +91,7 @@ class CliReferenceDocsTests(unittest.TestCase):
         self.assertIn("make goal-resume", text)
         self.assertIn("make python-tests", text)
         self.assertIn("make secrets-archaeology", text)
+        self.assertIn("make asset-sbom-demo DATE=2026-05-11", text)
         self.assertIn("python3 -m assets.sbom_import --help", text)
         self.assertIn("assets/fixtures/dib-edge-appliance-sbom.cyclonedx.json", text)
         self.assertIn("raw SBOM SHA-256 provenance only", text)

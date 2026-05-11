@@ -28,6 +28,8 @@ operator board for the next buyer-pilot cycles.
   evidence, safety attestation, and redaction report.
 - [x] Customer-safe CSV asset imports emit a hash-only import manifest for raw
   input and sanitized inventory/report/seedset outputs.
+- [x] Customer-safe CycloneDX/SPDX SBOM fixture imports emit sanitized
+  inventory/report/seedset outputs through `make asset-sbom-demo`.
 - [x] Integration handoffs are review templates, not auto-deploying controls.
 - [x] Root README points evaluators to the 3-minute smoke path and generated
   evidence outputs.

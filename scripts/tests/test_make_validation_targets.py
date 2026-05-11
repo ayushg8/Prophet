@@ -44,6 +44,8 @@ class MakeValidationTargetsTests(unittest.TestCase):
         self.assertIn("Check running local console readiness, evidence, integration", completed.stdout)
         self.assertIn("make console-screenshot-check", completed.stdout)
         self.assertIn("Verify generated console screenshot manifest", completed.stdout)
+        self.assertIn("make asset-sbom-demo", completed.stdout)
+        self.assertIn("Import sanitized CycloneDX/SPDX fixture", completed.stdout)
         self.assertIn("make supply-chain-sbom", completed.stdout)
         self.assertIn("ignored machine-readable supply-chain review artifact", completed.stdout)
         self.assertIn("make validation-status", completed.stdout)
@@ -103,6 +105,44 @@ class MakeValidationTargetsTests(unittest.TestCase):
         self.assertIn("current + git-history secret scan", completed.stdout)
         self.assertIn("make release-tag-preflight", completed.stdout)
         self.assertIn("Fail-closed read-only public release-tag preflight", completed.stdout)
+
+    @unittest.skipIf(shutil.which("make") is None, "make is not available")
+    def test_asset_sbom_demo_target_writes_requested_runtime_outputs(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            inventory = root / "sbom-inventory.json"
+            report = root / "sbom-report.json"
+            seedset = root / "sbom-seedset.json"
+            completed = subprocess.run(
+                [
+                    "make",
+                    "asset-sbom-demo",
+                    "DATE=2026-05-11",
+                    f"ASSET_SBOM_INVENTORY_OUT={inventory}",
+                    f"ASSET_SBOM_REPORT_OUT={report}",
+                    f"ASSET_SBOM_SEEDSET_OUT={seedset}",
+                    "ASSET_SBOM_INVENTORY_ID=make-target-sbom-test",
+                    "ASSET_SBOM_SEEDSET_RUN_ID=make-target-sbom-seedset",
+                ],
+                cwd=ROOT,
+                text=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                check=False,
+            )
+
+            self.assertEqual(completed.returncode, 0, completed.stderr)
+            self.assertIn("Wrote sanitized SBOM inventory", completed.stdout)
+            inventory_json = json.loads(inventory.read_text(encoding="utf-8"))
+            report_json = json.loads(report.read_text(encoding="utf-8"))
+            seedset_json = json.loads(seedset.read_text(encoding="utf-8"))
+
+        self.assertEqual(inventory_json["schema_version"], "asset_inventory.v0.1")
+        self.assertEqual(inventory_json["source_format"], "cyclonedx-json")
+        self.assertEqual(report_json["schema_version"], "asset_sbom_import_report.v0.1")
+        self.assertFalse(report_json["raw_sbom_embedded"])
+        self.assertFalse(report_json["raw_component_values_embedded"])
+        self.assertEqual(seedset_json["schema_version"], "asset_osint_seedset.v0.1")
 
     def test_python_tests_target_runs_all_unit_suites(self) -> None:
         makefile = (ROOT / "Makefile").read_text(encoding="utf-8")

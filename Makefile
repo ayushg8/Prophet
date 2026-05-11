@@ -20,6 +20,17 @@ VALIDATION_WEEKLY_REVIEW_MD ?= $(VALIDATION_DIR)/today-weekly-review.md
 VALIDATION_NEXT_ACTION_MD ?= $(VALIDATION_DIR)/NEXT_ACTION.md
 VALIDATION_INTERVIEW_JSON ?= $(if $(INTERVIEW),$(INTERVIEW),$(VALIDATION_DIR)/customer-validation-interview-next.json)
 SUPPLY_CHAIN_SBOM_OUT ?= evidence/outputs/runtime/supply-chain/prophet-supply-chain-sbom.json
+ASSET_SBOM ?= assets/fixtures/dib-edge-appliance-sbom.cyclonedx.json
+ASSET_SBOM_INVENTORY_ID ?= customer-safe-sbom-import
+ASSET_SBOM_PRODUCT_FAMILY ?= secure edge appliance family
+ASSET_SBOM_EXPOSURE_CLASS ?= edge_appliance
+ASSET_SBOM_OWNER_GROUP ?= product security
+ASSET_SBOM_ENVIRONMENT ?= customer approved metadata
+ASSET_SBOM_BUSINESS_CRITICALITY ?= high
+ASSET_SBOM_INVENTORY_OUT ?= assets/outputs/runtime/customer-safe-sbom-inventory.json
+ASSET_SBOM_REPORT_OUT ?= assets/outputs/runtime/customer-safe-sbom-report.json
+ASSET_SBOM_SEEDSET_OUT ?= assets/outputs/runtime/customer-safe-sbom-seedset.json
+ASSET_SBOM_SEEDSET_RUN_ID ?= customer-safe-sbom-seedset
 VALIDATION_RUN_DATE ?= $(if $(DATE),$(DATE),$(shell date +%F))
 DATE_ARG := $(if $(DATE),--date $(DATE),)
 REQUIRE_DATE_ARG := --require-date $(VALIDATION_RUN_DATE)
@@ -52,6 +63,7 @@ help:
 		'  make console-demo             Start control server and evaluator UI in one local terminal; Ctrl-C to stop.' \
 		'  make console-live-check       Check running local console readiness, evidence, integration, and audit endpoints.' \
 		'  make console-screenshot-check Verify generated console screenshot manifest hashes, dimensions, and ignored paths.' \
+		'  make asset-sbom-demo        Import sanitized CycloneDX/SPDX fixture to ignored inventory/report/seedset outputs; optional DATE=YYYY-MM-DD.' \
 		'  make supply-chain-sbom        Generate ignored machine-readable supply-chain review artifact; optional DATE=YYYY-MM-DD.' \
 		'  make console-control          Run the local console control server; Ctrl-C to stop.' \
 		'  make console-ui               Run the evaluator console UI; start console-control first.' \
@@ -155,6 +167,28 @@ console-live-check:
 .PHONY: console-screenshot-check
 console-screenshot-check:
 	@python3 scripts/check-console-screenshots.py --format text
+
+.PHONY: asset-sbom-demo
+asset-sbom-demo:
+	@PYTHONPATH=. python3 -m assets.sbom_import \
+		--sbom "$(ASSET_SBOM)" \
+		--inventory-id "$(ASSET_SBOM_INVENTORY_ID)" \
+		--product-family "$(ASSET_SBOM_PRODUCT_FAMILY)" \
+		--exposure-class "$(ASSET_SBOM_EXPOSURE_CLASS)" \
+		--owner-group "$(ASSET_SBOM_OWNER_GROUP)" \
+		--environment "$(ASSET_SBOM_ENVIRONMENT)" \
+		--business-criticality "$(ASSET_SBOM_BUSINESS_CRITICALITY)" \
+		--scope "Customer-approved sanitized SBOM metadata; no live targets named." \
+		--generated-at "$(VALIDATION_RUN_DATE)T08:00:00Z" \
+		--fixture \
+		--out "$(ASSET_SBOM_INVENTORY_OUT)" \
+		--report-out "$(ASSET_SBOM_REPORT_OUT)" \
+		--seedset-out "$(ASSET_SBOM_SEEDSET_OUT)" \
+		--seedset-run-id "$(ASSET_SBOM_SEEDSET_RUN_ID)" \
+		> /dev/null
+	@printf 'Wrote sanitized SBOM inventory to %s\n' '$(ASSET_SBOM_INVENTORY_OUT)'
+	@printf 'Wrote sanitized SBOM report to %s\n' '$(ASSET_SBOM_REPORT_OUT)'
+	@printf 'Wrote sanitized SBOM seedset to %s\n' '$(ASSET_SBOM_SEEDSET_OUT)'
 
 .PHONY: supply-chain-sbom
 supply-chain-sbom:

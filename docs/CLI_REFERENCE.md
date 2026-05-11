@@ -163,6 +163,14 @@ Import a sanitized CycloneDX or SPDX SBOM fixture into the same safe inventory
 shape:
 
 ```bash
+make asset-sbom-demo DATE=2026-05-11
+```
+
+The Make wrapper writes ignored runtime inventory, report, and seedset outputs
+from `assets/fixtures/dib-edge-appliance-sbom.cyclonedx.json`. Use the Python
+CLI directly when changing fixture, output path, or safe product-family labels:
+
+```bash
 PYTHONPATH=. python3 -m assets.sbom_import \
   --sbom assets/fixtures/dib-edge-appliance-sbom.cyclonedx.json \
   --inventory-id customer-safe-sbom-import \
