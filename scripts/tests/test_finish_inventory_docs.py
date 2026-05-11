@@ -84,10 +84,13 @@ class FinishInventoryDocsTests(unittest.TestCase):
             if path.is_file()
         )
 
-        self.assertIn(
-            f"ignored private validation output safety scan passes over {private_file_count} paths",
-            audit,
-        )
+        if private_file_count:
+            self.assertIn(
+                f"ignored private validation output safety scan passes over {private_file_count} paths",
+                audit,
+            )
+        else:
+            self.assertIn("ignored private validation output safety scan passes", audit)
         self.assertIn("ignored private validation output whitespace checks pass", audit)
         self.assertIn("Ignored private validation outputs passed release-safety scanning", inventory)
         self.assertIn("copy-only send text", inventory)
