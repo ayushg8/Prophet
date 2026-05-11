@@ -256,6 +256,8 @@ def check_send_copy_directory(
         "copy_file_count": len(checked_files),
         "copy_files_outbound_safe": True,
         "operator_metadata_outbound_safe": False,
+        "operator_metadata_private_by_design": True,
+        "operator_metadata_send_boundary": "private_do_not_send",
         "send_boundary": "copy_numbered_txt_contents_only",
         "readme_exists": True,
         "readme_matches_manifest": True,

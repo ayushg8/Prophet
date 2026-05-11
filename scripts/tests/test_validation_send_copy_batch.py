@@ -236,6 +236,8 @@ class ValidationSendCopyBatchTests(unittest.TestCase):
             self.assertEqual(summary["copy_file_count"], 8)
             self.assertTrue(summary["copy_files_outbound_safe"])
             self.assertFalse(summary["operator_metadata_outbound_safe"])
+            self.assertTrue(summary["operator_metadata_private_by_design"])
+            self.assertEqual(summary["operator_metadata_send_boundary"], "private_do_not_send")
             self.assertEqual(
                 summary["send_boundary"],
                 "copy_numbered_txt_contents_only",

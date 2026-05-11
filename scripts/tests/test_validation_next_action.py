@@ -36,6 +36,8 @@ class ValidationNextActionTests(unittest.TestCase):
         self.assertIn("readme_matches_manifest: true", rendered)
         self.assertIn("checklist_matches_manifest: true", rendered)
         self.assertIn("copy_index_matches_manifest: true", rendered)
+        self.assertIn("operator_metadata_outbound_safe: false", rendered)
+        self.assertIn("private operator", rendered)
         self.assertIn("make validation-prune-private DATE=2026-05-11", rendered)
         self.assertIn(
             "make validation-apply-draft TARGET=target-dib-platform-001 DATE=2026-05-11",
