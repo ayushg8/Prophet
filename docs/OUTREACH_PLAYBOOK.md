@@ -77,7 +77,7 @@ Subject options:
 Body:
 
 ```text
-Hi <first name>,
+Hi,
 
 I'm building Prophet, a policy-bound evidence workflow for defensive
 prioritization. It does not do live target testing or exploit generation.
@@ -193,8 +193,9 @@ When you want a copy-only artifact for the sending channel, run
 `make validation-send-copy DATE=YYYY-MM-DD`; it writes
 `validation/private/today-send-copy.txt` without target labels, tracker
 commands, or status metadata.
-When sending from the rendered draft, replace only the recipient name and
-channel-specific greeting. Do not add private customer details or new claims.
+When sending from the rendered draft, copy the generated subject/body as-is, or
+personalize only in the outreach channel after pasting. Do not store recipient
+names, private contact details, or new claims in repo files.
 To render a specific draft, use
 `make validation-draft TARGET=target-dib-platform-004 DATE=YYYY-MM-DD`; it
 rejects packs that do not match the requested outreach date.

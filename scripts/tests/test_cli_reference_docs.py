@@ -95,6 +95,10 @@ class CliReferenceDocsTests(unittest.TestCase):
         self.assertIn("tracker/log files", text)
         self.assertIn("does not delete", text)
         self.assertIn("never reply text", text)
+        self.assertIn("copy the generated subject/body as-is", text)
+        self.assertIn("personalize only in the outreach channel", text)
+        self.assertIn("Do not store recipient names", text)
+        self.assertNotIn("replace only the recipient name", text)
 
     def test_console_demo_docs_name_dependency_and_port_override(self) -> None:
         readme = README.read_text(encoding="utf-8")

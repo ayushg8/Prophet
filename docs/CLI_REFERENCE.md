@@ -429,11 +429,12 @@ python3 scripts/validation-next-draft.py \
   --out validation/private/today-send-copy.txt
 ```
 
-When sending from the rendered draft, replace only the recipient name and
-channel-specific greeting. Use `today-send-copy.txt` when you want an outbound
-copy artifact with one subject line and the message body, without target
-labels, tracker commands, alternate subject options, or status metadata. Do not
-add private customer details or new claims.
+When sending from the rendered draft, copy the generated subject/body as-is, or
+personalize only in the outreach channel after pasting. Use
+`today-send-copy.txt` when you want an outbound copy artifact with one subject
+line and the message body, without target labels, tracker commands, alternate
+subject options, or status metadata. Do not store recipient names, private
+contact details, or new claims in repo files.
 
 Render one copy-only file per verified pending draft when sending a whole
 outreach block:

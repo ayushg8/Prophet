@@ -56,6 +56,16 @@ class ProductValidationPlanDocsTests(unittest.TestCase):
                 self.assertIn("make validation-book-call", text)
                 self.assertIn("make validation-disqualify-target", text)
 
+    def test_outreach_copy_guidance_is_placeholder_free(self) -> None:
+        for path in (OUTREACH, DAILY):
+            text = path.read_text(encoding="utf-8")
+            with self.subTest(path=path.name):
+                self.assertIn("copy the generated subject/body as-is", text)
+                self.assertIn("personalize only in the outreach channel", text)
+                self.assertIn("Do not store recipient", text)
+                self.assertNotIn("replace only the recipient name", text)
+                self.assertNotIn("<first name>", text)
+
 
 if __name__ == "__main__":
     unittest.main()
