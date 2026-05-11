@@ -46,6 +46,17 @@ class ExposureClassificationGuideDocsTests(unittest.TestCase):
 
         self.assertIn("[x] Add exposure classification guide.", text)
 
+    def test_master_todo_marks_evaluator_worksheet_complete(self) -> None:
+        text = MASTER_TODO.read_text(encoding="utf-8")
+        worksheet = WORKSHEET.read_text(encoding="utf-8")
+
+        self.assertIn("[x] A customer-facing evaluator worksheet exists.", text)
+        self.assertIn("[x] Add CISO evaluator checklist.", text)
+        self.assertIn("[x] Day 6: Add customer evaluator worksheet and CISO checklist.", text)
+        self.assertIn("## CISO / Executive Review", worksheet)
+        self.assertIn("Executive go/no-go", worksheet)
+        self.assertIn("Build next slice", worksheet)
+
 
 if __name__ == "__main__":
     unittest.main()

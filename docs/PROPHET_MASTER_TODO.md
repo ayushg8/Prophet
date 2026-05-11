@@ -602,7 +602,7 @@ non-live unless a future customer policy explicitly authorizes a narrower mode.
 - [~] Day 4: Add CI jobs for smoke hashes, policy lint, and unsafe text scan.
 - [x] Day 5: Add audit export and audit verification command.
 - [x] Day 5: Add audit retention cleanup.
-- [ ] Day 6: Add customer evaluator worksheet and CISO checklist.
+- [x] Day 6: Add customer evaluator worksheet and CISO checklist.
 - [ ] Day 7: Run fresh clone smoke and package an internal pilot release.
 
 ## 30-Day Execution Plan
