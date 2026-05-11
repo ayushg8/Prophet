@@ -14,15 +14,13 @@ It does not tag, deploy, or mark the product complete.
 - Critical open readiness items: `26`.
 - Outreach status: 8 pending send/update items, 0 attention errors.
 - Latest implementation checkpoint is
-  `6f005aaa6c343f62558cc6ee45034327fcf39464`
-  (`6f005aa Add batch guard to send-copy metadata`); the GitHub
+  `87d3d5e8f1c5d44603f10c4db5e057d9ac61c8e5`
+  (`87d3d5e Sharpen validation outreach copy`); the GitHub
   `main` CI run for that checkpoint completed successfully at
-  <https://github.com/Ayush1298567/Prophet/actions/runs/25672743585>.
-  Audit-only handoff commits after that implementation checkpoint are
-  intentionally not hardcoded here because any doc-only commit would make that
-  value stale. Treat the moving current head as live state from
-  `git log --oneline -1` and GitHub `main` CI rather than hardcoding it into
-  this inventory.
+  <https://github.com/Ayush1298567/Prophet/actions/runs/25675309129>.
+  Future product/workflow commits after that checkpoint must rerun GitHub
+  `main` CI and the relevant local handoff gates before being treated as
+  current.
 
 Do not create production platform commits from this inventory until real
 validation reaches `build_next_slice`.
@@ -702,10 +700,12 @@ Latest verification run for this inventory:
   before merge, including the same readiness preflight, console lint/build,
   control evidence smoke, 5 Playwright tests, and console dependency audit. The
   merge commit `04fb56b` has no tree diff from that verified PR head.
-- `make pilot-ready-check-full DATE=2026-05-11`: passed again at latest
-  implementation checkpoint `6f005aa`, including the readiness preflight,
+- `make pilot-ready-check-full DATE=2026-05-11`: passed again at the earlier
+  console/live implementation checkpoint, including the readiness preflight,
   console lint/build, control evidence smoke, 5 Playwright tests, and console
-  dependency audit.
+  dependency audit. Latest checkpoint `87d3d5e` changed only validation
+  outreach copy and its tests, then passed GitHub `main` CI and release
+  hygiene.
 - `make worktree-smoke`: local wrapper added for repeatable dirty-worktree
   overlay smoke. It clones HEAD to `/tmp`, overlays current non-ignored dirty
   files, excludes ignored private validation files, then runs
@@ -812,16 +812,13 @@ Latest verification run for this inventory:
 - `python3 scripts/production-readiness-scorecard.py`: readiness `33.3%`,
   26 critical open items.
 - Latest implementation checkpoint:
-  `6f005aaa6c343f62558cc6ee45034327fcf39464`
-  (`6f005aa Add batch guard to send-copy metadata`). GitHub `main`
+  `87d3d5e8f1c5d44603f10c4db5e057d9ac61c8e5`
+  (`87d3d5e Sharpen validation outreach copy`). GitHub `main`
   CI completed successfully at
-  <https://github.com/Ayush1298567/Prophet/actions/runs/25672743585>. This
-  checkpoint adds the batch send-copy metadata guard and does not open
-  production platform scope while validation remains `insufficient_data`.
-- Audit-only handoff commits after that implementation checkpoint are
-  intentionally not hardcoded here because any doc-only commit would make that
-  value stale. Use `git log --oneline -1` plus GitHub `main` CI for the moving
-  current head.
+  <https://github.com/Ayush1298567/Prophet/actions/runs/25675309129>. This
+  checkpoint sharpens the validation outreach copy around recent painful
+  hardening-priority decisions and does not open production platform scope
+  while validation remains `insufficient_data`.
 
 ## PR Handoff Draft
 
@@ -866,8 +863,11 @@ runtime output contents into the PR.
 
 ## Verification
 
-- `make pilot-ready-check-full DATE=2026-05-11` passed at latest
-  implementation checkpoint `6f005aa`.
+- `make pilot-ready-check-full DATE=2026-05-11` passed at the earlier
+  console/live implementation checkpoint. Latest implementation checkpoint
+  `87d3d5e` passed GitHub `main` CI, `python3 -m unittest discover -s
+  scripts/tests -v`, `make release-hygiene`, dated validation dashboard checks,
+  and full pre-send validation checks.
 - `make python-tests` passed.
 - `make release-hygiene` passed.
 - `make console-live-check` passed against the running local demo.
@@ -902,12 +902,12 @@ runtime output contents into the PR.
   documentation-only commits; rerun it before release tagging if a later release
   tag moves beyond this commit.
   Linux fresh-clone smoke is covered by the Ubuntu CI pilot smoke steps.
-- Latest implementation checkpoint is `6f005aa`, and the GitHub `main` CI run
+- Latest implementation checkpoint is `87d3d5e`, and the GitHub `main` CI run
   for that checkpoint completed successfully:
-  <https://github.com/Ayush1298567/Prophet/actions/runs/25672743585>.
-  Audit-only handoff commits after that implementation checkpoint are
-  intentionally not hardcoded here. Use `git log --oneline -1` plus GitHub
-  `main` CI for the moving current head.
+  <https://github.com/Ayush1298567/Prophet/actions/runs/25675309129>.
+  Future product/workflow commits after that checkpoint must rerun GitHub
+  `main` CI and the relevant local handoff gates before being treated as
+  current.
 ```
 
 Before any new release tag or follow-up PR, rerun the relevant console
