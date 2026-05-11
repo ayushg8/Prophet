@@ -18,7 +18,10 @@ VALIDATION_TEAM_UPDATE_MD ?= $(VALIDATION_DIR)/today-team-update.md
 VALIDATION_WEEKLY_REVIEW_JSON ?= $(VALIDATION_DIR)/today-weekly-review.json
 VALIDATION_WEEKLY_REVIEW_MD ?= $(VALIDATION_DIR)/today-weekly-review.md
 VALIDATION_NEXT_ACTION_MD ?= $(VALIDATION_DIR)/NEXT_ACTION.md
+VALIDATION_WORKING_PRODUCT_HANDOFF_MD ?= $(VALIDATION_DIR)/WORKING_PRODUCT_HANDOFF.md
 VALIDATION_INTERVIEW_JSON ?= $(if $(INTERVIEW),$(INTERVIEW),$(VALIDATION_DIR)/customer-validation-interview-next.json)
+PROPHET_CONTROL_PORT ?= 8787
+PROPHET_CONSOLE_PORT ?= 5173
 SUPPLY_CHAIN_SBOM_OUT ?= evidence/outputs/runtime/supply-chain/prophet-supply-chain-sbom.json
 ASSET_SBOM ?= assets/fixtures/dib-edge-appliance-sbom.cyclonedx.json
 ASSET_SBOM_INVENTORY_ID ?= customer-safe-sbom-import
@@ -94,6 +97,7 @@ help:
 		'  make validation-team-update  Print sanitized aggregate-only validation update; optional DATE=YYYY-MM-DD.' \
 		'  make validation-team-update-save Write sanitized aggregate-only update under validation/private/; optional DATE=YYYY-MM-DD.' \
 		'  make validation-next-action-save Write regenerated private NEXT_ACTION.md handoff; optional DATE=YYYY-MM-DD.' \
+		'  make validation-working-product-handoff-save Write ignored private working-product handoff with current ports/git/build gate; optional DATE=YYYY-MM-DD.' \
 		'  make validation-weekly-review Write read-only private weekly review report; optional DATE=YYYY-MM-DD.' \
 		'  make validation-prune-private Dry-run pruning of generated ignored private artifacts; optional DATE=YYYY-MM-DD, CONFIRM_PRUNE=1 after review.' \
 		'  make validation-resume        Run dashboard and print existing next draft when present; optional DATE=YYYY-MM-DD.' \
@@ -521,6 +525,19 @@ validation-next-action-save:
 		--out $(VALIDATION_NEXT_ACTION_MD) \
 		> /dev/null
 	@printf 'Wrote regenerated private next-action handoff to %s\n' '$(VALIDATION_NEXT_ACTION_MD)'
+
+.PHONY: validation-working-product-handoff-save
+validation-working-product-handoff-save:
+	@python3 scripts/working-product-handoff.py \
+		--log $(VALIDATION_LOG) \
+		--targets $(VALIDATION_TARGETS) \
+		--message-pack $(VALIDATION_MESSAGE_PACK_JSON) \
+		--date $(VALIDATION_RUN_DATE) \
+		--control-port $(PROPHET_CONTROL_PORT) \
+		--ui-port $(PROPHET_CONSOLE_PORT) \
+		--out $(VALIDATION_WORKING_PRODUCT_HANDOFF_MD) \
+		> /dev/null
+	@printf 'Wrote ignored private working-product handoff to %s\n' '$(VALIDATION_WORKING_PRODUCT_HANDOFF_MD)'
 
 .PHONY: validation-weekly-review
 validation-weekly-review:

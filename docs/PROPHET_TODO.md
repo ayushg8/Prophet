@@ -134,6 +134,10 @@ operator board for the next buyer-pilot cycles.
 - [x] Saved aggregate validation team updates use an atomic temp-file write:
   `make validation-team-update-save DATE=YYYY-MM-DD` preserves the previous
   `validation/private/today-team-update.md` if rendering fails.
+- [x] Working-product handoff can be regenerated from current local state:
+  `make validation-working-product-handoff-save DATE=YYYY-MM-DD` writes the
+  ignored private `validation/private/WORKING_PRODUCT_HANDOFF.md` with current
+  git state, validation/build gate, and configured localhost console ports.
 - [x] `make validation-pack` refreshes outreach block, message pack, and paired
   outreach status JSON/Markdown so private status files do not go stale.
 - [x] Makefile validation wrappers have focused tests for overridden private

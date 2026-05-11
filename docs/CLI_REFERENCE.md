@@ -52,6 +52,7 @@ make validation-contact-form-copy DATE=2026-05-11
 make validation-reply-triage TARGET=target-dib-platform-001 REPLY=book_call DATE=2026-05-11
 make validation-status DATE=2026-05-11
 make validation-dashboard DATE=2026-05-11
+make validation-working-product-handoff-save DATE=2026-05-11
 make validation-resume DATE=2026-05-11
 make release-hygiene
 make secrets-archaeology
@@ -125,6 +126,13 @@ generated PNGs.
 `--allow-untracked-interview` bypass remain useful learning but do not satisfy
 the target-backed gate. Target-backed interviews must also match the target
 tracker's segment/persona metadata.
+
+`make validation-working-product-handoff-save DATE=YYYY-MM-DD` writes the
+ignored private `validation/private/WORKING_PRODUCT_HANDOFF.md` from the
+current git state, validation/build gate, and configured localhost console
+ports. It does not send outreach, open production scope, create a release tag,
+or write public docs. If the running demo is on alternate ports, pass
+`PROPHET_CONTROL_PORT=... PROPHET_CONSOLE_PORT=...` before the Make command.
 
 ## Pilot Smoke
 

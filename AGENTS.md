@@ -55,6 +55,7 @@ make validation-dashboard
 make validation-team-update
 make validation-team-update-save
 make validation-next-action-save
+make validation-working-product-handoff-save
 make validation-weekly-review
 make validation-prune-private
 make validation-status
@@ -77,6 +78,10 @@ labels, commands, message bodies, or private validation paths.
 private `validation/private/NEXT_ACTION.md` handoff from the current dashboard
 so restored sessions do not carry stale PR/head, worktree, GitHub CI, or
 send-boundary state.
+`make validation-working-product-handoff-save DATE=YYYY-MM-DD` regenerates the
+ignored private `validation/private/WORKING_PRODUCT_HANDOFF.md` from the
+current git state, build gate, validation sprint state, and local console ports
+so restored sessions do not open stale demo URLs.
 `make validation-weekly-review DATE=YYYY-MM-DD` writes a read-only private
 weekly report for stale artifact/pruning review without deleting files or
 mutating trackers/logs. `make validation-prune-private DATE=YYYY-MM-DD` reads
@@ -92,6 +97,7 @@ make validation-dashboard DATE=YYYY-MM-DD
 make validation-team-update DATE=YYYY-MM-DD
 make validation-team-update-save DATE=YYYY-MM-DD
 make validation-next-action-save DATE=YYYY-MM-DD
+make validation-working-product-handoff-save DATE=YYYY-MM-DD
 make validation-weekly-review DATE=YYYY-MM-DD
 make validation-prune-private DATE=YYYY-MM-DD
 make validation-status DATE=YYYY-MM-DD
@@ -253,6 +259,7 @@ make validation-next-draft
 make validation-status
 make validation-dashboard
 make validation-team-update-save
+make validation-working-product-handoff-save
 make validation-weekly-review
 make validation-prune-private
 ```

@@ -195,6 +195,7 @@ make validation-dashboard DATE=YYYY-MM-DD
 make validation-team-update DATE=YYYY-MM-DD
 make validation-team-update-save DATE=YYYY-MM-DD
 make validation-next-action-save DATE=YYYY-MM-DD
+make validation-working-product-handoff-save DATE=YYYY-MM-DD
 make validation-weekly-review DATE=YYYY-MM-DD
 make validation-prune-private DATE=YYYY-MM-DD
 make validation-resume DATE=YYYY-MM-DD
@@ -290,6 +291,12 @@ send-boundary summary and `--format team` for the aggregate update.
 restored session does not depend on stale PR/head, worktree, CI, or
 send-boundary notes. The handoff includes send-copy and contact-form copy
 readiness checks before any restored session sends outreach.
+`make validation-working-product-handoff-save` writes the ignored private
+`validation/private/WORKING_PRODUCT_HANDOFF.md` from the current git state,
+build gate, validation sprint state, and configured local console ports. If the
+demo is running on alternate ports, pass them through the Make environment, for
+example `PROPHET_CONTROL_PORT=8891 PROPHET_CONSOLE_PORT=5291 make
+validation-working-product-handoff-save DATE=YYYY-MM-DD`.
 `make validation-weekly-review` writes a read-only private weekly review under
 `validation/private/`; it reports the validation gate, message-pack age, stale
 private artifacts, and pruning candidates, but does not delete files, send
