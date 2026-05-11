@@ -140,6 +140,15 @@ class FinishInventoryDocsTests(unittest.TestCase):
         self.assertIn("make goal-resume DATE=YYYY-MM-DD", inventory)
         self.assertIn("Ignored Private Validation Outputs", inventory)
 
+    def test_inventory_describes_same_date_init_recovery_commands(self) -> None:
+        inventory = FINISH_INVENTORY.read_text(encoding="utf-8")
+
+        self.assertIn("`scripts/init-validation-sprint.py --date YYYY-MM-DD`", inventory)
+        self.assertIn("same-date `make validation-dashboard DATE=YYYY-MM-DD`", inventory)
+        self.assertIn("same-date `make validation-next-draft DATE=YYYY-MM-DD`", inventory)
+        self.assertNotIn("`scripts/init-validation-sprint.py --date 2026-05-10` now prints", inventory)
+        self.assertNotIn("`make validation-dashboard DATE=2026-05-11` before", inventory)
+
     def test_weekly_review_json_handoff_is_recorded(self) -> None:
         audit = COMPLETION_AUDIT.read_text(encoding="utf-8")
         inventory = FINISH_INVENTORY.read_text(encoding="utf-8")

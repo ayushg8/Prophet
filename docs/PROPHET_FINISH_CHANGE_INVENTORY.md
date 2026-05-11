@@ -451,7 +451,7 @@ sanitized examples.
 
 Latest verification run for this inventory:
 
-- `python3 -m unittest discover -s scripts/tests -v`: 348 tests passed after
+- `python3 -m unittest discover -s scripts/tests -v`: 349 tests passed after
   the send-boundary dashboard, copy-only resume boundary, CLI-reference,
   validation-resume, goal-resume, validation-team-update, validation-weekly-review,
   weekly-review `review_date`, weekly-review target-backed build-gate coverage,
@@ -719,9 +719,10 @@ Latest verification run for this inventory:
   operator workflows: `AGENTS.md`, `README.md`,
   `docs/VALIDATION_DAILY_BRIEF.md`, `docs/VALIDATION_SPRINT_CHECKLIST.md`,
   `docs/CLI_REFERENCE.md`, and `docs/PRODUCT_VALIDATION_PLAN.md`.
-- `scripts/init-validation-sprint.py --date 2026-05-10` now prints
-  `make validation-dashboard DATE=2026-05-11` before
-  `make validation-next-draft DATE=2026-05-11`, and the ignored private README
+- `scripts/init-validation-sprint.py --date YYYY-MM-DD` now prints the
+  same-date `make validation-dashboard DATE=YYYY-MM-DD` command before the
+  same-date `make validation-next-draft DATE=YYYY-MM-DD` command, and the
+  ignored private README
   mirrors that dashboard-first restored-session flow. `--refresh-readme`
   rewrites only that ignored private README without overwriting private
   tracker/log files; `make validation-init DATE=YYYY-MM-DD REFRESH_README=1`
