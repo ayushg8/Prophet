@@ -387,12 +387,13 @@ Review focus:
   fields while allowing public source citations, and should verify
   policy-listed OSINT snapshot provenance manifests.
 - Pilot release tag remains blocked until the historical secret-history finding
-  has an owner decision. A true GitHub fresh clone of the PR branch at commit
-  `1fc69be` passed on macOS with 26 verified pilot hashes. The GitHub Actions
-  `python` job runs on `ubuntu-latest` and now names the Linux fresh-clone
-  pilot smoke steps. Rerun true macOS fresh-clone smoke if another commit is
-  pushed. PR checks are green on the pushed head, but must be rechecked before
-  review, undraft, or merge.
+  has an owner decision. A true GitHub fresh clone of the PR branch passed on
+  macOS with 26 verified pilot hashes. The GitHub Actions `python` job runs on
+  `ubuntu-latest` and now names the Linux fresh-clone pilot smoke steps. Because
+  documentation commits change the PR head, rely on the PR verification notes
+  for the latest exact-head run and rerun true macOS fresh-clone smoke before
+  review, undraft, or merge. PR checks are green on the pushed head, but must be
+  rechecked before review, undraft, or merge.
 - `make worktree-smoke` should remain a local pre-commit release-hygiene check:
   it may clone HEAD to `/tmp`, overlay non-ignored dirty files, and run the safe
   root smoke, but must not copy `validation/private/`, stage, commit, push, tag,
@@ -797,9 +798,10 @@ runtime output contents into the PR.
 - Full git-history secret archaeology remains unresolved; rotate/clean/except
   the historical `LOG4SHELL_INSTRUCTIONS.md` finding before public release.
 - Release tag remains blocked until the historical secret-history finding has
-  an owner decision. True GitHub fresh-clone smoke passed on macOS for commit
-  `1fc69be`; rerun it if another commit is pushed before review, undraft, or
-  merge. Linux fresh-clone smoke is covered by the Ubuntu CI pilot smoke steps.
+  an owner decision. True GitHub fresh-clone smoke passed on macOS; because
+  documentation commits change the PR head, rely on the PR verification notes
+  for the latest exact-head run and rerun it before review, undraft, or merge.
+  Linux fresh-clone smoke is covered by the Ubuntu CI pilot smoke steps.
 - PR `#5` has the finish-pass commits pushed and checks are green on the
   current pushed head; verify `gh pr checks 5` again before review, undraft, or
   merge.

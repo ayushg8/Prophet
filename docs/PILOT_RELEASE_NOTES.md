@@ -3,7 +3,8 @@
 Date: 2026-05-11
 Status: release-candidate notes, not a git tag
 Branch: `prophet-pilot-consolidation-2026-05-05`
-Baseline commit checked: `57c9d68`
+Baseline commit checked: see PR verification notes for the latest exact-head
+fresh-clone run.
 
 These notes identify the safe fixture/hash set for the current buyer pilot.
 This release candidate does not authorize live target validation.
@@ -161,10 +162,11 @@ After the default smoke passes, the main reviewer artifacts are:
   `./scripts/check-local-env.sh`, and passing the default smoke with 26
   verified hashes.
 - A true GitHub fresh clone of branch
-  `prophet-pilot-consolidation-2026-05-05` at commit `1fc69be` passed on macOS
-  on 2026-05-11 with `./scripts/check-local-env.sh` and
-  `./scripts/run-pilot-demo-smoke.sh`, verifying 26 pilot hashes.
-  Rerun this check before review, undraft, or merge if another commit is pushed.
+  `prophet-pilot-consolidation-2026-05-05` passed on macOS on 2026-05-11 with
+  `./scripts/check-local-env.sh` and `./scripts/run-pilot-demo-smoke.sh`,
+  verifying 26 pilot hashes. Because documentation commits change the PR head,
+  rely on the PR verification notes for the latest exact-head run and rerun this
+  check before review, undraft, or merge.
 - The GitHub Actions `python` job runs on `ubuntu-latest` and now names the
   `Linux fresh-clone pilot smoke preflight` plus
   `Linux fresh-clone pilot smoke` steps, covering the Linux fresh-clone smoke

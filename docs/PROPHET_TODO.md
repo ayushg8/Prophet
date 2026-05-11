@@ -214,9 +214,10 @@ operator board for the next buyer-pilot cycles.
   cleanup/rotation/exception before any public release. Public release review
   stays blocked until the owner decision is recorded. Safe review path:
   `docs/SECRET_HISTORY_REVIEW.md`.
-- [x] True GitHub fresh-clone smoke passed on macOS for commit `1fc69be` with
-  26 verified pilot hashes; rerun before review, undraft, or merge if another
-  commit is pushed.
+- [x] True GitHub fresh-clone smoke passed on macOS with 26 verified pilot
+  hashes; because documentation commits change the PR head, rely on the PR
+  verification notes for the latest exact-head run and rerun before review,
+  undraft, or merge.
 - [x] Linux fresh-clone smoke is covered by the Ubuntu GitHub Actions `python`
   job through the named `Linux fresh-clone pilot smoke preflight` and
   `Linux fresh-clone pilot smoke` steps.
