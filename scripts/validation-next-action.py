@@ -106,6 +106,11 @@ def render_next_action(
             "",
             "## 2. Send Copy-Only Text",
             "",
+            "The repo intentionally does not store recipient names, emails,",
+            "LinkedIn URLs, or outbound channel details. To actually send a",
+            "draft, the operator must use an external outreach channel and a",
+            "real contact selected outside the repo.",
+            "",
         ]
     )
     if outreach.get("send_copy_state") == "ready":
