@@ -113,6 +113,9 @@ reports `outreach_execution.next_draft_state: ready`, with both
 `outreach_execution.send_copy_matches_next_pending: true`. A ready draft and
 send-copy file must match the current next pending target, outreach date,
 verified draft status, and copy-only text body.
+The repo intentionally does not store recipient names, emails, LinkedIn URLs,
+or outbound channel details. To actually send a draft, use an external outreach
+channel and a real contact selected outside the repo.
 `make validation-resume DATE=YYYY-MM-DD` performs that dashboard check and
 prints the copy-only send text inside begin/end markers, then prints the
 existing tracker/audit draft below a do-not-send divider only when it still

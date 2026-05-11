@@ -55,6 +55,9 @@ class AgentOperatingManualTests(unittest.TestCase):
         self.assertIn("validation/private/today-next-draft.md", text)
         self.assertIn("copy-only send artifact", text)
         self.assertIn("copy-only subject/body text", text)
+        self.assertIn("does not store recipient names", text)
+        self.assertIn("external outreach", text)
+        self.assertIn("real contact selected outside the repo", text)
         self.assertIn(
             "make validation-apply-draft TARGET=<target-label> DATE=YYYY-MM-DD",
             text,

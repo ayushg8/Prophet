@@ -60,6 +60,9 @@ class CliReferenceDocsTests(unittest.TestCase):
         self.assertIn("private tracker or log files", text)
         self.assertIn("read-only private weekly review", text)
         self.assertIn("sanitized classification", text)
+        self.assertIn("does not store recipient names", text)
+        self.assertIn("external outreach channel", text)
+        self.assertIn("real contact\nmust come from outside the repo", text)
 
     def test_validation_status_documents_machine_readable_output(self) -> None:
         text = CLI_REFERENCE.read_text(encoding="utf-8")

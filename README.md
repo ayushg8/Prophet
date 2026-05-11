@@ -217,6 +217,9 @@ text match the current next pending target/date/status/body.
 `make validation-send-copy` writes `validation/private/today-send-copy.txt`
 for the same verified next draft without target labels, tracker commands, or
 status metadata, so operators can copy only the outbound text.
+The repo intentionally does not store recipient names, emails, LinkedIn URLs,
+or outbound channel details. The external outreach channel and real contact
+must come from outside the repo before sending any copy-only draft.
 `make validation-send-copy-batch` writes one neutral-named copy-only `.txt`
 file per verified pending draft under
 `validation/private/send-copy-YYYY-MM-DD/`. The dashboard
