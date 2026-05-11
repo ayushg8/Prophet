@@ -215,9 +215,8 @@ operator board for the next buyer-pilot cycles.
   stays blocked until the owner decision is recorded. Safe review path:
   `docs/SECRET_HISTORY_REVIEW.md`.
 - [x] True GitHub fresh-clone smoke passed on macOS with 26 verified pilot
-  hashes. Exact-head evidence belongs in the PR verification notes because
-  documentation commits can move the branch head; rerun after any further
-  commit before merge or release decisions.
+  hashes. PR `#5` is now merged to `main`; rerun true GitHub fresh-clone smoke
+  before release tagging if exact release-tag proof is needed.
 - [x] Linux fresh-clone smoke is covered by the Ubuntu GitHub Actions `python`
   job through the named `Linux fresh-clone pilot smoke preflight` and
   `Linux fresh-clone pilot smoke` steps.

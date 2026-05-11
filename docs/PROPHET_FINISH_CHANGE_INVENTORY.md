@@ -2,8 +2,8 @@
 
 Date: 2026-05-11
 
-This inventory groups the current CEO/product finish-pass commits so they can
-be reviewed or pushed to the existing PR without relying on terminal history.
+This inventory groups the current CEO/product finish-pass commits now merged to
+`main` so they can be reviewed without relying on terminal history.
 It does not tag, deploy, or mark the product complete.
 
 ## Current Gate
@@ -13,10 +13,9 @@ It does not tag, deploy, or mark the product complete.
 - Production readiness: `26.7%`.
 - Critical open readiness items: `29`.
 - Outreach status: 8 pending send/update items, 0 attention errors.
-- GitHub PR `#5` exists for branch `prophet-pilot-consolidation-2026-05-05`
-  and the finish-pass commits have been pushed. PR `#5` is ready for internal
-  buyer-pilot review, checks are green on the pushed head, and merge/release
-  decisions still require a fresh check.
+- GitHub PR `#5` is merged to `main` at
+  `04fb56b4c4c5d3e48a1de0f286f3f12c43ad9dd4`; the GitHub `main` CI run for
+  that merge commit completed successfully.
 
 Do not create production platform commits from this inventory until real
 validation reaches `build_next_slice`.
@@ -400,9 +399,8 @@ Review focus:
   has an owner decision. A true GitHub fresh clone of the PR branch at
   `6fe55f3` passed on macOS with 26 verified pilot hashes. The GitHub Actions
   `python` job runs on `ubuntu-latest` and now names the Linux fresh-clone pilot
-  smoke steps. Rerun true macOS fresh-clone smoke after any further commit
-  before merge or release decisions. PR checks are green on the pushed head, but
-  must be rechecked before merge or release decisions.
+  smoke steps. PR `#5` is merged to `main` at `04fb56b`; rerun true macOS
+  fresh-clone smoke before release tagging if exact release-tag proof is needed.
 - `make worktree-smoke` should remain a local pre-commit release-hygiene check:
   it may clone HEAD to `/tmp`, overlay non-ignored dirty files, and run the safe
   root smoke, but must not copy `validation/private/`, stage, commit, push, tag,
@@ -647,10 +645,10 @@ Latest verification run for this inventory:
 - `make pilot-ready-check DATE=2026-05-11`: passed, including local environment
   check, default buyer pilot smoke, dated validation dashboard, production
   readiness summary, and release-safety diff scan.
-- `make pilot-ready-check-full DATE=2026-05-11`: passed at PR head `6fe55f3`
-  at verification time, including the same readiness preflight, console
-  lint/build, control evidence smoke, 5 Playwright tests, and console
-  dependency audit.
+- `make pilot-ready-check-full DATE=2026-05-11`: passed at PR head `0026d85`
+  before merge, including the same readiness preflight, console lint/build,
+  control evidence smoke, 5 Playwright tests, and console dependency audit. The
+  merge commit `04fb56b` has no tree diff from that verified PR head.
 - `make worktree-smoke`: local wrapper added for repeatable dirty-worktree
   overlay smoke. It clones HEAD to `/tmp`, overlays current non-ignored dirty
   files, excludes ignored private validation files, then runs
@@ -797,8 +795,9 @@ runtime output contents into the PR.
 
 ## Verification
 
-- `make pilot-ready-check-full DATE=2026-05-11` passed at PR head `6fe55f3`
-  at verification time.
+- `make pilot-ready-check-full DATE=2026-05-11` passed at PR head `0026d85`
+  before merge; merge commit `04fb56b` has no tree diff from that verified
+  head.
 - `make python-tests` passed.
 - `make release-hygiene` passed.
 - `make console-live-check` passed against the running local demo.
@@ -827,15 +826,13 @@ runtime output contents into the PR.
 - Full git-history secret archaeology remains unresolved; rotate/clean/except
   the historical `LOG4SHELL_INSTRUCTIONS.md` finding before public release.
 - Release tag remains blocked until the historical secret-history finding has
-  an owner decision. True GitHub fresh-clone smoke passed on macOS; exact-head
-  evidence belongs in the PR verification notes because documentation commits
-  can move the branch head, and the check should be rerun after any further
-  commit before merge or release decisions.
+  an owner decision. True GitHub fresh-clone smoke passed on macOS; rerun it
+  before release tagging if exact release-tag proof is needed.
   Linux fresh-clone smoke is covered by the Ubuntu CI pilot smoke steps.
-- PR `#5` has the finish-pass commits pushed and checks are green on the
-  current pushed head, and is ready for internal buyer-pilot review; verify
-  `gh pr checks 5` again before merge or release decisions.
+- PR `#5` is merged to `main` at `04fb56b`, and the GitHub `main` CI run for
+  that merge commit completed successfully.
 ```
 
-Before any commit or PR, rerun the relevant console acceptance, pilot smoke,
-release-safety, and validation dashboard checks for the exact staged diff.
+Before any new release tag or follow-up PR, rerun the relevant console
+acceptance, pilot smoke, release-safety, and validation dashboard checks for the
+exact staged diff or release commit.

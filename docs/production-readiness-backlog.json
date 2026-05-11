@@ -17,7 +17,7 @@
       "status": "in_progress",
       "risk_tags": ["buyer", "release", "safety"],
       "acceptance_gates": [
-        "PR #5 is ready for internal buyer-pilot review, then merged after the release/security gates clear or intentionally superseded by an explicit owner decision.",
+        "PR #5 is merged to main at 04fb56b for the internal buyer-pilot baseline; release tagging still waits for release/security gates.",
         "A release tag identifies the exact fixture and smoke hash set.",
         "A second operator can run the evaluator smoke from a fresh clone."
       ],
@@ -35,14 +35,14 @@
         },
         {
           "id": "M0-02",
-          "title": "Merge and tag the buyer pilot branch",
+          "title": "Tag the merged buyer pilot baseline",
           "status": "blocked",
           "priority": "P0",
           "owner": "founder",
           "target_version": "v0.3",
           "risk_tags": ["release", "buyer"],
           "acceptance_gates": ["A tag such as pilot-v0.1 points to the reviewed commit and links to release notes."],
-          "blocker": "PR #5 is ready for internal buyer-pilot review, but public pilot merge/tag remains blocked until the historical LOG4SHELL_INSTRUCTIONS.md secret-history finding has an owner decision."
+          "blocker": "PR #5 is merged to main for the internal buyer-pilot baseline, but public pilot tagging remains blocked until the historical LOG4SHELL_INSTRUCTIONS.md secret-history finding has an owner decision."
         },
         {
           "id": "M0-03",

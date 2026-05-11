@@ -1,9 +1,9 @@
 # Prophet Pilot Release Notes
 
 Date: 2026-05-11
-Status: release-candidate notes, not a git tag
-Branch: `prophet-pilot-consolidation-2026-05-05`
-Baseline commit checked: `6fe55f3`
+Status: internal buyer-pilot baseline merged to `main`, not a git tag
+Branch: `main`
+Baseline commit checked: `04fb56b`
 
 These notes identify the safe fixture/hash set for the current buyer pilot.
 This release candidate does not authorize live target validation.
@@ -116,10 +116,14 @@ After the default smoke passes, the main reviewer artifacts are:
 - Local worktree smoke passed on 2026-05-10 after adding the handoff review
   checklist artifact, manifest customer-placeholder validation, and Forecast
   section rationale/source-ID rendering in the evidence Markdown.
+- PR `#5` merged to `main` on 2026-05-11 at
+  `04fb56b4c4c5d3e48a1de0f286f3f12c43ad9dd4`; the GitHub `main` CI run for
+  that merge commit completed successfully.
 - `make pilot-ready-check-full DATE=2026-05-11` passed on 2026-05-11 at
-  PR head `6fe55f3` at verification time, including console lint/build,
-  control evidence smoke, 5 Playwright console tests, and
-  `npm audit --audit-level=moderate` with 0 vulnerabilities.
+  PR head `0026d85` before merge, including console lint/build, control
+  evidence smoke, 5 Playwright console tests, and
+  `npm audit --audit-level=moderate` with 0 vulnerabilities. The merge commit
+  `04fb56b` has no tree diff from that verified PR head.
 - `cd prophet-console && npm run capture:screenshots` passed and generated 6
   redacted desktop/mobile evaluator screenshots under ignored
   `evidence/outputs/runtime/console-screenshots/`.
@@ -166,12 +170,12 @@ After the default smoke passes, the main reviewer artifacts are:
   `prophet-pilot-consolidation-2026-05-05` at PR head `6fe55f3` at
   verification time passed on macOS on 2026-05-11 with
   `./scripts/check-local-env.sh` and `./scripts/run-pilot-demo-smoke.sh`,
-  verifying 26 pilot hashes. Rerun this check after any further commit before
-  merge or release decisions.
+  verifying 26 pilot hashes. Rerun this check before release tagging if an
+  exact release-tag fresh-clone proof is needed.
 - The GitHub Actions `python` job runs on `ubuntu-latest` and now names the
   `Linux fresh-clone pilot smoke preflight` plus
   `Linux fresh-clone pilot smoke` steps, covering the Linux fresh-clone smoke
-  gate for pushed PR heads.
+  gate for pushed heads.
 - `make worktree-smoke` is now the repeatable local wrapper for that pre-commit
   worktree-overlay check. It clones HEAD to `/tmp`, overlays non-ignored dirty
   files, excludes ignored private validation files, and runs the safe root
@@ -186,8 +190,7 @@ After the default smoke passes, the main reviewer artifacts are:
 
 - No git release tag has been created for this fixture/hash set; public tagging
   is blocked until the historical secret-history finding has an owner decision.
-- PR `#5` is ready for internal buyer-pilot review; checks are green on the
-  pushed commit set, but recheck before merge or release decisions.
+- PR `#5` is merged to `main` for the internal buyer-pilot baseline.
 - Customer validation remains `insufficient_data`; production platform build
   remains gated.
 - Production readiness remains below controlled-production requirements.
