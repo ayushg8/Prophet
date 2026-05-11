@@ -109,7 +109,7 @@ class FinishInventoryDocsTests(unittest.TestCase):
                 self.assertRegex(text, r"7 (?:policy-listed )?default outputs")
                 self.assertIn("1 OSINT provenance manifest", text)
                 self.assertIn("check-doc-links.py", text)
-                self.assertIn("88 Markdown", text)
+                self.assertIn("89 Markdown", text)
 
     def test_completion_audit_names_current_checked_runtime_head(self) -> None:
         audit = COMPLETION_AUDIT.read_text(encoding="utf-8")

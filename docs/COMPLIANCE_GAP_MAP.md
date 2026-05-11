@@ -29,7 +29,7 @@ The repo is not yet production-compliance-ready because it lacks:
 - Production secrets handling.
 - Backup and restore.
 - Incident response playbook.
-- Security control matrix.
+- Production security control operation evidence.
 - Production-enforced data classification controls.
 - External security review.
 
@@ -66,11 +66,17 @@ The repo is not yet production-compliance-ready because it lacks:
 
 ## CMMC/NIST 800-171 Oriented Work
 
+The review packet exists at `docs/NIST_CMMC_SECURITY_PACKET.md`. It includes a
+pilot SSP draft, control matrix, data flows, asset inventory references, access
+control gaps, incident-response reference, and POA&M. It is a review artifact,
+not certification evidence.
+
 Do before claiming readiness for environments that may handle CUI:
 
-- Define whether Prophet will process, store, or transmit CUI.
-- Draft a System Security Plan.
-- Map system components, data flows, and boundaries.
+- Define whether Prophet will process, store, or transmit CUI for a specific
+  customer.
+- Turn the draft System Security Plan into a customer/system-specific SSP.
+- Confirm system components, data flows, and boundaries with the customer.
 - Add access control family evidence: users, roles, least privilege, session
   handling, service accounts.
 - Add audit and accountability evidence: audit event schema, retention, review.
@@ -134,6 +140,7 @@ The v1.0 customer packet should include:
 - Deployment model.
 - Backup/restore plan.
 - Incident response playbook.
+- NIST/CMMC-oriented security packet.
 - Vulnerability disclosure process.
 - Dependency and supply-chain review.
 - POA&M with owners and dates.
@@ -147,8 +154,8 @@ The v1.0 customer packet should include:
 5. Run an incident response tabletop exercise and fill the contact matrix.
 6. Add secrets manager design.
 7. Add backup/restore design.
-8. Add control matrix once the production architecture is implemented enough to
-   be meaningful.
+8. Convert the current review matrix into assessor-ready control implementation
+   statements only after the system boundary and production controls exist.
 
 ## Buyer-Facing Language
 

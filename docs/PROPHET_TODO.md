@@ -248,6 +248,10 @@ operator board for the next buyer-pilot cycles.
 - [x] Software supply-chain packet exists with dependency inventory, SBOM
   source of truth, provenance targets, vulnerability process, and update cadence:
   `docs/SOFTWARE_SUPPLY_CHAIN_PACKET.md`.
+- [x] NIST/CMMC-oriented security packet exists for buyer/security review with
+  SSP draft, control matrix, data flows, asset inventory references, access
+  control gaps, IR reference, and POA&M:
+  `docs/NIST_CMMC_SECURITY_PACKET.md`.
 - [x] Local operator identity format guidance exists for the buyer pilot:
   `docs/OPERATOR_IDENTITY_GUIDE.md`.
 - [x] Signed operator approval design exists for future buyer/security review:

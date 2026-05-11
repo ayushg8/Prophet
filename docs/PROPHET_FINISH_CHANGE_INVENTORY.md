@@ -10,8 +10,8 @@ It does not tag, deploy, or mark the product complete.
 
 - Customer validation verdict: `insufficient_data`.
 - Production build gate: closed.
-- Production readiness: `31.1%`.
-- Critical open readiness items: `27`.
+- Production readiness: `33.3%`.
+- Critical open readiness items: `26`.
 - Outreach status: 8 pending send/update items, 0 attention errors.
 - GitHub PR `#5` is merged to `main` at
   `04fb56b4c4c5d3e48a1de0f286f3f12c43ad9dd4`; the GitHub `main` CI run for
@@ -339,6 +339,7 @@ Files:
 - `docs/COMPLIANCE_GAP_MAP.md`
 - `docs/INCIDENT_RESPONSE_PLAYBOOK.md`
 - `docs/SOFTWARE_SUPPLY_CHAIN_PACKET.md`
+- `docs/NIST_CMMC_SECURITY_PACKET.md`
 - `docs/production-readiness-backlog.json`
 - `docs/PROPHET_TODO.md`
 - `docs/PROPHET_MASTER_TODO.md`
@@ -370,6 +371,7 @@ Files:
 - `scripts/tests/test_finish_inventory_docs.py`
 - `scripts/tests/test_incident_response_playbook_docs.py`
 - `scripts/tests/test_software_supply_chain_packet_docs.py`
+- `scripts/tests/test_nist_cmmc_security_packet_docs.py`
 - `scripts/tests/test_overnight_loop_prompt.py`
 - `scripts/tests/test_pilot_release_notes_docs.py`
 - `scripts/tests/test_production_readiness_scorecard.py`
@@ -387,6 +389,9 @@ Review focus:
 - The software supply-chain packet should name dependency inventory, SBOM
   source of truth, provenance targets, vulnerability process, and update
   cadence without claiming signed provenance or public release readiness.
+- The NIST/CMMC-oriented packet should include SSP draft, control matrix, data
+  flows, asset inventory references, access-control gaps, IR reference, and
+  POA&M without claiming CMMC/NIST compliance or CUI authorization.
 - Public release review should stay blocked on the historical secret-history
   owner decision until `docs/SECRET_HISTORY_REVIEW.md` has an approved path.
 - The release checklist should force the validation dashboard/build-gate
@@ -482,8 +487,8 @@ sanitized examples.
 
 Latest verification run for this inventory:
 
-- `python3 -m unittest discover -s scripts/tests -v`: 373 tests passed after
-  the send-boundary dashboard, copy-only resume boundary, CLI-reference,
+- `python3 -m unittest discover -s scripts/tests -v`: 377 tests passed after
+  the NIST/CMMC security packet docs guard, send-boundary dashboard, copy-only resume boundary, CLI-reference,
   validation-resume, goal-resume, validation-team-update, validation-weekly-review,
   validation-next-action handoff generation, weekly-review `review_date`,
   weekly-review target-backed build-gate coverage, outreach execution,
@@ -708,7 +713,7 @@ Latest verification run for this inventory:
 - `PYTHONPATH=.:cyber-side:world-side python3 scripts/check-release-safety.py --diff`:
   passed over 0 paths in the clean committed worktree.
 - `PYTHONPATH=.:cyber-side:world-side python3 scripts/check-release-safety.py --tracked --paths-only`:
-  passed over 351 tracked paths, including release-bound policy-hash coverage
+  passed over 353 tracked paths, including release-bound policy-hash coverage
   checks.
 - `python3 -m policy.lint --policy policy/prophet-pilot-policy.json`:
   passed and reported policy ID `prophet-pilot-fixture-localhost-v0.1` with
@@ -717,7 +722,7 @@ Latest verification run for this inventory:
   `raw_scraper_text_allowed` all false.
 - `python3 scripts/check-default-output-safety.py --policy policy/prophet-pilot-policy.json --format text`:
   passed over 7 policy-listed default outputs and 1 OSINT provenance manifest.
-- `python3 scripts/check-doc-links.py`: passed over 88 Markdown source files
+- `python3 scripts/check-doc-links.py`: passed over 89 Markdown source files
   with external URLs and ignored private/runtime output skipped.
 - Explicit untracked file checks: no-index whitespace checks passed over 0
   untracked non-ignored files, and release hygiene reported no untracked
@@ -774,8 +779,8 @@ Latest verification run for this inventory:
   remains partial because fresh-clone smoke is covered, but release packaging
   and tagging remain blocked by the historical secret-history owner decision
   and unproven buyer demand.
-- `python3 scripts/production-readiness-scorecard.py`: readiness `31.1%`,
-  27 critical open items.
+- `python3 scripts/production-readiness-scorecard.py`: readiness `33.3%`,
+  26 critical open items.
 
 ## PR Handoff Draft
 
@@ -847,7 +852,7 @@ runtime output contents into the PR.
 ## Known Blockers
 
 - Real buyer demand remains unproven.
-- Production readiness remains 31.1% with 27 critical open items.
+- Production readiness remains 33.3% with 26 critical open items.
 - Full git-history secret archaeology remains unresolved; rotate/clean/except
   the historical `LOG4SHELL_INSTRUCTIONS.md` finding before public release.
 - Release tag remains blocked until the historical secret-history finding has

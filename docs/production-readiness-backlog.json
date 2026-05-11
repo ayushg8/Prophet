@@ -561,12 +561,13 @@
         {
           "id": "M8-01",
           "title": "Build NIST 800-171 and CMMC-oriented security packet",
-          "status": "planned",
+          "status": "done",
           "priority": "P0",
           "owner": "security",
           "target_version": "v1.0",
           "risk_tags": ["security", "compliance", "buyer"],
-          "acceptance_gates": ["Packet includes SSP draft, control matrix, data flows, asset inventory, access controls, IR plan, and POA&M."]
+          "acceptance_gates": ["Packet includes SSP draft, control matrix, data flows, asset inventory, access controls, IR plan, and POA&M."],
+          "evidence_paths": ["docs/NIST_CMMC_SECURITY_PACKET.md"]
         },
         {
           "id": "M8-02",

@@ -414,6 +414,7 @@ non-live unless a future customer policy explicitly authorizes a narrower mode.
 - [x] Add post-pilot conversion plan.
 - [x] Add procurement/security questionnaire draft.
 - [x] Add FedRAMP/CMMC/SOC 2 gap map.
+- [x] Add NIST/CMMC-oriented security packet.
 - [x] Add export-control review placeholder.
 - [x] Add data processing addendum notes.
 - [x] Add support model for pilots.
