@@ -140,7 +140,7 @@ After the default smoke passes, the main reviewer artifacts are:
   gates.
 - `make release-hygiene` passed on 2026-05-11, including tracked/untracked
   whitespace, release-safety scans, staged-path safety, current-worktree secret
-  scanning, policy lint, and default-output safety over 7 outputs, 117 URLs,
+  scanning, policy lint, and default-output safety over 7 outputs, 115 URLs,
   and 1 OSINT provenance manifest.
 - Full `make secrets-archaeology` is available for public-release review and
   currently flags historical `LOG4SHELL_INSTRUCTIONS.md` password-like content

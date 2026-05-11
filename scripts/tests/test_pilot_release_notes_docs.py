@@ -26,7 +26,7 @@ class PilotReleaseNotesDocsTests(unittest.TestCase):
         self.assertIn("355 tests", text)
         self.assertIn("0 paths in the clean committed worktree", text)
         self.assertIn("0 untracked non-ignored files", text)
-        self.assertIn("117 URLs", text)
+        self.assertIn("115 URLs", text)
         self.assertIn("make release-hygiene", text)
         self.assertIn("make secrets-archaeology", text)
         self.assertIn("historical `LOG4SHELL_INSTRUCTIONS.md`", text)

@@ -685,7 +685,7 @@ Latest verification run for this inventory:
   `credentials_allowed`, `private_hostnames_allowed`, and
   `raw_scraper_text_allowed` all false.
 - `python3 scripts/check-default-output-safety.py --policy policy/prophet-pilot-policy.json --format text`:
-  passed over 7 policy-listed default outputs and 117 URLs.
+  passed over 7 policy-listed default outputs and 115 URLs.
 - `python3 scripts/check-doc-links.py`: passed over 86 Markdown source files
   with external URLs and ignored private/runtime output skipped.
 - Explicit untracked file checks: no-index whitespace checks passed over 0
