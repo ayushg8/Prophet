@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import importlib.util
 import json
+import re
 import subprocess
 import sys
 from datetime import date
@@ -191,12 +192,17 @@ def render_markdown(review: dict[str, Any]) -> str:
             f"- validation/private ignored: {str(artifacts['private_dir_ignored']).lower()}",
             f"- File count: {artifacts['file_count']}",
             f"- Stale file count: {artifacts['stale_file_count']}",
+            f"- Send-copy warning count: {artifacts['send_copy_warning_count']}",
         ]
     )
     if artifacts["stale_files"]:
         lines.extend(["", "Stale ignored private files:"])
         for item in artifacts["stale_files"]:
             lines.append(f"- {item['path']} ({item['age_days']} day(s) old)")
+    if artifacts["send_copy_warnings"]:
+        lines.extend(["", "Private send-copy warnings:"])
+        for item in artifacts["send_copy_warnings"]:
+            lines.append(f"- {item['path']}: {', '.join(item['reasons'])}")
     lines.extend(
         [
             "",
@@ -378,12 +384,69 @@ def _private_file_summary(
         age_days = (run_date - mtime_date).days
         if age_days >= stale_days:
             stale_files.append({"path": str(path), "age_days": age_days})
+    send_copy_warnings = _send_copy_file_warnings(private_dir, run_date)
     return {
         "private_dir_ignored": _is_ignored(private_dir),
         "file_count": len(files),
         "stale_file_count": len(stale_files),
         "stale_files": stale_files,
+        "send_copy_warning_count": len(send_copy_warnings),
+        "send_copy_warnings": send_copy_warnings,
     }
+
+
+def _send_copy_file_warnings(private_dir: Path, run_date: date) -> list[dict[str, Any]]:
+    copy_paths = sorted(
+        {
+            *(private_dir.glob("send-copy-*/*.txt")),
+            private_dir / "today-send-copy.txt",
+        }
+    )
+    warnings: list[dict[str, Any]] = []
+    for path in copy_paths:
+        if not path.is_file():
+            continue
+        reasons = _send_copy_warning_reasons(path, run_date)
+        if reasons:
+            warnings.append({"path": str(path), "reasons": reasons})
+    return warnings
+
+
+def _send_copy_warning_reasons(path: Path, run_date: date) -> list[str]:
+    reasons: list[str] = []
+    batch_date = _send_copy_batch_date(path)
+    if batch_date is not None and batch_date != run_date:
+        reasons.append("date_mismatch")
+    text = path.read_text(encoding="utf-8")
+    if re.search(r"<[^>\n]+>", text):
+        reasons.append("placeholder_text")
+    blocked_literals = (
+        "make validation-",
+        "python3 scripts/validation-",
+        "CONFIRM_SENT",
+        "target-",
+        "validation/private",
+        "manifest.json",
+        "CHECKLIST.md",
+        "COPY_ONLY_INDEX.md",
+        "Tracker update command",
+        "Safe dry-run",
+        "Confirmed-send",
+        "Dry-run command",
+        "Confirmed-send command",
+    )
+    if any(literal in text for literal in blocked_literals):
+        reasons.append("tracker_metadata")
+    if sum(1 for line in text.splitlines() if line.startswith("Subject: ")) != 1:
+        reasons.append("subject_count")
+    return reasons
+
+
+def _send_copy_batch_date(path: Path) -> date | None:
+    match = re.fullmatch(r"send-copy-([0-9]{4}-[0-9]{2}-[0-9]{2})", path.parent.name)
+    if match is None:
+        return None
+    return _parse_date(match.group(1), f"{path.parent.name}.date")
 
 
 def _is_atomic_temp_file(path: Path) -> bool:

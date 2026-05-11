@@ -310,8 +310,9 @@ Every Friday:
 - [ ] Run `make validation-weekly-review DATE=YYYY-MM-DD` to write a read-only
   private review before pruning. It reports the validation gate, message-pack
   age, date-guarded outreach execution readiness, send-copy batch
-  README/checklist/copy-index state, stale private artifacts, and pruning
-  candidates without deleting files or mutating trackers/logs.
+  README/checklist/copy-index state, stale private artifacts, unsafe or
+  outdated private send-copy warnings, and pruning candidates without deleting
+  files or mutating trackers/logs.
 - [ ] Use the matching outreach date so stale private packs fail closed.
 - [ ] Run `make validation-status DATE=YYYY-MM-DD` if a private message pack
   exists, and use only aggregate status counts in shared updates.

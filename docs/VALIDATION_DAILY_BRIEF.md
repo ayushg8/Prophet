@@ -493,7 +493,8 @@ review before pruning or rotating ignored artifacts. It writes
 `validation/private/today-weekly-review.md`, reports outreach execution
 readiness with the matching review date, target-backed build-gate status,
 send-copy batch README/checklist/copy-index state, stale private artifacts, and
-pruning candidates, and does not delete files or mutate trackers/logs.
+unsafe or outdated private send-copy warnings, and pruning candidates, and does
+not delete files or mutate trackers/logs.
 
 ## Decision Rule
 

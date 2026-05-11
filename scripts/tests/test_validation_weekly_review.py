@@ -72,6 +72,8 @@ class ValidationWeeklyReviewTests(unittest.TestCase):
             self.assertEqual(review["outreach_execution"]["state"], "not_ready")
             self.assertEqual(review["outreach_execution"]["send_copy_batch_state"], "missing")
             self.assertFalse(review["outreach_execution"]["send_copy_batch_copy_index_exists"])
+            self.assertEqual(review["private_artifacts"]["send_copy_warning_count"], 0)
+            self.assertEqual(review["private_artifacts"]["send_copy_warnings"], [])
             self.assertEqual(review["pruning_candidates"]["overdue_follow_ups"], [])
             self.assertTrue(
                 any("Read-only review" in note for note in review["operator_notes"])
@@ -116,6 +118,39 @@ class ValidationWeeklyReviewTests(unittest.TestCase):
             self.assertTrue(outreach["send_copy_batch_checklist_exists"])
             self.assertTrue(outreach["send_copy_batch_copy_index_exists"])
             self.assertTrue(outreach["send_copy_batch_matches_current_pack"])
+            self.assertEqual(review["private_artifacts"]["send_copy_warning_count"], 0)
+
+    def test_flags_unsafe_or_outdated_private_send_copy_files(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            private_dir = Path(tmp) / "validation-private"
+            private_dir.mkdir()
+            targets_path, log_path, pack_path = _write_private_inputs(private_dir)
+            old_dir = private_dir / "send-copy-2026-05-09"
+            old_dir.mkdir()
+            old_copy = old_dir / "01.txt"
+            old_copy.write_text(
+                "Subject: stale\n\nHi <first name>,\n\nOld placeholder body.\n",
+                encoding="utf-8",
+            )
+
+            review = weekly_review.build_weekly_review(
+                private_dir=private_dir,
+                targets_path=targets_path,
+                log_path=log_path,
+                message_pack_path=pack_path,
+                review_date="2026-05-10",
+            )
+
+            self.assertEqual(review["private_artifacts"]["send_copy_warning_count"], 1)
+            warning = review["private_artifacts"]["send_copy_warnings"][0]
+            self.assertEqual(warning["path"], str(old_copy))
+            self.assertIn("date_mismatch", warning["reasons"])
+            self.assertIn("placeholder_text", warning["reasons"])
+
+            rendered = weekly_review.render_markdown(review)
+            self.assertIn("Send-copy warning count: 1", rendered)
+            self.assertIn("Private send-copy warnings:", rendered)
+            self.assertIn("placeholder_text", rendered)
 
     def test_build_gate_requires_target_backed_validation(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
