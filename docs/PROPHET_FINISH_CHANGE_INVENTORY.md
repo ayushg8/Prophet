@@ -383,9 +383,10 @@ Review focus:
 - The pilot smoke should scan policy-listed default outputs for live-target URL
   fields while allowing public source citations, and should verify
   policy-listed OSINT snapshot provenance manifests.
-- Pilot release tag and Linux fresh-clone smoke remain open. PR checks are
-  green on the pushed head, but must be rechecked before review, undraft, or
-  merge.
+- Pilot release tag and Linux fresh-clone smoke remain open. A true GitHub
+  fresh clone of the PR branch at commit `d9a0d52` passed on macOS with 26
+  verified pilot hashes. PR checks are green on the pushed head, but must be
+  rechecked before review, undraft, or merge.
 - `make worktree-smoke` should remain a local pre-commit release-hygiene check:
   it may clone HEAD to `/tmp`, overlay non-ignored dirty files, and run the safe
   root smoke, but must not copy `validation/private/`, stage, commit, push, tag,
@@ -789,7 +790,8 @@ runtime output contents into the PR.
 - Production readiness remains 24.4% with 30 critical open items.
 - Full git-history secret archaeology remains unresolved; rotate/clean/except
   the historical `LOG4SHELL_INSTRUCTIONS.md` finding before public release.
-- Release tag and Linux fresh-clone smoke remain open.
+- Release tag and Linux fresh-clone smoke remain open. True GitHub fresh-clone
+  smoke passed on macOS for commit `d9a0d52`.
 - PR `#5` has the finish-pass commits pushed and checks are green on the
   current pushed head; verify `gh pr checks 5` again before review, undraft, or
   merge.
