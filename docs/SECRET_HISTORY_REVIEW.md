@@ -36,17 +36,44 @@ Before any public release, the owner must choose one of these paths:
 - If ownership cannot be confirmed, treat it as sensitive and do not publish
   the current git history as clean.
 
+## Owner Decision Template
+
+Use this template in a private release review. Do not include the matched line
+or value.
+
+```text
+Reviewer:
+Review date:
+Finding path: LOG4SHELL_INSTRUCTIONS.md
+Finding commits:
+- 4cb04a1f003a62876dfe15d0ff11f31635bde945
+- e025907c723645b2d725d424243e6f35b7100deb
+- c2a5082c34d85491f93c23bb98c09f82d15148e1
+
+Decision:
+[ ] Real or possibly reused secret: rotate/revoke first, then approve history rewrite or clean-repo release.
+[ ] Non-secret demo/test value: record false-positive rationale and reviewer.
+[ ] Unknown ownership or uncertainty: treat as sensitive and block public-release signoff.
+
+Rationale without matched value:
+
+Approved next action:
+```
+
 ## Safe Local Review
 
 Review locally only:
 
 ```bash
 make secrets-archaeology
-git show <commit>:LOG4SHELL_INSTRUCTIONS.md
+git show --no-ext-diff <commit>:LOG4SHELL_INSTRUCTIONS.md
 ```
 
 Do not use `git reset --hard`, `git filter-repo`, BFG, force-push, or branch
 deletion unless the repo owner explicitly approves that release cleanup.
+
+If a history rewrite or clean-repo release is approved, capture that approval
+outside this public repo before running destructive git cleanup.
 
 ## Current Working Release Boundary
 

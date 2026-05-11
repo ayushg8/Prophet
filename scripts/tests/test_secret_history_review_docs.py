@@ -55,6 +55,10 @@ class SecretHistoryReviewDocsTests(unittest.TestCase):
 
         self.assertIn("without printing matched secret-like values", review)
         self.assertIn("Do not paste the matched line or value", review)
+        self.assertIn("Owner Decision Template", review)
+        self.assertIn("Rationale without matched value", review)
+        self.assertIn("Unknown ownership or uncertainty", review)
+        self.assertIn("git show --no-ext-diff <commit>:LOG4SHELL_INSTRUCTIONS.md", review)
         self.assertNotIn("Password:", review)
         self.assertNotIn("s3cr", review.lower())
 
