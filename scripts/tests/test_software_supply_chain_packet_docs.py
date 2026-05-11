@@ -22,6 +22,7 @@ class SoftwareSupplyChainPacketDocsTests(unittest.TestCase):
             "Provenance Target",
             "Vulnerability Process",
             "Update Cadence",
+            "Generated Review Artifact Check",
         ):
             self.assertIn(required, text)
 
@@ -30,6 +31,12 @@ class SoftwareSupplyChainPacketDocsTests(unittest.TestCase):
         self.assertIn("make supply-chain-sbom DATE=YYYY-MM-DD", text)
         self.assertIn("evidence/outputs/runtime/supply-chain/prophet-supply-chain-sbom.json", text)
         self.assertIn("not a CycloneDX/SPDX release asset", text)
+        self.assertIn("git check-ignore -v evidence/outputs/runtime/supply-chain/prophet-supply-chain-sbom.json", text)
+        self.assertIn('git rev-parse HEAD', text)
+        self.assertIn(".generated_from.git_commit == $head", text)
+        self.assertIn(".generated_from.dirty_worktree == false", text)
+        self.assertIn("Do not run `check-release-safety.py` directly", text)
+        self.assertIn("ignored runtime artifact", text)
         self.assertIn("npm audit --audit-level=moderate", text)
         self.assertIn("docs/INCIDENT_RESPONSE_PLAYBOOK.md", text)
         self.assertIn("docs/SECRET_HISTORY_REVIEW.md", text)

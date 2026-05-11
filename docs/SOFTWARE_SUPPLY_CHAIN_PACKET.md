@@ -100,6 +100,28 @@ the exact release commit and store the generated machine-readable artifact as a
 release asset or ignored runtime review artifact. Do not commit generated SBOM
 output unless the release owner explicitly wants that artifact versioned.
 
+## Generated Review Artifact Check
+
+After generating the local review artifact, verify it is ignored and tied to
+the current commit before sharing it with a buyer or security reviewer:
+
+```bash
+make supply-chain-sbom DATE=YYYY-MM-DD
+git check-ignore -v evidence/outputs/runtime/supply-chain/prophet-supply-chain-sbom.json
+jq -e --arg head "$(git rev-parse HEAD)" \
+  '.generated_from.git_commit == $head
+   and .generated_from.dirty_worktree == false
+   and .review_boundary.output_policy
+   and (.review_boundary.non_claims | index("not evidence of production SaaS readiness"))' \
+  evidence/outputs/runtime/supply-chain/prophet-supply-chain-sbom.json
+```
+
+Do not run `check-release-safety.py` directly on this generated runtime
+artifact as a release-bound file. The path policy should reject it as an
+ignored runtime artifact if someone tries to stage or scan it as commit
+content. Use `make release-hygiene` for committed-state checks, and use the
+artifact only as an ignored review attachment when explicitly approved.
+
 ## Provenance Target
 
 For each internal alpha or paid-pilot review, record:
