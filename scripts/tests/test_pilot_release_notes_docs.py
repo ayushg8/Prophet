@@ -15,6 +15,7 @@ class PilotReleaseNotesDocsTests(unittest.TestCase):
     def test_release_notes_name_runnable_local_product_and_gate(self) -> None:
         text = RELEASE_NOTES.read_text(encoding="utf-8")
         master_todo = MASTER_TODO.read_text(encoding="utf-8")
+        sandbox_tests = (ROOT / "sandbox_runner/tests/test_runner.py").read_text(encoding="utf-8")
 
         self.assertIn("## Runnable Local Product", text)
         self.assertIn("make console-demo", text)
@@ -63,8 +64,13 @@ class PilotReleaseNotesDocsTests(unittest.TestCase):
         self.assertIn("[x] Day 1: Convert this working tree into reviewable commits.", master_todo)
         self.assertIn("[x] Day 1: Run full Python and console acceptance.", master_todo)
         self.assertIn("[x] Day 1: Fix any smoke or lint regressions.", master_todo)
+        self.assertIn("[x] Day 3: Add sandbox artifact schema and validation tests.", master_todo)
         self.assertIn("[~] Day 7: Run fresh clone smoke and package an internal pilot release.", master_todo)
         self.assertNotIn("[x] Day 7: Run fresh clone smoke and package an internal pilot release.", master_todo)
+        self.assertTrue((ROOT / "sandbox_runner/sandbox-artifact.schema.json").is_file())
+        self.assertTrue((ROOT / "sandbox_runner/sandbox-run-manifest.schema.json").is_file())
+        self.assertIn("test_sandbox_artifact_schema_file_is_published", sandbox_tests)
+        self.assertIn("validate_sandbox_run_manifest_schema", sandbox_tests)
 
     def test_release_notes_keep_safety_boundary_explicit(self) -> None:
         text = RELEASE_NOTES.read_text(encoding="utf-8")

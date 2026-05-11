@@ -598,7 +598,7 @@ non-live unless a future customer policy explicitly authorizes a narrower mode.
 - [x] Day 2: Add root evaluator README and 3-minute path.
 - [x] Day 2: Add policy status panel or console policy-blocked states.
 - [x] Day 3: Add evidence JSON Schema and validation tests.
-- [ ] Day 3: Add sandbox artifact schema and validation tests.
+- [x] Day 3: Add sandbox artifact schema and validation tests.
 - [~] Day 4: Add CI jobs for smoke hashes, policy lint, and unsafe text scan.
 - [x] Day 5: Add audit export and audit verification command.
 - [x] Day 5: Add audit retention cleanup.
