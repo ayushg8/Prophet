@@ -111,30 +111,31 @@ class FinishInventoryDocsTests(unittest.TestCase):
                 self.assertIn("check-doc-links.py", text)
                 self.assertIn("89 Markdown", text)
 
-    def test_completion_audit_names_current_checked_runtime_head(self) -> None:
+    def test_completion_audit_names_current_pushed_finish_head(self) -> None:
         audit = COMPLETION_AUDIT.read_text(encoding="utf-8")
 
-        self.assertIn("latest checked product/runtime head", audit)
+        self.assertIn("checked product/runtime baseline", audit)
         self.assertIn("1929dc0211f9d4567774df8b22a674afd01df48b", audit)
         self.assertIn("actions/runs/25663480672", audit)
-        self.assertIn("npm run acceptance` passed locally at `1929dc0`", audit)
-        self.assertIn("latest pushed buyer/security packet handoff checkpoint", audit)
-        self.assertIn("3431795b9e2b3ab8c79d985e8561f08ee5039aef", audit)
-        self.assertIn("actions/runs/25666353445", audit)
-        self.assertIn("does not replace the checked", audit)
-        self.assertIn("product/runtime baseline", audit)
-        self.assertIn("Documentation-only commits", audit)
+        self.assertIn("current pushed finish-pass head", audit)
+        self.assertIn("f91da90463b753743175d89d82e6f709f8ffc859", audit)
+        self.assertIn("actions/runs/25666846465", audit)
+        self.assertIn("Add supply-chain SBOM review generator", audit)
+        self.assertIn("make pilot-ready-check-full DATE=2026-05-11", audit)
+        self.assertIn("make console-live-check", audit)
+        self.assertIn("make release-hygiene", audit)
         self.assertIn("make validation-send-copy-check DATE=2026-05-11", audit)
-        self.assertIn("Do not append every later documentation-only commit", audit)
+        self.assertIn("Future commits after this checkpoint must rerun", audit)
 
-    def test_finish_inventory_names_latest_packet_handoff_checkpoint(self) -> None:
+    def test_finish_inventory_names_latest_finish_checkpoint(self) -> None:
         inventory = FINISH_INVENTORY.read_text(encoding="utf-8")
 
-        self.assertIn("Latest pushed buyer/security packet handoff checkpoint", inventory)
-        self.assertIn("3431795b9e2b3ab8c79d985e8561f08ee5039aef", inventory)
-        self.assertIn("actions/runs/25666353445", inventory)
-        self.assertIn("not a replacement for the", inventory)
-        self.assertIn("checked product/runtime baseline", inventory)
+        self.assertIn("Latest pushed finish-pass checkpoint", inventory)
+        self.assertIn("f91da90463b753743175d89d82e6f709f8ffc859", inventory)
+        self.assertIn("actions/runs/25666846465", inventory)
+        self.assertIn("Add supply-chain SBOM review generator", inventory)
+        self.assertIn("does not open", inventory)
+        self.assertIn("production platform scope", inventory)
 
     def test_github_main_fresh_clone_baseline_smoke_is_recorded(self) -> None:
         audit = COMPLETION_AUDIT.read_text(encoding="utf-8")

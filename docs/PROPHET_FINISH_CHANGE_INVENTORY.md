@@ -13,9 +13,11 @@ It does not tag, deploy, or mark the product complete.
 - Production readiness: `33.3%`.
 - Critical open readiness items: `26`.
 - Outreach status: 8 pending send/update items, 0 attention errors.
-- GitHub PR `#5` is merged to `main` at
-  `04fb56b4c4c5d3e48a1de0f286f3f12c43ad9dd4`; the GitHub `main` CI run for
-  that merge commit completed successfully.
+- Current pushed finish-pass head is
+  `f91da90463b753743175d89d82e6f709f8ffc859`
+  (`f91da90 Add supply-chain SBOM review generator`); the GitHub `main` CI run
+  for that head completed successfully at
+  <https://github.com/Ayush1298567/Prophet/actions/runs/25666846465>.
 
 Do not create production platform commits from this inventory until real
 validation reaches `build_next_slice`.
@@ -786,13 +788,13 @@ Latest verification run for this inventory:
   and unproven buyer demand.
 - `python3 scripts/production-readiness-scorecard.py`: readiness `33.3%`,
   26 critical open items.
-- Latest pushed buyer/security packet handoff checkpoint before this inventory
-  refresh: `3431795b9e2b3ab8c79d985e8561f08ee5039aef`
-  (`3431795 Add NIST CMMC security packet`). GitHub `main` CI completed
-  successfully at
-  <https://github.com/Ayush1298567/Prophet/actions/runs/25666353445>. This is
-  a documentation/readiness packet checkpoint, not a replacement for the
-  checked product/runtime baseline.
+- Latest pushed finish-pass checkpoint for this inventory refresh:
+  `f91da90463b753743175d89d82e6f709f8ffc859`
+  (`f91da90 Add supply-chain SBOM review generator`). GitHub `main` CI
+  completed successfully at
+  <https://github.com/Ayush1298567/Prophet/actions/runs/25666846465>. This
+  checkpoint includes the supply-chain SBOM review generator and does not open
+  production platform scope while validation remains `insufficient_data`.
 
 ## PR Handoff Draft
 
@@ -874,8 +876,9 @@ runtime output contents into the PR.
   documentation-only commits; rerun it before release tagging if a later release
   tag moves beyond this commit.
   Linux fresh-clone smoke is covered by the Ubuntu CI pilot smoke steps.
-- PR `#5` is merged to `main` at `04fb56b`, and the GitHub `main` CI run for
-  that merge commit completed successfully.
+- Current pushed finish-pass head is `f91da90`, and the GitHub `main` CI run
+  for that head completed successfully:
+  <https://github.com/Ayush1298567/Prophet/actions/runs/25666846465>.
 ```
 
 Before any new release tag or follow-up PR, rerun the relevant console
