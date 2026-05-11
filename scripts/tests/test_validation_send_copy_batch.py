@@ -64,6 +64,10 @@ class ValidationSendCopyBatchTests(unittest.TestCase):
                 "Run the matching pre-send check command immediately before each send.",
                 manifest["operator_notes"],
             )
+            self.assertIn(
+                "Before a full-block send, run make validation-pre-send-check-all DATE=2026-05-10.",
+                manifest["operator_notes"],
+            )
             first = manifest["files"][0]
             self.assertEqual(first["target_label"], "target-dib-platform-001")
             self.assertIn("subject", first)
@@ -105,6 +109,7 @@ class ValidationSendCopyBatchTests(unittest.TestCase):
             )
             self.assertIn("SHA-256", readme)
             self.assertIn("make validation-send-copy-check DATE=2026-05-10", readme)
+            self.assertIn("make validation-pre-send-check-all DATE=2026-05-10", readme)
             self.assertIn("make validation-status DATE=2026-05-10", readme)
             self.assertIn("pre-send check command immediately before sending", readme)
             self.assertIn("personalize only in the outreach channel", readme)
@@ -116,6 +121,7 @@ class ValidationSendCopyBatchTests(unittest.TestCase):
             checklist = Path(manifest["checklist_path"]).read_text(encoding="utf-8")
             self.assertIn("Prophet Send-Copy Batch Checklist", checklist)
             self.assertIn("make validation-send-copy-check DATE=2026-05-10", checklist)
+            self.assertIn("make validation-pre-send-check-all DATE=2026-05-10", checklist)
             self.assertIn("Do not send this checklist", checklist)
             self.assertIn("`01.txt`", checklist)
             self.assertIn("`target-dib-platform-001`", checklist)
@@ -160,6 +166,7 @@ class ValidationSendCopyBatchTests(unittest.TestCase):
             do_not_send = Path(manifest["do_not_send_path"]).read_text(encoding="utf-8")
             self.assertIn("# Do Not Send", do_not_send)
             self.assertIn("Only the contents of the numbered `.txt` files", do_not_send)
+            self.assertIn("make validation-pre-send-check-all", do_not_send)
             self.assertIn("CONFIRM_SENT=1", do_not_send)
             self.assertNotIn("target-dib-platform-001", do_not_send)
             self.assertNotIn("@", do_not_send)
