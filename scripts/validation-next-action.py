@@ -197,7 +197,7 @@ def render_next_action(
     if git_head:
         lines.extend(
             [
-                f"- Local git head: `{git_head}`. Recheck PR status before merge or release decisions.",
+                f"- Local git head: `{git_head}`. Recheck GitHub status before release decisions.",
                 "- Do not use PR readiness as buyer-demand evidence.",
             ]
         )
