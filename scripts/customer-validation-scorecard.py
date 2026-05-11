@@ -8,6 +8,7 @@ import json
 import re
 import sys
 from collections import Counter
+from datetime import date
 from pathlib import Path
 from typing import Any
 
@@ -48,6 +49,32 @@ ALLOWED_PILOT_SIGNALS = {
     "asked_for_scoped_pilot",
     "pilot_committed",
 }
+ALLOWED_WORKFLOW_PAIN_THEMES = {
+    "evidence_packet_gap",
+    "leadership_briefing_gap",
+    "soc_ticket_handoff_gap",
+    "asset_sbom_context_gap",
+    "prioritization_conflict",
+    "compliance_audit_pressure",
+    "existing_tools_sufficient",
+    "offensive_live_validation_request",
+    "other",
+}
+VERDICT_THRESHOLDS = {
+    "pilot_pull_detected": {
+        "qualified_count": 15,
+        "high_pain_count": 5,
+        "repeated_workflow_pain_count": 5,
+        "pilot_pull_count": 2,
+    },
+    "build_next_slice": {
+        "qualified_count": 15,
+        "high_pain_count": 8,
+        "repeated_workflow_pain_count": 5,
+        "pilot_pull_count": 3,
+        "paid_or_sponsored_count": 1,
+    },
+}
 
 
 class CustomerValidationError(ValueError):
@@ -65,6 +92,7 @@ def validate_log(log: dict[str, Any]) -> list[str]:
     errors: list[str] = []
     if log.get("schema_version") != SCHEMA_VERSION:
         errors.append(f"schema_version must be {SCHEMA_VERSION}")
+    _validate_optional_date(log.get("updated_at"), "updated_at", errors)
     interviews = log.get("interviews")
     if not isinstance(interviews, list):
         errors.append("interviews must be a list")
@@ -83,6 +111,7 @@ def validate_log(log: dict[str, Any]) -> list[str]:
             "recent_painful_event",
             "status_quo_gap",
             "desired_output",
+            "workflow_pain_theme",
             "budget_signal",
             "pilot_signal",
             "next_step",
@@ -92,7 +121,11 @@ def validate_log(log: dict[str, Any]) -> list[str]:
         if not isinstance(interview.get("qualified"), bool):
             errors.append(f"{context}.qualified must be boolean")
         existing_tools = interview.get("existing_tools")
-        if not isinstance(existing_tools, list) or not all(_non_empty_str(tool) for tool in existing_tools):
+        if (
+            not isinstance(existing_tools, list)
+            or not existing_tools
+            or not all(_non_empty_str(tool) for tool in existing_tools)
+        ):
             errors.append(f"{context}.existing_tools must be non-empty list[str]")
         objections = interview.get("objections")
         if not isinstance(objections, list) or not all(isinstance(item, str) for item in objections):
@@ -101,6 +134,8 @@ def validate_log(log: dict[str, Any]) -> list[str]:
             errors.append(f"{context}.budget_signal is unsupported")
         if interview.get("pilot_signal") not in ALLOWED_PILOT_SIGNALS:
             errors.append(f"{context}.pilot_signal is unsupported")
+        if interview.get("workflow_pain_theme") not in ALLOWED_WORKFLOW_PAIN_THEMES:
+            errors.append(f"{context}.workflow_pain_theme is unsupported")
         for field in SCORE_FIELDS:
             score = interview.get(field)
             if not isinstance(score, int) or score < 1 or score > 5:
@@ -143,15 +178,34 @@ def build_scorecard(log: dict[str, Any]) -> dict[str, Any]:
     ]
     segment_counts = Counter(str(interview["segment"]) for interview in qualified)
     persona_counts = Counter(str(interview["persona"]) for interview in qualified)
+    workflow_pain_theme_counts = Counter(
+        str(interview["workflow_pain_theme"]) for interview in high_pain
+    )
+    top_workflow_pain_theme, repeated_workflow_pain_count = _top_counter(
+        workflow_pain_theme_counts
+    )
     average_scores = {
         field: _average([interview[field] for interview in qualified])
         for field in SCORE_FIELDS
     }
-    verdict = _verdict(
+    example_seed_log = _example_seed_log(log)
+    raw_verdict = _verdict(
         qualified_count=len(qualified),
         high_pain_count=len(high_pain),
+        repeated_workflow_pain_count=repeated_workflow_pain_count,
         pilot_pull_count=len(pilot_pull),
         paid_or_sponsored_count=len(paid_or_sponsored),
+    )
+    verdict = "insufficient_data" if example_seed_log else raw_verdict
+    current_counts = {
+        "qualified_count": len(qualified),
+        "high_pain_count": len(high_pain),
+        "repeated_workflow_pain_count": repeated_workflow_pain_count,
+        "pilot_pull_count": len(pilot_pull),
+        "paid_or_sponsored_count": len(paid_or_sponsored),
+    }
+    effective_validation_counts = (
+        _zero_counts(current_counts) if example_seed_log else current_counts
     )
     return {
         "schema_version": SCORECARD_SCHEMA_VERSION,
@@ -162,11 +216,22 @@ def build_scorecard(log: dict[str, Any]) -> dict[str, Any]:
         "high_pain_count": len(high_pain),
         "pilot_pull_count": len(pilot_pull),
         "paid_or_sponsored_count": len(paid_or_sponsored),
+        "repeated_workflow_pain_count": repeated_workflow_pain_count,
+        "top_workflow_pain_theme": top_workflow_pain_theme,
+        "example_seed_log": example_seed_log,
+        "raw_verdict": raw_verdict,
+        "effective_validation_counts": effective_validation_counts,
         "average_scores": average_scores,
         "segment_counts": dict(sorted(segment_counts.items())),
         "persona_counts": dict(sorted(persona_counts.items())),
+        "workflow_pain_theme_counts": dict(sorted(workflow_pain_theme_counts.items())),
+        "validation_thresholds": VERDICT_THRESHOLDS,
+        "gaps_to_verdicts": {
+            verdict_name: _gap_counts(effective_validation_counts, thresholds)
+            for verdict_name, thresholds in VERDICT_THRESHOLDS.items()
+        },
         "verdict": verdict,
-        "next_action": _next_action(verdict),
+        "next_action": _next_action(verdict, example_seed_log=example_seed_log),
     }
 
 
@@ -199,6 +264,7 @@ def _verdict(
     *,
     qualified_count: int,
     high_pain_count: int,
+    repeated_workflow_pain_count: int,
     pilot_pull_count: int,
     paid_or_sponsored_count: int,
 ) -> str:
@@ -208,14 +274,21 @@ def _verdict(
         return "do_not_build_yet"
     if qualified_count < 15:
         return "keep_discovering"
-    if high_pain_count >= 8 and pilot_pull_count >= 3 and paid_or_sponsored_count >= 1:
+    if (
+        high_pain_count >= 8
+        and repeated_workflow_pain_count >= 5
+        and pilot_pull_count >= 3
+        and paid_or_sponsored_count >= 1
+    ):
         return "build_next_slice"
-    if high_pain_count >= 5 and pilot_pull_count >= 2:
+    if high_pain_count >= 5 and repeated_workflow_pain_count >= 5 and pilot_pull_count >= 2:
         return "pilot_pull_detected"
     return "keep_discovering"
 
 
-def _next_action(verdict: str) -> str:
+def _next_action(verdict: str, *, example_seed_log: bool = False) -> str:
+    if example_seed_log:
+        return "Replace the example-only validation seed with real anonymized buyer interviews before changing product direction."
     return {
         "insufficient_data": "Book more qualified discovery calls before changing product direction.",
         "do_not_build_yet": "Stop platform work; revise ICP or positioning because pain is not strong enough.",
@@ -223,6 +296,11 @@ def _next_action(verdict: str) -> str:
         "pilot_pull_detected": "Convert interested accounts into a paid or sponsored design partner pilot.",
         "build_next_slice": "Build only the smallest production slice required by the committed pilot.",
     }[verdict]
+
+
+def _example_seed_log(log: dict[str, Any]) -> bool:
+    notes = log.get("notes")
+    return isinstance(notes, str) and "example only" in notes.lower()
 
 
 def _scan_for_sensitive_values(value: Any, path: str, errors: list[str]) -> None:
@@ -243,10 +321,43 @@ def _scan_for_sensitive_values(value: Any, path: str, errors: list[str]) -> None
             errors.append(f"{path} contains private hostname-like text")
 
 
+def _validate_optional_date(value: object, path: str, errors: list[str]) -> None:
+    if value in (None, ""):
+        return
+    if not isinstance(value, str):
+        errors.append(f"{path} must be YYYY-MM-DD")
+        return
+    try:
+        date.fromisoformat(value)
+    except ValueError:
+        errors.append(f"{path} must be YYYY-MM-DD")
+
+
 def _average(values: list[int]) -> float:
     if not values:
         return 0.0
     return round(sum(values) / len(values), 2)
+
+
+def _top_counter(counter: Counter[str]) -> tuple[str | None, int]:
+    if not counter:
+        return None, 0
+    theme, count = counter.most_common(1)[0]
+    return theme, count
+
+
+def _gap_counts(
+    current_counts: dict[str, int],
+    thresholds: dict[str, int],
+) -> dict[str, int]:
+    return {
+        field: max(0, threshold - current_counts.get(field, 0))
+        for field, threshold in thresholds.items()
+    }
+
+
+def _zero_counts(current_counts: dict[str, int]) -> dict[str, int]:
+    return {field: 0 for field in current_counts}
 
 
 def _non_empty_str(value: object) -> bool:

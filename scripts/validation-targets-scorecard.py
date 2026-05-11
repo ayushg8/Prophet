@@ -8,12 +8,14 @@ import json
 import re
 import sys
 from collections import Counter
+from datetime import date
 from pathlib import Path
 from typing import Any
 
 
 SCHEMA_VERSION = "prophet_validation_targets.v0.1"
 SCORECARD_SCHEMA_VERSION = "prophet_validation_targets_scorecard.v0.1"
+DAILY_FOLLOW_UP_TARGET = 2
 ALLOWED_PRIORITIES = {"P0", "P1", "P2"}
 ALLOWED_STATUSES = {
     "identified",
@@ -44,6 +46,7 @@ def validate_targets(value: dict[str, Any]) -> list[str]:
     errors: list[str] = []
     if value.get("schema_version") != SCHEMA_VERSION:
         errors.append(f"schema_version must be {SCHEMA_VERSION}")
+    _validate_optional_date(value.get("updated_at"), "updated_at", errors)
     targets = value.get("targets")
     if not isinstance(targets, list):
         errors.append("targets must be a list")
@@ -76,6 +79,12 @@ def validate_targets(value: dict[str, Any]) -> list[str]:
             errors.append(f"{context}.priority is unsupported")
         if target.get("status") not in ALLOWED_STATUSES:
             errors.append(f"{context}.status is unsupported")
+        _validate_optional_date(target.get("last_touch"), f"{context}.last_touch", errors)
+        _validate_optional_date(target.get("follow_up_due"), f"{context}.follow_up_due", errors)
+        if target.get("status") == "follow_up_due" and not _non_empty_str(target.get("follow_up_due")):
+            errors.append(f"{context}.follow_up_due is required when status is follow_up_due")
+        if target.get("status") in {"call_booked", "completed", "disqualified"} and _non_empty_str(target.get("follow_up_due")):
+            errors.append(f"{context}.follow_up_due must be empty when status is {target.get('status')}")
     return errors
 
 
@@ -148,13 +157,15 @@ def _next_action(
 ) -> str:
     if target_count < 30:
         return "Add more anonymized targets until the sprint has at least 30 candidates."
-    if due_count > 0:
-        return "Work follow-ups before adding more targets."
     if p0_active_count < 10:
         return "Add more P0 DIB/platform-security targets."
     if active_target_count < 15:
         return "Replenish the active target list before the next outreach block."
-    return "Run today's outreach block: 5 targeted asks and 2 follow-ups."
+    if due_count >= DAILY_FOLLOW_UP_TARGET:
+        return "Run today's outreach block: 5 targeted asks, 2 due follow-ups, and 1 referral ask."
+    if due_count == 1:
+        return "Run today's outreach block: 5 targeted asks, 1 due follow-up, 1 follow-up backfill ask, and 1 referral ask."
+    return "Run today's outreach block: 5 targeted asks, 2 follow-up backfill asks, and 1 referral ask."
 
 
 def _scan_sensitive(value: Any, path: str, errors: list[str]) -> None:
@@ -171,6 +182,18 @@ def _scan_sensitive(value: Any, path: str, errors: list[str]) -> None:
             errors.append(f"{path} contains phone-like text")
         if URL_RE.search(value):
             errors.append(f"{path} contains URL-like text")
+
+
+def _validate_optional_date(value: object, path: str, errors: list[str]) -> None:
+    if value in (None, ""):
+        return
+    if not isinstance(value, str):
+        errors.append(f"{path} must be YYYY-MM-DD")
+        return
+    try:
+        date.fromisoformat(value)
+    except ValueError:
+        errors.append(f"{path} must be YYYY-MM-DD")
 
 
 def _non_empty_str(value: object) -> bool:

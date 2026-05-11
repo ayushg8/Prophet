@@ -13,6 +13,7 @@
       "existing_tools": ["scanner", "ticketing", "sbom", "threat_intel"],
       "status_quo_gap": "Tools ranked findings but did not produce a defensible evidence packet for leadership and SOC handoff.",
       "desired_output": "A short evidence packet with source basis, affected product-family context, recommended first action, and ticket/SIEM review templates.",
+      "workflow_pain_theme": "evidence_packet_gap",
       "pain_score": 5,
       "urgency_score": 4,
       "status_quo_weakness_score": 4,
