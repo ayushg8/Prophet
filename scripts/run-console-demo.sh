@@ -116,7 +116,8 @@ except OSError:
 PY
   then
     echo "error: $label port $port is already in use on $host" >&2
-    echo "Stop the existing process or set PROPHET_${label}_PORT to another port before running make console-demo." >&2
+    echo "If this is an existing Prophet demo, verify it with make console-live-check before starting another one." >&2
+    echo "Otherwise stop the existing process or set PROPHET_${label}_PORT to another port before running make console-demo." >&2
     exit 1
   fi
 }

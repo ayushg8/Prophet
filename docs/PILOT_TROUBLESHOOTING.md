@@ -140,9 +140,15 @@ is part of the reviewed console contract.
 ### `make console-demo` says a port is already in use
 
 `make console-demo` checks the control API and evaluator UI ports before it
-starts child processes. If the default ports are already occupied, either stop
-the previous local console/control-server process or run the demo on alternate
-localhost ports:
+starts child processes. If the default ports are already occupied, first check
+whether the previous local console is already healthy:
+
+```bash
+make console-live-check
+```
+
+If that passes, use the existing UI URL. Otherwise stop the previous local
+console/control-server process or run the demo on alternate localhost ports:
 
 ```bash
 PROPHET_CONTROL_PORT=8877 PROPHET_CONSOLE_PORT=5273 make console-demo

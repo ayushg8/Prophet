@@ -279,6 +279,7 @@ class MakeValidationTargetsTests(unittest.TestCase):
         self.assertIn("require_localhost_host", script)
         self.assertIn("console host must be localhost-only", script)
         self.assertIn("port $port is already in use", script)
+        self.assertIn("make console-live-check", script)
         self.assertIn("PROPHET_${label}_PORT", script)
         self.assertIn('require_port_available "127.0.0.1" "$CONTROL_PORT" "CONTROL"', script)
         self.assertIn('require_port_available "$UI_HOST" "$UI_PORT" "CONSOLE"', script)
@@ -309,6 +310,7 @@ class MakeValidationTargetsTests(unittest.TestCase):
         self.assertNotEqual(completed.returncode, 0)
         output = completed.stdout + completed.stderr
         self.assertIn(f"CONTROL port {occupied_port} is already in use", output)
+        self.assertIn("make console-live-check", output)
         self.assertIn("PROPHET_CONTROL_PORT", output)
         self.assertNotIn("Starting Prophet local evaluator console", output)
 
