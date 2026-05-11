@@ -90,6 +90,19 @@ class SecretHistoryReviewDocsTests(unittest.TestCase):
         self.assertIn("build_next_slice", script)
         self.assertIn("does not stage, commit, push, tag", script)
 
+    def test_release_tag_preflight_reports_secret_and_validation_blockers(self) -> None:
+        script = RELEASE_TAG_PREFLIGHT.read_text(encoding="utf-8")
+
+        self.assertIn("preflight_failed=0", script)
+        self.assertIn("release tag preflight blocker: full secrets archaeology failed", script)
+        self.assertIn("release tag preflight failed: build gate is closed", script)
+        self.assertIn("Prophet release tag preflight failed.", script)
+        self.assertIn("both the full secrets archaeology result", script)
+        self.assertLess(
+            script.index("release tag preflight blocker: full secrets archaeology failed"),
+            script.index("Checking real-validation build gate"),
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -20,6 +20,10 @@ This fails closed unless:
 - the validation dashboard allows build_next_slice from real buyer evidence
 - staged-path release safety passes
 
+After the clean-worktree and release-hygiene prerequisites pass, this reports
+both the full secrets archaeology result and the real-validation build gate
+result before exiting, so release owners can see every current blocker.
+
 This script does not stage, commit, push, tag, rewrite history, delete files,
 copy ignored private validation artifacts, or mark outreach as sent.
 USAGE
@@ -51,17 +55,24 @@ fi
 printf '[4/6] Running release hygiene\n'
 ./scripts/check-release-hygiene.sh
 
+preflight_failed=0
+
 printf '[5/6] Running full secrets archaeology\n'
-./scripts/check-secrets-archaeology.sh
+if ! ./scripts/check-secrets-archaeology.sh; then
+  printf 'release tag preflight blocker: full secrets archaeology failed; review docs/SECRET_HISTORY_REVIEW.md.\n' >&2
+  preflight_failed=1
+fi
 
 printf '[6/6] Checking real-validation build gate\n'
-dashboard_json="$(
+if ! dashboard_json="$(
   PYTHONPATH="$PYTHONPATH_SAFE" python3 scripts/validation-sprint-dashboard.py \
     --log "$VALIDATION_LOG" \
     --targets "$VALIDATION_TARGETS" \
     --require-date "$VALIDATION_RUN_DATE"
-)"
-printf '%s\n' "$dashboard_json" | python3 -c '
+)"; then
+  printf 'release tag preflight blocker: validation dashboard failed.\n' >&2
+  preflight_failed=1
+elif ! printf '%s\n' "$dashboard_json" | python3 -c '
 import json
 import sys
 
@@ -79,6 +90,13 @@ if not allowed:
     )
     sys.exit(1)
 print("Real-validation build gate is open.")
-'
+'; then
+  preflight_failed=1
+fi
+
+if [[ "$preflight_failed" != "0" ]]; then
+  printf 'Prophet release tag preflight failed.\n' >&2
+  exit 1
+fi
 
 printf 'Prophet release tag preflight passed.\n'

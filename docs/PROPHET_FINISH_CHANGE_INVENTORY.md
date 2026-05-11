@@ -520,7 +520,7 @@ sanitized examples.
 
 Latest verification run for this inventory:
 
-- `python3 -m unittest discover -s scripts/tests -v`: 401 tests passed after
+- `python3 -m unittest discover -s scripts/tests -v`: 402 tests passed after
   the NIST/CMMC security packet docs guard, send-boundary dashboard, copy-only resume boundary, CLI-reference,
   validation-resume, goal-resume, validation-team-update, validation-weekly-review,
   validation-next-action handoff generation, weekly-review `review_date`,
@@ -897,7 +897,7 @@ runtime output contents into the PR.
   `4d9565c` passed GitHub `main` CI, `python3 -m unittest discover -s
   scripts/tests -v`, `make release-hygiene`, and
   `make validation-resume DATE=2026-05-11`.
-- `python3 -m unittest discover -s scripts/tests -v` passed with 401 tests.
+- `python3 -m unittest discover -s scripts/tests -v` passed with 402 tests.
 - `make release-hygiene` passed.
 - `make console-live-check` passed against the running local demo.
 - `make console-screenshot-check` passed against the generated screenshot
