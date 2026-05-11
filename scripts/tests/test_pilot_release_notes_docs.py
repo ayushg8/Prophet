@@ -14,6 +14,7 @@ MASTER_TODO = ROOT / "docs" / "PROPHET_MASTER_TODO.md"
 class PilotReleaseNotesDocsTests(unittest.TestCase):
     def test_release_notes_name_runnable_local_product_and_gate(self) -> None:
         text = RELEASE_NOTES.read_text(encoding="utf-8")
+        master_todo = MASTER_TODO.read_text(encoding="utf-8")
 
         self.assertIn("## Runnable Local Product", text)
         self.assertIn("make console-demo", text)
@@ -59,6 +60,11 @@ class PilotReleaseNotesDocsTests(unittest.TestCase):
         self.assertNotIn("63 untracked non-ignored files", text)
         self.assertNotIn("58 untracked non-ignored files", text)
         self.assertNotIn("59 untracked non-ignored files", text)
+        self.assertIn("[x] Day 1: Convert this working tree into reviewable commits.", master_todo)
+        self.assertIn("[x] Day 1: Run full Python and console acceptance.", master_todo)
+        self.assertIn("[x] Day 1: Fix any smoke or lint regressions.", master_todo)
+        self.assertIn("[~] Day 7: Run fresh clone smoke and package an internal pilot release.", master_todo)
+        self.assertNotIn("[x] Day 7: Run fresh clone smoke and package an internal pilot release.", master_todo)
 
     def test_release_notes_keep_safety_boundary_explicit(self) -> None:
         text = RELEASE_NOTES.read_text(encoding="utf-8")

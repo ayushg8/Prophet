@@ -592,9 +592,9 @@ non-live unless a future customer policy explicitly authorizes a narrower mode.
 
 ## 7-Day Execution Plan
 
-- [ ] Day 1: Convert this working tree into reviewable commits.
-- [ ] Day 1: Run full Python and console acceptance.
-- [ ] Day 1: Fix any smoke or lint regressions.
+- [x] Day 1: Convert this working tree into reviewable commits.
+- [x] Day 1: Run full Python and console acceptance.
+- [x] Day 1: Fix any smoke or lint regressions.
 - [x] Day 2: Add root evaluator README and 3-minute path.
 - [x] Day 2: Add policy status panel or console policy-blocked states.
 - [x] Day 3: Add evidence JSON Schema and validation tests.
@@ -603,7 +603,7 @@ non-live unless a future customer policy explicitly authorizes a narrower mode.
 - [x] Day 5: Add audit export and audit verification command.
 - [x] Day 5: Add audit retention cleanup.
 - [x] Day 6: Add customer evaluator worksheet and CISO checklist.
-- [ ] Day 7: Run fresh clone smoke and package an internal pilot release.
+- [~] Day 7: Run fresh clone smoke and package an internal pilot release.
 
 ## 30-Day Execution Plan
 
