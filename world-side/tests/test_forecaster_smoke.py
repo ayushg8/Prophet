@@ -79,6 +79,37 @@ class ForecasterSmokeTests(unittest.TestCase):
         self.assertIn("src_chatter_fixture_001", used)
         self.assert_non_actionable(forecast)
 
+    def test_generator_integrates_osint_snapshot(self) -> None:
+        candidate = _load_json(FIXTURES / "exploit-candidate-edge-appliance.json")
+        forecast = assemble_forecast(
+            candidate,
+            generated_at="2026-05-02T23:45:00Z",
+            osint_snapshot_paths=[FIXTURES / "osint-snapshot-sample.jsonl"],
+            osint_manifest_paths=[FIXTURES / "osint-snapshot-sample.manifest.json"],
+            asset_seedset_paths=[ROOT / "assets/fixtures/dib-edge-appliance-seedset.json"],
+        )
+        validate_world_forecast(forecast)
+        signals = forecast["open_source_signals"]
+        self.assertTrue(signals["integrated"])
+        self.assertEqual(signals["record_count"], 4)
+        self.assertIn("src_context_osint_snapshot", signals["source_ref_ids"])
+        self.assertEqual(signals["freshness"]["status"], "current")
+        self.assertEqual(signals["freshness"]["newest_record_observed_at"], "2026-05-02T12:15:00Z")
+        self.assertEqual(signals["freshness"]["newest_record_age_days"], 2.32)
+        self.assertEqual(signals["freshness"]["record_span_days"], 0.01)
+        self.assertEqual(signals["source_health"]["status"], "ok")
+        self.assertEqual(signals["source_health"]["failed_source_count"], 0)
+        self.assertEqual(signals["source_failures"], [])
+        source_ids = {source["id"] for source in forecast["source_refs"]}
+        self.assertIn("src_context_osint_snapshot", source_ids)
+        self.assertIn("src_osint_cvelistv5_delta_fixture", source_ids)
+        asset_context = forecast["asset_seed_context"]
+        self.assertTrue(asset_context["integrated"])
+        self.assertEqual(asset_context["asset_count"], 3)
+        self.assertEqual(asset_context["cve_seed_count"], 4)
+        self.assertIn("src_context_asset_seedset", source_ids)
+        self.assert_non_actionable(forecast)
+
     def test_chatter_validation_rejects_raw_material(self) -> None:
         bad_record = {
             "record_id": "bad_raw",
@@ -137,6 +168,12 @@ class ForecasterSmokeTests(unittest.TestCase):
                     "2026-05-02T23:45:00Z",
                     "--chatter",
                     str(FIXTURES / "sanitized-chatter-sample.jsonl"),
+                    "--osint-snapshot",
+                    str(FIXTURES / "osint-snapshot-sample.jsonl"),
+                    "--osint-manifest",
+                    str(FIXTURES / "osint-snapshot-sample.manifest.json"),
+                    "--asset-seedset",
+                    str(ROOT / "assets/fixtures/dib-edge-appliance-seedset.json"),
                     "--out",
                     str(out_path),
                 ],
@@ -154,6 +191,8 @@ class ForecasterSmokeTests(unittest.TestCase):
                 "src_context_chatter",
                 {source["id"] for source in forecast["source_refs"]},
             )
+            self.assertTrue(forecast["open_source_signals"]["integrated"])
+            self.assertTrue(forecast["asset_seed_context"]["integrated"])
 
     def test_vector_validation_rejects_actionable_fields(self) -> None:
         candidate = _load_json(FIXTURES / "exploit-candidate-edge-appliance.json")

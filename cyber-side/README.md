@@ -13,15 +13,15 @@ a sandbox validation result. The Console renders that artifact in `ExploitPanel`
 
 | Asset | Where it lives | Reachable now? |
 |---|---|---|
-| Dell lab box (Log4Shell sandbox) | Idan's local network | **No.** Network unreachable from dev box. |
 | Palantir / Danti / private context | Idan's environment | Idan integrating separately. |
 | Forecaster (Direction B) | `world-side/` | Yes. Goldens in `world-side/outputs/`. |
 | Console | `prophet-console/` | Yes. Reads goldens by default. |
 | Exploit Engine artifact | `cyber-side/fixtures/` | **Yes — fixture path works without Dell.** |
 | Exploit prediction portfolio | `cyber-side/predictor.py` | **Yes — deterministic, no API keys.** |
 
-The demo therefore has two operating modes. The fixture mode is the one the
-Console reads today; the live mode is what runs once Dell access is restored.
+The public demo path is fixture-backed and local-only. Any lab-only validation
+scaffolding lives in a private research repo or local archive outside this
+public tree.
 
 ## Alex action item — exploit prediction portfolio
 
@@ -50,7 +50,7 @@ The local Console control server exposes it at
 `POST /api/cyber/prediction-portfolio`, and the Console summarizes the loaded
 5+5 portfolio in the AgentStream after the defense fixture is loaded.
 
-## Two operating modes
+## Operating modes
 
 ### Mode A — fixture mode (works right now, no Dell required)
 
@@ -83,68 +83,15 @@ npm run dev
 # open the demo route; ExploitPanel + DefencePanel render the fixture
 ```
 
-### Mode B — live mode (Dell back online, run by Idan)
+### Mode B — private research validation
 
-When the Dell is reachable, the Exploit Engine runs end-to-end on Idan's
-machine and emits a fresh Direction C artifact that the Console picks up
-instead of the fixture. The contract in `cyber-side/INTERFACE.md` is the only
-shape the Console accepts; anything that validates against
-`cyber-side/validator.py` is wire-compatible.
+Private research validation may emit fresh Direction C artifacts, but the
+public repo does not include lab setup scripts, exploit services, or
+operator steps for exploitation. The contract in `cyber-side/INTERFACE.md` is
+the only shape the Console accepts; anything copied back from a private lab must
+pass `cyber-side/validator.py` before use.
 
-The live mode runs against a **vulnerable-by-design sandbox container** on the
-Dell — never against operational infrastructure. The lab files at the repo
-root (`log4shell_setup.py`, `VulnerableApp.java`, `Exploit.java`,
-`LOG4SHELL_INSTRUCTIONS.md`, `setup_lab.ps1`, etc.) describe the historical
-Log4Shell stand-up that Idan provisioned for the rehearsal.
-
-## Operator runbook (Mode B — once Dell access exists)
-
-These commands are the only ones the operator should need on demo day. They
-assume Idan has restored SSH to the Dell and that the Log4Shell sandbox
-container is running on `[LAB-HOST]:8080`.
-
-> Replace `[LAB-HOST]` with the operator-supplied sandbox hostname. Do not put
-> the actual hostname in this file or in any committed artifact.
-
-### 1. Sanity-check the sandbox is up
-
-Run from the Dell, not the dev box:
-
-```bash
-# verify the sandbox responds
-curl -sS -o /dev/null -w "%{http_code}\n" "http://[LAB-HOST]:8080/"
-# expected: 200
-```
-
-### 2. Confirm the validation tool is present
-
-```bash
-nuclei -version
-# expected: nuclei v3.x or later
-```
-
-### 3. Run the engine against the forecast
-
-This is the one command that drives the full Mode B loop. The engine reads
-both Direction A and Direction B inputs and writes a Direction C artifact:
-
-```bash
-# from the Dell, with the engine repo checked out
-exploit-engine run \
-  --candidate /opt/prophet/world-side/fixtures/exploit-candidate-edge-appliance.json \
-  --forecast  /opt/prophet/world-side/outputs/golden-forecast-edge-appliance.json \
-  --sandbox   "[LAB-HOST]:8080" \
-  --out       /opt/prophet/cyber-side/outputs/run-$(date +%Y%m%d-%H%M)-edge-appliance.json
-```
-
-The engine binary is Idan's deliverable; the contract it must satisfy is
-`cyber-side/INTERFACE.md`.
-
-### 4. Validate the artifact before showing it on stage
-
-This step is the one the operator must not skip. It catches contract drift,
-banned keys, and accidental payload material before anything reaches the
-Console:
+Validate any private-lab artifact before showing it in the Console:
 
 ```bash
 PYTHONPATH=cyber-side python3 -c \
@@ -154,26 +101,13 @@ PYTHONPATH=cyber-side python3 -c \
   cyber-side/outputs/run-YYYYMMDD-HHMM-edge-appliance.json
 ```
 
-### 5. Hand the artifact to the Console
-
-Copy the validated artifact into the Console's data directory or expose it
-behind the existing loader (see `prophet-console/src/data/`). The Console
-reads Direction C as static JSON.
-
-### 6. If the live run fails on stage
-
-Drop straight back to Mode A by switching the loader to the fixture in
-`cyber-side/fixtures/exploit-engine-output-edge-appliance.json`. The judge sees
-the same panels render with the same content; only the audit `emitted_by`
-field changes.
-
 ## What goes into a live run, and what does not
 
 **Goes in:**
 
 - A Direction B forecast from `world-side/outputs/`.
 - A Direction A candidate from `world-side/fixtures/`.
-- The vulnerable-by-design sandbox identifier on the Dell.
+- A private, approved vulnerable-by-design sandbox identifier.
 - A localhost-only validation scope.
 
 **Stays out — non-negotiable:**
@@ -217,7 +151,6 @@ PYTHONPATH=world-side:world-side/scraper python3 -m unittest discover -s world-s
 ## OPSEC reminders inherited from `AGENTS.md`
 
 - Never commit `.env.local`, SSH keys, session files, or raw scrape output.
-- The Dell SSH passwords referenced in `LOG4SHELL_INSTRUCTIONS.md` and
-  `qwen_agent.py` must come from out-of-band channels and never from a
-  committed file.
+- Lab-only exploit validation scaffolding must stay in a private research repo
+  or local archive outside this public tree.
 - The lab is sandbox-only. Do not point the engine at anything else.

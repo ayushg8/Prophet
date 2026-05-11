@@ -48,8 +48,8 @@ off stage:
 - We **never show exploit code on screen.** What the judge sees: prediction
   score, exploit class label, patch diff, sandbox validation result. Payload
   bytes never cross the UI.
-- Targets are **vulnerable-by-design** sandbox containers (Vulhub, DVWA, Juice
-  Shop). Never live infrastructure.
+- Validation is fixture-backed or deterministic localhost sandbox output under
+  policy. Never live infrastructure.
 
 When we say "predicts a zero-day" we mean *predicts the next likely
 vulnerability class* — not "discovers a brand-new bug nobody knew about."
@@ -67,8 +67,9 @@ vulnerability class* — not "discovers a brand-new bug nobody knew about."
 | Component | Lives in | Owner | Job |
 |---|---|---|---|
 | **Forecaster** | `world-side/` | Ayush | Reads geopolitical signals + historical campaigns. Outputs *when* and *how* an attack is likely. |
-| **Exploit Engine** | `cyber-side/` (contract) + Idan's Dell box (live engine) | Idan + Alexander | Takes the forecast, picks an exploit class, validates it in a sandbox, generates patch + Sigma rule. |
-| **Console** | `prophet-console/` | Shared | React UI that streams agent reasoning and displays the strike window, exploit status, defense, and validation. |
+| **Exploit Engine contract** | `cyber-side/` | Idan + Alexander | Defines safe Direction C artifacts: exploit class, patch primitive, Sigma rule, and localhost/fixture validation result. |
+| **Evidence + sandbox** | `evidence/`, `sandbox_runner/` | Shared | Generates policy-bound evidence bundles and deterministic localhost sandbox artifacts. |
+| **Console** | `prophet-console/` | Shared | React UI that streams agent reasoning and displays the strike window, policy state, evidence, defense, and validation. |
 
 Three JSON contracts hold the components together:
 
@@ -155,7 +156,7 @@ forecaster.
 
 These are fixtures so the demo works without internet or live scraping.
 
-## 6. Component 2 — The Exploit Engine (`cyber-side/` + Dell live box)
+## 6. Component 2 — The Exploit Engine (`cyber-side/` + private lab boundary)
 
 ### What it does, in plain words
 
@@ -169,36 +170,33 @@ For the demo the canonical example is **Log4Shell (CVE-2021-44228)**:
 
 1. Forecaster says "edge-appliance access, PRC pre-positioning, May 2026."
 2. Engine picks JNDI-lookup RCE as the representative class.
-3. Engine spins up a vulnerable Log4j 2.14.0 container (Vulhub).
-4. Engine runs a Nuclei template; the template confirms the lookup fires via
-   an out-of-band DNS callback. No shell is spawned.
+3. Engine validates only in a vulnerable-by-design sandbox or deterministic
+   fixture harness.
+4. Engine records pre/post status without exposing raw payload strings,
+   target-control steps, or private infrastructure.
 5. Engine writes the defense: `formatMsgNoLookups=true` JVM flag, hardened
    `log4j2.xml`, plus a fallback JAR-strip of `JndiLookup.class`. Sigma rule
    detects JNDI strings in HTTP headers.
-6. Engine restarts the service with the patch applied, re-runs the same
-   Nuclei template — gets "NOT VULNERABLE."
+6. The localhost harness records the post-patch state as "BLOCKED" without
+   exposing raw validation payloads.
 7. Engine emits the **Direction C artifact**: predicted exploit class,
    non-actionable rationale, patch diff, Sigma rule, pre/post validation
    status, audit fields.
 
 ### Two operating modes
 
-**Mode A — fixture mode (works right now, no Dell):**
+**Mode A — fixture mode (default public path):**
 
 - Console loads `cyber-side/fixtures/exploit-engine-output-edge-appliance.json`.
 - That fixture contains a fully validated Direction C artifact.
-- Demo renders end-to-end without any live engine.
-- Safety net for stage day.
+- Demo renders end-to-end without any live engine or live target.
+- This is the default evaluator path.
 
-**Mode B — live mode (Dell back online, run by Idan):**
+**Mode B — private research validation:**
 
-- Idan runs the actual engine on the Dell.
-- It produces a fresh Direction C artifact.
-- Console loads that instead of the fixture.
-- If anything goes wrong on stage, fall back to Mode A by switching the loader.
-
-The Dell is currently unreachable, so Mode A is the only confirmed-working
-path today.
+- Approved operators may run lab validation in a private research environment.
+- The public repo does not contain lab setup scripts or exploit scaffolding.
+- Only validated Direction C artifacts may be copied back into the product path.
 
 ### The validator
 
@@ -216,26 +214,13 @@ Direction C contract. It rejects:
 `cyber-side/tests/test_exploit_engine_artifact.py` exercises the golden
 fixture passing and 9 ways drift would be caught. All 10 tests pass.
 
-### The lab files at the repo root
+### Research lab policy
 
-Operational scaffolding that runs on the Dell when it is reachable. Not part
-of the public demo:
-
-- `LOG4SHELL_INSTRUCTIONS.md` — step-by-step setup runbook.
-- `log4shell_setup.py` — automates installing Java 8 + Log4j 2.14.0 + an HTTP
-  service + an LDAP server on a Windows host.
-- `VulnerableApp.java`, `Exploit.java`, `Exploit.class` — the Java target and
-  the proof-of-exploit class that runs in the sandbox.
-- `setup_lab.ps1`, `fix_service.ps1` — PowerShell helpers.
-- `demo_script.py` — runs the historical Log4Shell demo end-to-end.
-- `setup_status.py` — sanity-check script.
-- `qwen_agent.py` — auto-setup agent that drove the Windows machine via a
-  local Qwen model.
-- `ldap_server.py`, `log4j2.xml`, `TestJNDI.java` — supporting bits.
-
-These exist because the engine needs a real sandbox to validate against. They
-reference the Dell but no credentials are committed — passwords are
-out-of-band per OPSEC.
+Lab-only exploit validation scaffolding is not part of the public product tree.
+It belongs in a private research repo or local archive outside this repository.
+Customer-facing and investor-facing demos use `cyber-side/fixtures/`, the
+deterministic sandbox runner, and the evidence bundle workflow instead. See
+`docs/RESEARCH_LAB_POLICY.md`.
 
 ## 7. Component 3 — The Console (`prophet-console/`)
 
@@ -285,7 +270,7 @@ button that walks through four phases.
 | `worldSide.ts` | TypeScript types + loader for the Direction B forecast. |
 | `forecastIndex.ts` | Maps `candidate_id` → loaded `StrikeForecast` object. |
 | `cves.ts` | CVE metadata for the demo set. |
-| `mockEvents.ts` | Hand-built event stream that drives the demo. Hardcodes the Log4Shell scenario today and merges in the world-side forecast. |
+| `mockEvents.ts` | Hand-built event stream that drives the demo and merges in the world-side forecast. |
 | `replayController.ts` | Drives the demo: emits events with timing, handles the human gate. |
 
 The Console runs entirely on static JSON from `world-side/outputs/` and
@@ -356,11 +341,10 @@ checklist.
 
 ## 10. Research artifacts (`research/`)
 
-`research/PROPHET_demo_candidates.md` is pre-event research that picked five
-historical KEV CVEs for the demo: Log4Shell, Apache 2.4.49 path traversal,
-Spring4Shell, Confluence SSTI, Struts2 OGNL. Each filtered for: (a) judge
-recognition value, (b) Vulhub Docker reproduction available, (c) Nuclei
-template available. Log4Shell is the on-stage anchor; the others are backups.
+`research/PROPHET_demo_candidates.md` is now a safety archive that points to the
+fixture-backed pilot contract. The current buyer demo uses sanitized fixtures,
+deterministic sandbox artifacts, policy-bound evidence, and review-template
+handoffs instead of live reproduction candidates.
 
 ## 11. Where the project actually stands right now
 
@@ -368,12 +352,13 @@ template available. Log4Shell is the on-stage anchor; the others are backups.
 |---|---|---|
 | Forecaster | **Done** | Pipeline runs, golden fixtures emit, 19 tests pass. |
 | Exploit Engine contract + fixture | **Done** | Direction C contract written, golden fixture validates, 10 tests pass. |
-| Exploit Engine live | **Blocked on Dell** | Idan has the Dell locally, integrating Palantir/Danti, currently unreachable. |
-| Console | **In progress** | Components built, mockEvents stream wired, forecaster JSON wired, panels render. Codex pushed cyber-side fixture loading. |
-| Demo lab files | **Done** | Log4Shell sandbox setup runs on the Dell. |
+| Evidence bundle | **Done** | JSON + Markdown bundle wraps forecast, portfolio, defense, validation, approval, hashes, and safety attestation. |
+| Private lab validation | **Out of public repo** | Private research work can emit Direction C artifacts only after validator review. |
+| Console | **In progress** | Components built, mockEvents stream wired, forecaster JSON wired, panels render. Evidence generation is exposed through localhost control server. |
 
-The fixture mode is the safety net. If the Dell never comes back, the demo
-still runs.
+The fixture mode is the default public product path. Private lab validation may
+exist separately, but only validated Direction C artifacts belong back in this
+repo.
 
 ## 12. The OPSEC rules (why so many guards)
 
@@ -395,11 +380,13 @@ still runs.
 > [Click] Strike window — May 8 to 18, anchored by the Trump-Xi summit and
 > Volt Typhoon analogy.
 >
-> [Click] Edge-appliance vector — Log4Shell as the representative class.
+> [Click] Edge-appliance vector — a logging-framework RCE class as the
+> representative one-day analogue.
 >
-> [Approve] Watch the agent: Nuclei fires, callback received, **VULNERABLE**.
-> Patch generates: `formatMsgNoLookups=true`. Patch applies. Re-run:
-> **BLOCKED**. Sigma rule shown.
+> [Approve] Watch the local fixture workflow: pre-patch evidence is
+> **VULNERABLE** in the localhost harness. Patch generates:
+> `formatMsgNoLookups=true`. Post-patch evidence is **BLOCKED**. Sigma rule
+> shown.
 >
 > Same loop runs disconnected on a Palantir CASK-class edge kit. Left of boom
 > for cyber."
@@ -411,6 +398,8 @@ still runs.
   `world-side/INTERFACE.md`.
 - Working on the Exploit Engine or Direction C? `cyber-side/README.md` and
   `cyber-side/INTERFACE.md`.
+- Working on evidence export? `evidence/bundle.py` is the bundle contract and
+  `prophet-console/control-server.mjs` exposes the local API.
 - Working on the Console? `prophet-console/src/data/mockEvents.ts` is the
   starting point for the demo flow.
 - Pitching or rehearsing? `HACKATHON.md` for the judging rubric and pitch arc.

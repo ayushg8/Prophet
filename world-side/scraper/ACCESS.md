@@ -78,6 +78,13 @@ Current collector-ready low-risk feeds:
 - NOAA/NHC Atlantic and Eastern Pacific RSS
 - CISA cybersecurity and ICS advisory index metadata
 - GitHub Advisory Database metadata
+- CVEProject cvelistV5 delta metadata, without CVE record bodies
+- CISA Vulnrichment repository commit metadata, without diffs or CVE record bodies
+- Red Hat Security Data CVE metadata, without Bugzilla descriptions or scoring vectors
+- MITRE ATT&CK Enterprise STIX object metadata, without procedures or relationship bodies
+- MITRE CWE XML taxonomy metadata, without examples or extended descriptions
+- MITRE CAPEC XML taxonomy metadata, without execution flows or examples
+- MITRE D3FEND ontology ID/label metadata, without definitions or inferred relationships
 - ProjectDiscovery Nuclei Templates commit metadata, without file bodies or diffs
 - Openwall oss-security index metadata
 - Fortinet PSIRT RSS headline metadata
@@ -94,6 +101,8 @@ Current collector-ready low-risk feeds:
 Cataloged but disabled by default:
 
 - World Monitor Bootstrap API until a key is obtained out-of-band and a sanitizer review is complete
+- CISA Vulnrichment seeded CVE-record collector until a CVE seed is supplied by a forecast or asset match
+- OSV.dev seeded package/CVE query collector until package or CVE seeds are available
 - ReliefWeb disaster metadata until an approved ReliefWeb `appname` exists for the project
 - GDELT public article-list metadata until conservative VM-side cadence/backoff is approved
 - Shodan and Exa until API-key handling and aggregate-only query review exist

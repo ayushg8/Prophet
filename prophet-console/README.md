@@ -1,34 +1,74 @@
 # Prophet Console
 
-The Prophet Console is the real-time web UI for Prophet's prediction pipeline. It displays:
-
-- **Strike windows** — when the target is most vulnerable, from the Forecaster
-- **Strike vectors** — how adversaries will likely strike, from the Forecaster
-- **Exploit generation stream** — live agent reasoning as the Exploit Engine runs
-- **Zero-day defense** — generated patch + Sigma rule, once the exploit loop completes
+The Prophet Console is the local evaluator UI for the safe buyer-pilot path. It
+shows the fixture-backed forecast, defensive exposure-class portfolio, evidence
+bundle, policy status, audit trail, and review-only SIEM/ticket handoff
+templates.
 
 ## Stack
 
-React + TypeScript + Vite. The demo works without a backend by loading static forecaster fixtures and replaying recorded agent events. An optional local-only control server can trigger the isolated scraper VM and refresh the forecast while running on localhost.
+React + TypeScript + Vite. The evaluator demo loads static fixtures and uses an
+optional localhost-only control server to refresh sanitized fixture outputs,
+generate evidence, and export review templates. The public pilot path does not
+perform live collection, payload generation, production pushes, or autonomous
+remediation.
 
 ## Run
 
 ```bash
-cd prophet-console
-npm install
-npm run dev
-# opens at http://localhost:5173
+(cd prophet-console && npm install)
+make console-control
 ```
 
-Optional scraper VM control button:
+In a second terminal:
 
 ```bash
-cd prophet-console
-npm run dev:control
-# listens on http://127.0.0.1:8787
+make console-ui
 ```
 
-With both commands running, `DEMO REFRESH` uses the tracked sanitized chatter fixture and refreshes the forecast locally. `LOAD FIXTURE` in the Defence panel loads the cyber-side Direction C fixture from `cyber-side/fixtures/exploit-engine-output-edge-appliance.json` into the Exploit and Defence panels. `RUN SCRAPER VM` calls the local control server, which uses SSH key auth to run `world-side/scripts/run-scraper-vm-workflow.sh`. That script pulls back sanitized JSONL only, validates it through the Forecaster, and returns a refreshed forecast to the Console. If key auth is not ready, the button fails closed and does not prompt for a password.
+The UI opens at `http://127.0.0.1:5173`; the control server listens on
+`http://127.0.0.1:8787`.
+
+With both commands running, fixture refresh uses tracked sanitized fixtures and
+seeded OSINT, evidence generation writes ignored runtime artifacts, and handoff
+export writes review templates under `integrations/outputs/runtime/`.
+
+Readiness check:
+
+```bash
+curl http://127.0.0.1:8787/api/readiness
+```
+
+The Alpha Readiness panel uses this read-only endpoint. Missing runtime evidence
+or integration exports are warnings until an operator generates them; policy or
+core fixture failures are blocking.
+
+Integration handoff export:
+
+```bash
+curl -X POST -H 'x-prophet-control: local-console' \
+  http://127.0.0.1:8787/api/integrations/demo-export
+```
+
+The Handoff panel uses this localhost-only endpoint after evidence generation.
+It writes review templates under `integrations/outputs/runtime/`; it does not
+call customer SIEM or ticketing APIs.
+
+Full internal-alpha acceptance:
+
+```bash
+npm run acceptance
+```
+
+Responsive screenshot capture for a qualified reviewer:
+
+```bash
+npm run capture:screenshots
+```
+
+This writes desktop/mobile screenshots and a manifest under
+`../evidence/outputs/runtime/console-screenshots/`. Those files are ignored
+runtime output and require redaction review before sharing.
 
 Before relying on the live VM button:
 
@@ -65,6 +105,7 @@ In the demo, the exploit agent stream is replayed from `src/data/mockEvents.ts` 
 | `AgentStream` | Live reasoning stream from the Exploit Engine |
 | `ExploitPanel` | Zero-day exploit prediction result |
 | `DefencePanel` | Generated patch + Sigma rule |
+| `IntegrationPanel` | SIEM, ticketing, and audit handoff export |
 | `ApprovalGate` | Human review gate between exploit and defense phases |
 | `PhaseProgress` | Four-phase progress bar (INTEL → PLAN → EXECUTE → DEFEND) |
 | `TriageQueue` | CVE triage queue (ranked candidates) |
@@ -75,3 +116,4 @@ In the demo, the exploit agent stream is replayed from `src/data/mockEvents.ts` 
 | `LabTopology` | Lab environment topology diagram |
 | `RunbookDrawer` | Collapsible runbook panel |
 | `SourceCitation` | Source citation badges |
+| `ReadinessPanel` | Read-only policy, fixture, evidence, export, and safety readiness |

@@ -1,4 +1,4 @@
-// PreflightChecklist: mirrors the real setup_status.py checks.
+// PreflightChecklist: mirrors safe fixture readiness checks.
 // Each item ticks ✓ in sequence over 1.2s on mount.
 // All checks must be ✓ before the run button enables.
 // Re-runs on reset (isRunning: false → true transition).
@@ -12,14 +12,14 @@ interface CheckItem {
 }
 
 const CHECKS: CheckItem[] = [
-  { id: 'kev',       label: 'KEV CATALOG',       detail: 'refreshed 14:32Z' },
-  { id: 'nvd',       label: 'NVD CVE 2.0',        detail: 'streaming' },
+  { id: 'kev',       label: 'KEV CATALOG',       detail: 'cached seed loaded' },
+  { id: 'nvd',       label: 'NVD CVE 2.0',        detail: 'cached context loaded' },
   { id: 'epss',      label: 'EPSS v4 BASELINE',   detail: 'loaded' },
-  { id: 'target',    label: 'LAB TARGET',          detail: '[LAB-HOST]:8080 · reachable' },
-  { id: 'vulnapp',   label: 'VULNERABLEAPP',       detail: 'Log4j 2.14.0 · running' },
+  { id: 'target',    label: 'FIXTURE SCOPE',       detail: 'localhost sandbox ready' },
+  { id: 'vulnapp',   label: 'DEMO SERVICE',         detail: 'Log4j fixture profile loaded' },
   { id: 'sandbox',   label: 'SANDBOX ISOLATION',   detail: 'enforced' },
-  { id: 'codex',     label: 'CODEX TERMINAL',      detail: 'operator loop ready' },
-  { id: 'fixture',   label: 'FIXTURE FALLBACK',    detail: 'world + cyber artifacts loaded' },
+  { id: 'control',   label: 'LOCAL CONTROL',      detail: 'operator loop ready' },
+  { id: 'fixture',   label: 'FIXTURE FALLBACK',    detail: 'forecast + defense artifacts loaded' },
 ];
 
 // Total animation budget: 1.2s across all items

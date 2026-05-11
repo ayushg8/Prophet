@@ -970,6 +970,616 @@
       }
     },
     {
+      "id": "cveproject_cvelistv5_delta_log",
+      "enabled": true,
+      "lane": "public_technical_chatter",
+      "source_type": "technical_api",
+      "display_name": "CVEProject cvelistV5 Delta Log",
+      "collection": {
+        "method": "http_get",
+        "format": "json",
+        "url": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/deltaLog.json",
+        "url_template": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/{year}/{bucket}/CVE-{year}-{id}.json",
+        "params": {
+          "collect_delta_metadata_only": "true"
+        },
+        "cadence_minutes": 180,
+        "auth_method": "none",
+        "respect_robots_txt": true,
+        "rate_limit_per_minute": 1
+      },
+      "normalization": {
+        "record_type": "technical_signal",
+        "extract_fields": [
+          "fetchTime",
+          "numberOfChanges",
+          "new[].cveId",
+          "new[].dateUpdated",
+          "new[].cveOrgLink",
+          "updated[].cveId",
+          "updated[].dateUpdated",
+          "updated[].cveOrgLink"
+        ],
+        "time_field_candidates": [
+          "fetchTime",
+          "dateUpdated"
+        ],
+        "dedupe_keys": [
+          "cveId",
+          "dateUpdated"
+        ]
+      },
+      "safety": {
+        "store_raw": false,
+        "raw_retention_hours": 0,
+        "max_text_chars": 500,
+        "prompt_eligibility": "after_sanitization",
+        "drop_content": [
+          "cve_record_text",
+          "references",
+          "descriptions",
+          "exploit_code",
+          "credentials",
+          "target_lists"
+        ],
+        "notes": "Collect only cvelistV5 delta metadata: CVE ID, update time, and public CVE link. Do not fetch or prompt with full CVE record bodies by default."
+      },
+      "relevance": {
+        "stage2_use": "exploit_context",
+        "default_weight": 0.82,
+        "tags": [
+          "cve",
+          "cvelistv5",
+          "official_cve_corpus"
+        ]
+      },
+      "options": {
+        "display_label": "CVEProject cvelistV5 delta log",
+        "max_records": "500",
+        "tags": [
+          "cve",
+          "cvelistv5",
+          "vulnerability_metadata"
+        ]
+      }
+    },
+    {
+      "id": "cisa_vulnrichment_repo_commits",
+      "enabled": true,
+      "lane": "official_gov_feeds",
+      "source_type": "gov_feed",
+      "display_name": "CISA Vulnrichment Repository Commit Metadata",
+      "collection": {
+        "method": "api",
+        "format": "json",
+        "url": "https://api.github.com/repos/cisagov/vulnrichment/commits?per_page=100",
+        "url_template": null,
+        "params": {
+          "per_page": "100",
+          "metadata_only": "true"
+        },
+        "cadence_minutes": 180,
+        "auth_method": "none",
+        "respect_robots_txt": true,
+        "rate_limit_per_minute": 1
+      },
+      "normalization": {
+        "record_type": "technical_signal",
+        "extract_fields": [
+          "sha",
+          "commit.author.date",
+          "commit.message",
+          "html_url"
+        ],
+        "time_field_candidates": [
+          "commit.author.date",
+          "commit.committer.date"
+        ],
+        "dedupe_keys": [
+          "sha"
+        ]
+      },
+      "safety": {
+        "store_raw": false,
+        "raw_retention_hours": 0,
+        "max_text_chars": 500,
+        "prompt_eligibility": "after_sanitization",
+        "drop_content": [
+          "file_diffs",
+          "cve_record_bodies",
+          "descriptions",
+          "references",
+          "exploit_code",
+          "credentials",
+          "target_lists"
+        ],
+        "notes": "Collect repository update metadata only. Direct CVE record enrichment is available through the seeded collector and remains explicit-source only."
+      },
+      "relevance": {
+        "stage2_use": "exploit_context",
+        "default_weight": 0.76,
+        "tags": [
+          "cisa",
+          "vulnrichment",
+          "ssvc",
+          "adp"
+        ]
+      },
+      "options": {
+        "display_label": "CISA Vulnrichment repository",
+        "target_sector": "public-sector and enterprise defenders tracking CISA-enriched CVEs",
+        "vector_class": "official vulnerability enrichment timing signal",
+        "motive_hint": "CISA vulnerability enrichment timing",
+        "confidence": "medium",
+        "tags": [
+          "cisa",
+          "vulnrichment",
+          "adp"
+        ]
+      }
+    },
+    {
+      "id": "cisa_vulnrichment_cve_record_seed",
+      "enabled": false,
+      "lane": "official_gov_feeds",
+      "source_type": "gov_feed",
+      "display_name": "CISA Vulnrichment Seeded CVE Record",
+      "collection": {
+        "method": "http_get",
+        "format": "json",
+        "url": null,
+        "url_template": "https://raw.githubusercontent.com/cisagov/vulnrichment/develop/{year}/{bucket}/CVE-{year}-{id}.json",
+        "params": {
+          "requires_cve_seed": "true",
+          "metadata_only": "true"
+        },
+        "cadence_minutes": 0,
+        "auth_method": "none",
+        "respect_robots_txt": true,
+        "rate_limit_per_minute": 0
+      },
+      "normalization": {
+        "record_type": "technical_signal",
+        "extract_fields": [
+          "cveMetadata.cveId",
+          "cveMetadata.dateUpdated",
+          "containers.adp.providerMetadata.shortName",
+          "containers.adp.metrics",
+          "containers.adp.problemTypes"
+        ],
+        "time_field_candidates": [
+          "cveMetadata.dateUpdated",
+          "cveMetadata.datePublished"
+        ],
+        "dedupe_keys": [
+          "cveMetadata.cveId",
+          "cveMetadata.dateUpdated"
+        ]
+      },
+      "safety": {
+        "store_raw": false,
+        "raw_retention_hours": 0,
+        "max_text_chars": 500,
+        "prompt_eligibility": "after_sanitization",
+        "drop_content": [
+          "descriptions",
+          "references",
+          "examples",
+          "exploit_code",
+          "credentials",
+          "target_lists"
+        ],
+        "notes": "Disabled until a CVE seed is supplied by a forecast or asset match. Collector extracts ADP/SSVC metadata only."
+      },
+      "relevance": {
+        "stage2_use": "exploit_context",
+        "default_weight": 0.78,
+        "tags": [
+          "cisa",
+          "vulnrichment",
+          "seeded"
+        ]
+      },
+      "options": {
+        "display_label": "CISA Vulnrichment seeded CVE record",
+        "max_records": "100"
+      }
+    },
+    {
+      "id": "osv_query_api_seed",
+      "enabled": false,
+      "lane": "public_technical_chatter",
+      "source_type": "technical_api",
+      "display_name": "OSV.dev Seeded Vulnerability Query API",
+      "collection": {
+        "method": "api",
+        "format": "json",
+        "url": "https://api.osv.dev/v1/query",
+        "url_template": "https://api.osv.dev/v1/vulns/{osv_id}",
+        "params": {
+          "requires_package_or_cve_seed": "true",
+          "metadata_only": "true"
+        },
+        "cadence_minutes": 0,
+        "auth_method": "none",
+        "respect_robots_txt": true,
+        "rate_limit_per_minute": 0
+      },
+      "normalization": {
+        "record_type": "technical_signal",
+        "extract_fields": [
+          "id",
+          "aliases",
+          "published",
+          "modified",
+          "affected.package.ecosystem",
+          "affected.package.name",
+          "severity"
+        ],
+        "time_field_candidates": [
+          "published",
+          "modified"
+        ],
+        "dedupe_keys": [
+          "id",
+          "modified"
+        ]
+      },
+      "safety": {
+        "store_raw": false,
+        "raw_retention_hours": 0,
+        "max_text_chars": 500,
+        "prompt_eligibility": "after_sanitization",
+        "drop_content": [
+          "details",
+          "events",
+          "ranges",
+          "references",
+          "exploit_code",
+          "credentials",
+          "target_lists"
+        ],
+        "notes": "Disabled until package/CVE seeds exist. Keep OSV metadata only; do not retain vulnerability detail text or version event ranges in prompts."
+      },
+      "relevance": {
+        "stage2_use": "exploit_context",
+        "default_weight": 0.74,
+        "tags": [
+          "osv",
+          "open_source",
+          "package_vulnerability"
+        ]
+      },
+      "options": {
+        "display_label": "OSV.dev vulnerability database",
+        "max_records": "100"
+      }
+    },
+    {
+      "id": "redhat_security_data_cve_api",
+      "enabled": true,
+      "lane": "public_technical_chatter",
+      "source_type": "vendor_advisory",
+      "display_name": "Red Hat Security Data CVE API",
+      "collection": {
+        "method": "api",
+        "format": "json",
+        "url": "https://access.redhat.com/hydra/rest/securitydata/cve.json",
+        "url_template": "https://access.redhat.com/hydra/rest/securitydata/cve/{cve_id}.json",
+        "params": {
+          "after": "{window_start_date}",
+          "metadata_only": "true"
+        },
+        "cadence_minutes": 360,
+        "auth_method": "none",
+        "respect_robots_txt": true,
+        "rate_limit_per_minute": 1
+      },
+      "normalization": {
+        "record_type": "technical_signal",
+        "extract_fields": [
+          "CVE",
+          "severity",
+          "public_date",
+          "CWE",
+          "affected_packages",
+          "package_state",
+          "resource_url"
+        ],
+        "time_field_candidates": [
+          "public_date"
+        ],
+        "dedupe_keys": [
+          "CVE",
+          "public_date"
+        ]
+      },
+      "safety": {
+        "store_raw": false,
+        "raw_retention_hours": 0,
+        "max_text_chars": 500,
+        "prompt_eligibility": "after_sanitization",
+        "drop_content": [
+          "bugzilla_description",
+          "scoring_vectors",
+          "advisory_bodies",
+          "exploit_code",
+          "credentials",
+          "target_lists"
+        ],
+        "notes": "Collect CVE, severity, CWE, package-family, and link metadata only. Omit Bugzilla descriptions, scoring vectors, and advisory bodies."
+      },
+      "relevance": {
+        "stage2_use": "exploit_context",
+        "default_weight": 0.68,
+        "tags": [
+          "redhat",
+          "vendor_advisory",
+          "linux"
+        ]
+      },
+      "options": {
+        "display_label": "Red Hat Security Data API",
+        "max_records": "200"
+      }
+    },
+    {
+      "id": "mitre_attack_enterprise_stix",
+      "enabled": true,
+      "lane": "public_technical_chatter",
+      "source_type": "technical_index",
+      "display_name": "MITRE ATT&CK Enterprise STIX Data",
+      "collection": {
+        "method": "http_get",
+        "format": "json",
+        "url": "https://raw.githubusercontent.com/mitre-attack/attack-stix-data/master/enterprise-attack/enterprise-attack.json",
+        "url_template": null,
+        "params": {
+          "metadata_only": "true"
+        },
+        "cadence_minutes": 1440,
+        "auth_method": "none",
+        "respect_robots_txt": true,
+        "rate_limit_per_minute": 1
+      },
+      "normalization": {
+        "record_type": "technical_signal",
+        "extract_fields": [
+          "objects[].type",
+          "objects[].name",
+          "objects[].modified",
+          "objects[].external_references.external_id",
+          "objects[].external_references.url",
+          "objects[].kill_chain_phases.phase_name"
+        ],
+        "time_field_candidates": [
+          "modified",
+          "created"
+        ],
+        "dedupe_keys": [
+          "external_id",
+          "modified"
+        ]
+      },
+      "safety": {
+        "store_raw": false,
+        "raw_retention_hours": 0,
+        "max_text_chars": 500,
+        "prompt_eligibility": "after_sanitization",
+        "drop_content": [
+          "descriptions",
+          "relationship_bodies",
+          "procedure_examples",
+          "detection_details",
+          "exploit_code",
+          "credentials",
+          "target_lists"
+        ],
+        "notes": "Large public STIX file. Collector emits object ID/name/type/tactic metadata only and omits descriptions, procedures, and relationships."
+      },
+      "relevance": {
+        "stage2_use": "background_context",
+        "default_weight": 0.5,
+        "tags": [
+          "mitre_attack",
+          "stix",
+          "taxonomy"
+        ]
+      },
+      "options": {
+        "display_label": "MITRE ATT&CK Enterprise STIX data",
+        "max_records": "250"
+      }
+    },
+    {
+      "id": "mitre_cwe_latest_xml",
+      "enabled": true,
+      "lane": "public_technical_chatter",
+      "source_type": "technical_index",
+      "display_name": "MITRE CWE Latest XML Catalog",
+      "collection": {
+        "method": "http_get",
+        "format": "xml_zip",
+        "url": "https://cwe.mitre.org/data/xml/cwec_latest.xml.zip",
+        "url_template": null,
+        "params": {
+          "metadata_only": "true"
+        },
+        "cadence_minutes": 1440,
+        "auth_method": "none",
+        "respect_robots_txt": true,
+        "rate_limit_per_minute": 1
+      },
+      "normalization": {
+        "record_type": "technical_signal",
+        "extract_fields": [
+          "Weakness.ID",
+          "Weakness.Name",
+          "Weakness.Status",
+          "Weakness.Abstraction"
+        ],
+        "time_field_candidates": [
+          "Catalog.Date"
+        ],
+        "dedupe_keys": [
+          "Weakness.ID"
+        ]
+      },
+      "safety": {
+        "store_raw": false,
+        "raw_retention_hours": 0,
+        "max_text_chars": 500,
+        "prompt_eligibility": "after_sanitization",
+        "drop_content": [
+          "extended_descriptions",
+          "examples",
+          "references",
+          "demonstrative_code",
+          "credentials",
+          "target_lists"
+        ],
+        "notes": "Collect CWE ID and name taxonomy metadata only. Do not surface extended descriptions, examples, references, or code snippets."
+      },
+      "relevance": {
+        "stage2_use": "exploit_context",
+        "default_weight": 0.55,
+        "tags": [
+          "mitre",
+          "cwe",
+          "weakness_taxonomy"
+        ]
+      },
+      "options": {
+        "display_label": "MITRE CWE catalog",
+        "max_records": "400"
+      }
+    },
+    {
+      "id": "mitre_capec_latest_xml",
+      "enabled": true,
+      "lane": "public_technical_chatter",
+      "source_type": "technical_index",
+      "display_name": "MITRE CAPEC Latest XML Catalog",
+      "collection": {
+        "method": "http_get",
+        "format": "xml_zip",
+        "url": "https://capec.mitre.org/data/xml/views/1000.xml.zip",
+        "url_template": null,
+        "params": {
+          "metadata_only": "true"
+        },
+        "cadence_minutes": 1440,
+        "auth_method": "none",
+        "respect_robots_txt": true,
+        "rate_limit_per_minute": 1
+      },
+      "normalization": {
+        "record_type": "technical_signal",
+        "extract_fields": [
+          "Attack_Pattern.ID",
+          "Attack_Pattern.Name",
+          "Attack_Pattern.Abstraction"
+        ],
+        "time_field_candidates": [
+          "Catalog.Date"
+        ],
+        "dedupe_keys": [
+          "Attack_Pattern.ID"
+        ]
+      },
+      "safety": {
+        "store_raw": false,
+        "raw_retention_hours": 0,
+        "max_text_chars": 500,
+        "prompt_eligibility": "after_sanitization",
+        "drop_content": [
+          "descriptions",
+          "execution_flows",
+          "examples",
+          "references",
+          "exploit_code",
+          "credentials",
+          "target_lists"
+        ],
+        "notes": "Collect CAPEC ID/name/abstraction metadata only. Do not surface execution flows, examples, or detailed pattern descriptions."
+      },
+      "relevance": {
+        "stage2_use": "exploit_context",
+        "default_weight": 0.45,
+        "tags": [
+          "mitre",
+          "capec",
+          "attack_pattern_taxonomy"
+        ]
+      },
+      "options": {
+        "display_label": "MITRE CAPEC catalog",
+        "max_records": "300"
+      }
+    },
+    {
+      "id": "mitre_d3fend_ontology_json",
+      "enabled": true,
+      "lane": "analysis_tooling_references",
+      "source_type": "osint_context",
+      "display_name": "MITRE D3FEND Ontology JSON-LD",
+      "collection": {
+        "method": "http_get",
+        "format": "json",
+        "url": "https://d3fend.mitre.org/ontologies/d3fend.json",
+        "url_template": null,
+        "params": {
+          "metadata_only": "true"
+        },
+        "cadence_minutes": 1440,
+        "auth_method": "none",
+        "respect_robots_txt": true,
+        "rate_limit_per_minute": 1
+      },
+      "normalization": {
+        "record_type": "advisory",
+        "extract_fields": [
+          "@graph[].d3f:d3fend-id",
+          "@graph[].rdfs:label",
+          "@graph[].@id"
+        ],
+        "time_field_candidates": [
+          "observed_at"
+        ],
+        "dedupe_keys": [
+          "d3f:d3fend-id"
+        ]
+      },
+      "safety": {
+        "store_raw": false,
+        "raw_retention_hours": 0,
+        "max_text_chars": 500,
+        "prompt_eligibility": "after_sanitization",
+        "drop_content": [
+          "definitions",
+          "inferred_relationships",
+          "references",
+          "private_project_exports",
+          "credentials",
+          "target_lists"
+        ],
+        "notes": "Collect D3FEND ID and label metadata only for defensive taxonomy alignment."
+      },
+      "relevance": {
+        "stage2_use": "background_context",
+        "default_weight": 0.35,
+        "tags": [
+          "mitre",
+          "d3fend",
+          "defensive_taxonomy"
+        ]
+      },
+      "options": {
+        "display_label": "MITRE D3FEND ontology",
+        "max_records": "250"
+      }
+    },
+    {
       "id": "nuclei_templates_cve_commits",
       "enabled": true,
       "lane": "public_technical_chatter",

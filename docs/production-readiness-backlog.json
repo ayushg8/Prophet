@@ -1,0 +1,616 @@
+{
+  "schema_version": "prophet_production_readiness_backlog.v0.1",
+  "updated_at": "2026-05-11",
+  "target_definition": "Controlled production means Prophet can run as a secure, deployable, policy-bound defense evidence product with approved customer data, tenant isolation, durable storage, operator identity, real integration handoffs, observability, and a security review packet.",
+  "status_scale": {
+    "done": "Implemented, documented, tested, and backed by repo evidence.",
+    "in_progress": "Partially implemented or designed, with remaining acceptance gates open.",
+    "planned": "Accepted into the roadmap, not yet implemented.",
+    "blocked": "Requires customer, legal, security, architecture, or deployment decision before build."
+  },
+  "milestones": [
+    {
+      "id": "M0",
+      "name": "Pilot Release Baseline",
+      "target_version": "v0.3",
+      "owner": "founder",
+      "status": "in_progress",
+      "risk_tags": ["buyer", "release", "safety"],
+      "acceptance_gates": [
+        "PR #5 is ready for internal buyer-pilot review, then merged after the release/security gates clear or intentionally superseded by an explicit owner decision.",
+        "A release tag identifies the exact fixture and smoke hash set.",
+        "A second operator can run the evaluator smoke from a fresh clone."
+      ],
+      "work_items": [
+        {
+          "id": "M0-01",
+          "title": "Keep buyer pilot smoke, CI, console, and release-safety gates green",
+          "status": "done",
+          "priority": "P0",
+          "owner": "founder",
+          "target_version": "v0.3",
+          "risk_tags": ["buyer", "release", "safety"],
+          "acceptance_gates": ["Root smoke, Python tests, console lint/build/smoke, dependency audit, and release-safety checks pass."],
+          "evidence_paths": ["README.md", ".github/workflows/ci.yml", "scripts/run-pilot-demo-smoke.sh"]
+        },
+        {
+          "id": "M0-02",
+          "title": "Merge and tag the buyer pilot branch",
+          "status": "blocked",
+          "priority": "P0",
+          "owner": "founder",
+          "target_version": "v0.3",
+          "risk_tags": ["release", "buyer"],
+          "acceptance_gates": ["A tag such as pilot-v0.1 points to the reviewed commit and links to release notes."],
+          "blocker": "PR #5 is ready for internal buyer-pilot review, but public pilot merge/tag remains blocked until the historical LOG4SHELL_INSTRUCTIONS.md secret-history finding has an owner decision."
+        },
+        {
+          "id": "M0-03",
+          "title": "Run fresh-clone smoke on macOS",
+          "status": "done",
+          "priority": "P0",
+          "owner": "founder",
+          "target_version": "v0.3",
+          "risk_tags": ["release", "buyer", "docs"],
+          "acceptance_gates": ["A clean macOS clone completes the 3-minute evaluator path with matching hashes."],
+          "evidence_paths": ["docs/PILOT_RELEASE_NOTES.md", "scripts/pilot-demo-smoke.sha256"]
+        },
+        {
+          "id": "M0-04",
+          "title": "Run fresh-clone smoke on Linux",
+          "status": "done",
+          "priority": "P0",
+          "owner": "founder",
+          "target_version": "v0.3",
+          "risk_tags": ["release", "buyer", "docs"],
+          "acceptance_gates": ["A clean Linux clone completes the 3-minute evaluator path with matching hashes."],
+          "evidence_paths": [".github/workflows/ci.yml", "docs/PILOT_RELEASE_NOTES.md", "scripts/pilot-demo-smoke.sha256"]
+        },
+        {
+          "id": "M0-05",
+          "title": "Publish release notes with expected output hashes",
+          "status": "done",
+          "priority": "P1",
+          "owner": "founder",
+          "target_version": "v0.3",
+          "risk_tags": ["release", "docs", "buyer"],
+          "acceptance_gates": ["Release notes name generated artifact paths, policy hash, evidence hash, and smoke hash manifest."],
+          "evidence_paths": ["docs/PILOT_RELEASE_NOTES.md", "scripts/pilot-demo-smoke.sha256", "scripts/pilot-demo-smoke-financial-workflow.sha256"]
+        }
+      ]
+    },
+    {
+      "id": "M1",
+      "name": "Production Architecture And Security Design",
+      "target_version": "v0.4",
+      "owner": "engineering",
+      "status": "in_progress",
+      "risk_tags": ["security", "infra", "compliance", "docs"],
+      "acceptance_gates": [
+        "Architecture, threat model, compliance gap map, and execution plan exist.",
+        "Customer security reviewers can see data flows, trust boundaries, and remaining gaps without private context."
+      ],
+      "work_items": [
+        {
+          "id": "M1-01",
+          "title": "Create production execution plan",
+          "status": "done",
+          "priority": "P0",
+          "owner": "founder",
+          "target_version": "v0.4",
+          "risk_tags": ["docs", "buyer", "security"],
+          "acceptance_gates": ["The plan defines milestones, acceptance gates, critical path, and non-goals."],
+          "evidence_paths": ["docs/PRODUCTION_EXECUTION_PLAN.md"]
+        },
+        {
+          "id": "M1-02",
+          "title": "Create production architecture decision record",
+          "status": "done",
+          "priority": "P0",
+          "owner": "engineering",
+          "target_version": "v0.4",
+          "risk_tags": ["infra", "security", "docs"],
+          "acceptance_gates": ["The architecture names the first deployable model, services, storage, trust boundaries, and promotion path."],
+          "evidence_paths": ["docs/PRODUCTION_ARCHITECTURE.md"]
+        },
+        {
+          "id": "M1-03",
+          "title": "Create STRIDE-style production threat model",
+          "status": "done",
+          "priority": "P0",
+          "owner": "security",
+          "target_version": "v0.4",
+          "risk_tags": ["security", "compliance", "docs"],
+          "acceptance_gates": ["The threat model covers identity, tenant isolation, data ingestion, evidence, integrations, sandboxing, and operations."],
+          "evidence_paths": ["docs/THREAT_MODEL.md"]
+        },
+        {
+          "id": "M1-04",
+          "title": "Create compliance and security review gap map",
+          "status": "done",
+          "priority": "P0",
+          "owner": "security",
+          "target_version": "v0.4",
+          "risk_tags": ["security", "compliance", "buyer", "docs"],
+          "acceptance_gates": ["The gap map identifies what exists, what is missing, and what blocks CMMC/NIST/FedRAMP/SOC 2 style review."],
+          "evidence_paths": ["docs/COMPLIANCE_GAP_MAP.md"]
+        },
+        {
+          "id": "M1-05",
+          "title": "Create data classification and artifact inventory",
+          "status": "done",
+          "priority": "P1",
+          "owner": "security",
+          "target_version": "v0.4",
+          "risk_tags": ["data", "security", "compliance"],
+          "acceptance_gates": ["Every artifact type has classification, allowed fields, retention, storage, and export rules."],
+          "evidence_paths": ["docs/DATA_CLASSIFICATION_AND_ARTIFACT_INVENTORY.md"]
+        }
+      ]
+    },
+    {
+      "id": "M2",
+      "name": "Durable Platform Foundation",
+      "target_version": "v0.5",
+      "owner": "engineering",
+      "status": "planned",
+      "risk_tags": ["infra", "ops", "data"],
+      "acceptance_gates": [
+        "Local stack has an API service, durable database, artifact store abstraction, and background jobs.",
+        "Pilot smoke can run through production-shaped services in local mode."
+      ],
+      "work_items": [
+        {
+          "id": "M2-01",
+          "title": "Define API service boundary for runs, policies, evidence, integrations, and readiness",
+          "status": "planned",
+          "priority": "P0",
+          "owner": "engineering",
+          "target_version": "v0.5",
+          "risk_tags": ["infra", "security"],
+          "acceptance_gates": ["API endpoints are versioned, tested, and do not bypass policy checks."]
+        },
+        {
+          "id": "M2-02",
+          "title": "Add Postgres schema and migrations for tenants, policies, runs, artifacts, approvals, and audit events",
+          "status": "planned",
+          "priority": "P0",
+          "owner": "engineering",
+          "target_version": "v0.5",
+          "risk_tags": ["infra", "data", "identity"],
+          "acceptance_gates": ["Migrations are deterministic and tests prove tenant-scoped records are required."]
+        },
+        {
+          "id": "M2-03",
+          "title": "Add artifact storage abstraction for evidence bundles and generated handoffs",
+          "status": "planned",
+          "priority": "P1",
+          "owner": "engineering",
+          "target_version": "v0.5",
+          "risk_tags": ["infra", "data", "security"],
+          "acceptance_gates": ["Artifacts are content-addressed, policy-bound, and immutable after approval."]
+        },
+        {
+          "id": "M2-04",
+          "title": "Add job queue abstraction for forecast, sandbox, evidence, and export workflows",
+          "status": "planned",
+          "priority": "P1",
+          "owner": "engineering",
+          "target_version": "v0.5",
+          "risk_tags": ["infra", "ops"],
+          "acceptance_gates": ["Long-running workflows have queued job status, retry policy, cancellation, and audit events."]
+        },
+        {
+          "id": "M2-05",
+          "title": "Add production configuration system",
+          "status": "planned",
+          "priority": "P1",
+          "owner": "engineering",
+          "target_version": "v0.5",
+          "risk_tags": ["infra", "security", "ops"],
+          "acceptance_gates": ["Local, staging, pilot, and production profiles validate required settings and fail closed."]
+        }
+      ]
+    },
+    {
+      "id": "M3",
+      "name": "Identity, RBAC, And Tenant Isolation",
+      "target_version": "v0.6",
+      "owner": "security",
+      "status": "planned",
+      "risk_tags": ["identity", "security", "compliance"],
+      "acceptance_gates": [
+        "Users authenticate with customer identity provider or local development identity.",
+        "Roles and tenant scope are enforced server-side and covered by negative tests."
+      ],
+      "work_items": [
+        {
+          "id": "M3-01",
+          "title": "Define tenant, organization, workspace, user, role, and service-account model",
+          "status": "done",
+          "priority": "P0",
+          "owner": "security",
+          "target_version": "v0.6",
+          "risk_tags": ["identity", "security", "data"],
+          "acceptance_gates": ["Every persisted object has tenant scope or an explicit global classification."],
+          "evidence_paths": ["docs/RBAC_TENANT_MODEL.md", "prophet_platform/authorization.py", "prophet_platform/tests/test_authorization.py"]
+        },
+        {
+          "id": "M3-02",
+          "title": "Implement RBAC roles for viewer, analyst, approver, admin, and auditor",
+          "status": "in_progress",
+          "priority": "P0",
+          "owner": "engineering",
+          "target_version": "v0.6",
+          "risk_tags": ["identity", "security"],
+          "acceptance_gates": ["Permission tests cover allowed and denied actions for each role."]
+        },
+        {
+          "id": "M3-03",
+          "title": "Add OIDC first, then SAML plan for customers that require it",
+          "status": "planned",
+          "priority": "P1",
+          "owner": "security",
+          "target_version": "v0.6",
+          "risk_tags": ["identity", "security", "compliance"],
+          "acceptance_gates": ["OIDC login maps identity claims to tenant roles without accepting unsigned or missing claims."]
+        },
+        {
+          "id": "M3-04",
+          "title": "Add tenant isolation test harness",
+          "status": "in_progress",
+          "priority": "P0",
+          "owner": "engineering",
+          "target_version": "v0.6",
+          "risk_tags": ["identity", "security", "data"],
+          "acceptance_gates": ["Automated tests prove tenant A cannot read, modify, export, or infer tenant B artifacts."]
+        },
+        {
+          "id": "M3-05",
+          "title": "Design approval quorum and break-glass controls",
+          "status": "planned",
+          "priority": "P2",
+          "owner": "security",
+          "target_version": "v0.6",
+          "risk_tags": ["identity", "security", "ops"],
+          "acceptance_gates": ["Higher-risk modes require configured approver count and emit special audit events."]
+        }
+      ]
+    },
+    {
+      "id": "M4",
+      "name": "Customer Data And Source Operations",
+      "target_version": "v0.7",
+      "owner": "data",
+      "status": "planned",
+      "risk_tags": ["data", "security", "buyer"],
+      "acceptance_gates": [
+        "Customer-owned inputs can be onboarded through approved schemas.",
+        "Source freshness, failure budgets, provenance, and retention are visible and policy-bound."
+      ],
+      "work_items": [
+        {
+          "id": "M4-01",
+          "title": "Add CycloneDX SBOM fixture and parser",
+          "status": "planned",
+          "priority": "P1",
+          "owner": "data",
+          "target_version": "v0.7",
+          "risk_tags": ["data", "buyer"],
+          "acceptance_gates": ["Safe CycloneDX fixtures produce seedsets without storing unsafe identifiers."]
+        },
+        {
+          "id": "M4-02",
+          "title": "Add SPDX SBOM fixture and parser",
+          "status": "planned",
+          "priority": "P1",
+          "owner": "data",
+          "target_version": "v0.7",
+          "risk_tags": ["data", "buyer"],
+          "acceptance_gates": ["Safe SPDX fixtures produce seedsets without storing unsafe identifiers."]
+        },
+        {
+          "id": "M4-03",
+          "title": "Implement source failure budgets and fail-closed behavior for required sources",
+          "status": "planned",
+          "priority": "P0",
+          "owner": "data",
+          "target_version": "v0.7",
+          "risk_tags": ["data", "security", "buyer"],
+          "acceptance_gates": ["Forecast and evidence generation fail closed when required source classes are stale or unavailable."]
+        },
+        {
+          "id": "M4-04",
+          "title": "Implement customer data retention and deletion workflow",
+          "status": "planned",
+          "priority": "P0",
+          "owner": "security",
+          "target_version": "v0.7",
+          "risk_tags": ["data", "security", "compliance"],
+          "acceptance_gates": ["A tenant admin can request deletion, retention reports identify expired data, and deletion is audited."]
+        },
+        {
+          "id": "M4-05",
+          "title": "Design official-source live collection approval flow",
+          "status": "blocked",
+          "priority": "P2",
+          "owner": "security",
+          "target_version": "v0.7",
+          "risk_tags": ["data", "security", "safety"],
+          "blocker": "Requires legal review, customer-specific policy, retention decision, source terms review, and explicit non-targeting scope.",
+          "acceptance_gates": ["Live collection remains disabled until policy, legal, and source governance gates exist."]
+        }
+      ]
+    },
+    {
+      "id": "M5",
+      "name": "Sandbox And Validation Hardening",
+      "target_version": "v0.7",
+      "owner": "engineering",
+      "status": "in_progress",
+      "risk_tags": ["sandbox", "safety", "security"],
+      "acceptance_gates": [
+        "Sandbox validation is reproducible, no-egress, resource-limited, and policy-approved.",
+        "Evidence records the artifact provenance chain without raw logs."
+      ],
+      "work_items": [
+        {
+          "id": "M5-01",
+          "title": "Maintain deterministic fixture profiles",
+          "status": "done",
+          "priority": "P0",
+          "owner": "engineering",
+          "target_version": "v0.7",
+          "risk_tags": ["sandbox", "safety"],
+          "acceptance_gates": ["Edge-appliance and financial-workflow fixture profiles emit valid Direction C artifacts."],
+          "evidence_paths": ["sandbox_runner/tests/test_runner.py", "sandbox_runner/runner.py"]
+        },
+        {
+          "id": "M5-02",
+          "title": "Package sandbox runner as a reproducible container",
+          "status": "planned",
+          "priority": "P0",
+          "owner": "engineering",
+          "target_version": "v0.7",
+          "risk_tags": ["sandbox", "infra", "security"],
+          "acceptance_gates": ["Container build is deterministic enough for pilot review and records image digest in run manifest."]
+        },
+        {
+          "id": "M5-03",
+          "title": "Add no-egress and resource-limit enforcement for container mode",
+          "status": "planned",
+          "priority": "P0",
+          "owner": "security",
+          "target_version": "v0.7",
+          "risk_tags": ["sandbox", "security", "safety"],
+          "acceptance_gates": ["Tests or documented runtime checks prove no external network, CPU, memory, disk, and timeout limits are configured."]
+        },
+        {
+          "id": "M5-04",
+          "title": "Add sandbox provenance chain from profile to evidence bundle",
+          "status": "done",
+          "priority": "P1",
+          "owner": "engineering",
+          "target_version": "v0.7",
+          "risk_tags": ["sandbox", "security", "data"],
+          "acceptance_gates": ["Evidence includes profile ID, artifact hash, run manifest hash, policy hash, and validator result."],
+          "evidence_paths": [
+            "evidence/bundle.py",
+            "evidence/prophet-evidence-bundle.schema.json",
+            "evidence/tests/test_evidence_bundle.py",
+            "sandbox_runner/runner.py",
+            "scripts/run-pilot-demo-smoke.sh",
+            "scripts/pilot-demo-smoke.sha256",
+            "scripts/pilot-demo-smoke-financial-workflow.sha256"
+          ]
+        },
+        {
+          "id": "M5-05",
+          "title": "Gate every non-fixture sandbox mode on customer approval",
+          "status": "blocked",
+          "priority": "P0",
+          "owner": "security",
+          "target_version": "v0.7",
+          "risk_tags": ["sandbox", "safety", "security"],
+          "blocker": "Requires RBAC, signed approval records, deployment isolation, and customer authorization model.",
+          "acceptance_gates": ["No non-fixture sandbox profile can run without approval record, policy allowlist, and audit event."]
+        }
+      ]
+    },
+    {
+      "id": "M6",
+      "name": "Real Integration Workflows",
+      "target_version": "v0.8",
+      "owner": "integrations",
+      "status": "planned",
+      "risk_tags": ["integrations", "security", "buyer"],
+      "acceptance_gates": [
+        "Templates can advance to customer-approved dry-run and push modes without bypassing approval.",
+        "Secrets are never stored in repo files or evidence outputs."
+      ],
+      "work_items": [
+        {
+          "id": "M6-01",
+          "title": "Add integration configuration schema for Splunk, Elastic, Sentinel, Jira, and ServiceNow",
+          "status": "planned",
+          "priority": "P1",
+          "owner": "integrations",
+          "target_version": "v0.8",
+          "risk_tags": ["integrations", "security"],
+          "acceptance_gates": ["Configuration validates placeholders, tenant scope, allowed export kinds, and dry-run mode."]
+        },
+        {
+          "id": "M6-02",
+          "title": "Add secrets manager abstraction for integration credentials",
+          "status": "planned",
+          "priority": "P0",
+          "owner": "security",
+          "target_version": "v0.8",
+          "risk_tags": ["integrations", "security", "infra"],
+          "acceptance_gates": ["Connectors can request credentials by reference only; evidence never contains secret values."]
+        },
+        {
+          "id": "M6-03",
+          "title": "Add dry-run connector mode",
+          "status": "planned",
+          "priority": "P1",
+          "owner": "integrations",
+          "target_version": "v0.8",
+          "risk_tags": ["integrations", "buyer", "security"],
+          "acceptance_gates": ["Connectors validate payload shape against customer sandbox endpoints without changing production systems."]
+        },
+        {
+          "id": "M6-04",
+          "title": "Add approval-required push mode",
+          "status": "blocked",
+          "priority": "P2",
+          "owner": "security",
+          "target_version": "v0.8",
+          "risk_tags": ["integrations", "security", "ops"],
+          "blocker": "Requires RBAC, signed approvals, customer integration sandbox, rollback plan, and legal/customer authorization.",
+          "acceptance_gates": ["Push mode cannot run without approval quorum, audit event, policy allowlist, and rollback metadata."]
+        },
+        {
+          "id": "M6-05",
+          "title": "Package handoff artifacts as a signed review bundle",
+          "status": "planned",
+          "priority": "P2",
+          "owner": "integrations",
+          "target_version": "v0.8",
+          "risk_tags": ["integrations", "buyer", "security"],
+          "acceptance_gates": ["A single bundle includes manifest, hashes, templates, review checklist, and optional detached signature."]
+        }
+      ]
+    },
+    {
+      "id": "M7",
+      "name": "Observability, Deployment, And Operations",
+      "target_version": "v0.9",
+      "owner": "operations",
+      "status": "planned",
+      "risk_tags": ["ops", "infra", "security"],
+      "acceptance_gates": [
+        "Production-shaped deployment has health checks, logs, metrics, backups, rollback, and incident procedures.",
+        "Operators can diagnose failed workflows without shell access to a developer machine."
+      ],
+      "work_items": [
+        {
+          "id": "M7-01",
+          "title": "Add structured logging contract",
+          "status": "planned",
+          "priority": "P1",
+          "owner": "operations",
+          "target_version": "v0.9",
+          "risk_tags": ["ops", "security"],
+          "acceptance_gates": ["Logs include tenant, run, policy, action, decision, and correlation IDs without unsafe customer data."]
+        },
+        {
+          "id": "M7-02",
+          "title": "Add metrics and alerting plan",
+          "status": "planned",
+          "priority": "P1",
+          "owner": "operations",
+          "target_version": "v0.9",
+          "risk_tags": ["ops", "infra"],
+          "acceptance_gates": ["Metrics cover job latency, failures, stale sources, policy blocks, export failures, and evidence generation time."]
+        },
+        {
+          "id": "M7-03",
+          "title": "Add health, readiness, and liveness checks",
+          "status": "planned",
+          "priority": "P0",
+          "owner": "engineering",
+          "target_version": "v0.9",
+          "risk_tags": ["ops", "infra", "security"],
+          "acceptance_gates": ["Checks distinguish service health, dependency readiness, and policy/evidence blocking failures."]
+        },
+        {
+          "id": "M7-04",
+          "title": "Add deployment and rollback runbooks",
+          "status": "planned",
+          "priority": "P1",
+          "owner": "operations",
+          "target_version": "v0.9",
+          "risk_tags": ["ops", "infra", "docs"],
+          "acceptance_gates": ["A release can deploy, verify, rollback, and produce incident notes from written runbooks."]
+        },
+        {
+          "id": "M7-05",
+          "title": "Add backup, restore, and disaster recovery tests",
+          "status": "planned",
+          "priority": "P1",
+          "owner": "operations",
+          "target_version": "v0.9",
+          "risk_tags": ["ops", "infra", "compliance"],
+          "acceptance_gates": ["Restore drill proves policies, evidence, artifacts, approvals, and audit chains survive backup/restore."]
+        }
+      ]
+    },
+    {
+      "id": "M8",
+      "name": "Security Review And Compliance Packet",
+      "target_version": "v1.0",
+      "owner": "security",
+      "status": "planned",
+      "risk_tags": ["security", "compliance", "buyer"],
+      "acceptance_gates": [
+        "Customer security review packet is complete enough for a paid pilot security team.",
+        "Critical and high security-review findings are closed or documented with accepted POA&M."
+      ],
+      "work_items": [
+        {
+          "id": "M8-01",
+          "title": "Build NIST 800-171 and CMMC-oriented security packet",
+          "status": "planned",
+          "priority": "P0",
+          "owner": "security",
+          "target_version": "v1.0",
+          "risk_tags": ["security", "compliance", "buyer"],
+          "acceptance_gates": ["Packet includes SSP draft, control matrix, data flows, asset inventory, access controls, IR plan, and POA&M."]
+        },
+        {
+          "id": "M8-02",
+          "title": "Add software supply-chain packet",
+          "status": "planned",
+          "priority": "P1",
+          "owner": "security",
+          "target_version": "v1.0",
+          "risk_tags": ["security", "compliance", "release"],
+          "acceptance_gates": ["Packet includes dependency inventory, SBOM for Prophet, provenance target, vulnerability process, and update cadence."]
+        },
+        {
+          "id": "M8-03",
+          "title": "Run secrets archaeology and public release review",
+          "status": "blocked",
+          "priority": "P0",
+          "owner": "security",
+          "target_version": "v1.0",
+          "risk_tags": ["security", "release"],
+          "acceptance_gates": ["Repository history, current tree, CI logs, and runtime samples are reviewed before public release."],
+          "blocker": "Full git-history secret archaeology is blocked on an owner decision for the historical LOG4SHELL_INSTRUCTIONS.md finding recorded in docs/SECRET_HISTORY_REVIEW.md."
+        },
+        {
+          "id": "M8-04",
+          "title": "Complete incident response playbook",
+          "status": "planned",
+          "priority": "P1",
+          "owner": "security",
+          "target_version": "v1.0",
+          "risk_tags": ["security", "ops", "compliance"],
+          "acceptance_gates": ["Playbook covers data spill, credential exposure, policy bypass, integration misfire, sandbox escape, and customer notification."]
+        },
+        {
+          "id": "M8-05",
+          "title": "Complete external security review",
+          "status": "blocked",
+          "priority": "P0",
+          "owner": "security",
+          "target_version": "v1.0",
+          "risk_tags": ["security", "compliance", "buyer"],
+          "blocker": "Requires production-shaped deployment, threat model, artifact inventory, RBAC, tenant isolation, and security packet.",
+          "acceptance_gates": ["No critical or high findings remain open before production launch."]
+        }
+      ]
+    }
+  ]
+}

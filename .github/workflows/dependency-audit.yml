@@ -1,0 +1,49 @@
+name: dependency-audit
+
+on:
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: '17 9 * * 1'
+
+jobs:
+  dependencies:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: prophet-console/package-lock.json
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Console npm audit
+        working-directory: prophet-console
+        run: |
+          npm ci
+          npm audit --audit-level=moderate
+      - name: Python dependency boundary check
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          import sys
+
+          req = Path("world-side/scraper/requirements.txt")
+          text = req.read_text(encoding="utf-8")
+          if re.search(r"https?://|--index-url|--extra-index-url|git\+", text, re.I):
+              print(f"{req} must not reference private indexes, URLs, or VCS dependencies", file=sys.stderr)
+              raise SystemExit(1)
+          packages = [
+              line.strip()
+              for line in text.splitlines()
+              if line.strip() and not line.lstrip().startswith("#")
+          ]
+          if not packages:
+              print(f"{req} has no runtime Python packages to audit yet.")
+              raise SystemExit(0)
+          print("Python packages present; add pip-audit enforcement before release.")
+          raise SystemExit(1)
+          PY

@@ -20,6 +20,8 @@ build/
 .turbo/
 .vite/
 *.tsbuildinfo
+prophet-console/test-results/
+prophet-console/playwright-report/
 
 # Env / secrets
 .env
@@ -29,8 +31,15 @@ build/
 
 # Local data / artifacts
 /data/
+_archive-private-research/
 world-layer/
 world-side/outputs/runtime/
+cyber-side/outputs/runtime/
+evidence/outputs/runtime/
+assets/outputs/runtime/
+integrations/outputs/runtime/
+validation/private/
+*.class
 *.db
 *.sqlite
 *.sqlite3

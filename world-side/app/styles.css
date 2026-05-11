@@ -356,6 +356,17 @@ h1 {
 .vector-row,
 .source-row {
   padding: 12px;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.window-row .pill,
+.vector-row .pill,
+.source-row .pill {
+  max-width: 100%;
+  min-width: 0;
+  white-space: normal;
+  line-height: 1.25;
 }
 
 .detail-section {

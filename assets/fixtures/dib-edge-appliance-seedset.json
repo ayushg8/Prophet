@@ -1,0 +1,313 @@
+{
+  "cve_seeds": [
+    {
+      "affected_asset_count": 1,
+      "cve_id": "CVE-2021-44228",
+      "exposure_classes": [
+        "edge_appliance"
+      ],
+      "owner_groups": [
+        "Edge Platform Security"
+      ],
+      "package_names": [
+        "appliance-auth-module",
+        "log4j-core"
+      ],
+      "product_families": [
+        "secure edge appliance family"
+      ]
+    },
+    {
+      "affected_asset_count": 1,
+      "cve_id": "CVE-2023-46805",
+      "exposure_classes": [
+        "edge_appliance"
+      ],
+      "owner_groups": [
+        "Remote Access Security"
+      ],
+      "package_names": [
+        "federation-validator",
+        "web-request-parser"
+      ],
+      "product_families": [
+        "enterprise VPN appliance family"
+      ]
+    },
+    {
+      "affected_asset_count": 1,
+      "cve_id": "CVE-2024-21887",
+      "exposure_classes": [
+        "edge_appliance"
+      ],
+      "owner_groups": [
+        "Remote Access Security"
+      ],
+      "package_names": [
+        "federation-validator",
+        "web-request-parser"
+      ],
+      "product_families": [
+        "enterprise VPN appliance family"
+      ]
+    },
+    {
+      "affected_asset_count": 1,
+      "cve_id": "CVE-2024-3400",
+      "exposure_classes": [
+        "edge_appliance"
+      ],
+      "owner_groups": [
+        "Perimeter Operations"
+      ],
+      "package_names": [
+        "management-api",
+        "update-channel-verifier"
+      ],
+      "product_families": [
+        "managed firewall edge family"
+      ]
+    }
+  ],
+  "exposure_class_seeds": [
+    {
+      "asset_count": 3,
+      "business_criticality_counts": {
+        "high": 2,
+        "medium": 1
+      },
+      "exposure_class": "edge_appliance",
+      "owner_groups": [
+        "Edge Platform Security",
+        "Perimeter Operations",
+        "Remote Access Security"
+      ]
+    }
+  ],
+  "fixture_context": true,
+  "generated_at": "2026-05-04T20:10:00Z",
+  "hashes": {
+    "asset_inventory_sha256": "cf50bb18c212e1dc4a316ac6011659f3b129472ac45d039ccb63b2bc2f61f119",
+    "seedset_body_sha256": "ebd9ed51dbc9ab3b940fc1e1bd4d5238c8106bcde83ce6f1e505f26fa4fbf6f3"
+  },
+  "input_refs": {
+    "asset_count": 3,
+    "inventory_id": "asset-fixture-dib-edge-001",
+    "inventory_schema_version": "asset_inventory.v0.1",
+    "run_id": "fixture-edge-appliance-seedset"
+  },
+  "owner_queues": [
+    {
+      "asset_count": 1,
+      "criticality_counts": {
+        "high": 1
+      },
+      "cve_ids": [
+        "CVE-2021-44228"
+      ],
+      "owner_group": "Edge Platform Security",
+      "package_names": [
+        "appliance-auth-module",
+        "log4j-core"
+      ],
+      "recommended_source_ids": [
+        "cveproject_cvelistv5_delta_log",
+        "cisa_vulnrichment_cve_record_seed",
+        "osv_query_api_seed",
+        "redhat_security_data_cve_api"
+      ]
+    },
+    {
+      "asset_count": 1,
+      "criticality_counts": {
+        "medium": 1
+      },
+      "cve_ids": [
+        "CVE-2024-3400"
+      ],
+      "owner_group": "Perimeter Operations",
+      "package_names": [
+        "management-api",
+        "update-channel-verifier"
+      ],
+      "recommended_source_ids": [
+        "cveproject_cvelistv5_delta_log",
+        "cisa_vulnrichment_cve_record_seed",
+        "osv_query_api_seed",
+        "redhat_security_data_cve_api"
+      ]
+    },
+    {
+      "asset_count": 1,
+      "criticality_counts": {
+        "high": 1
+      },
+      "cve_ids": [
+        "CVE-2023-46805",
+        "CVE-2024-21887"
+      ],
+      "owner_group": "Remote Access Security",
+      "package_names": [
+        "federation-validator",
+        "web-request-parser"
+      ],
+      "recommended_source_ids": [
+        "cveproject_cvelistv5_delta_log",
+        "cisa_vulnrichment_cve_record_seed",
+        "osv_query_api_seed",
+        "redhat_security_data_cve_api"
+      ]
+    }
+  ],
+  "package_seeds": [
+    {
+      "asset_count": 1,
+      "known_cve_overlaps": [
+        "CVE-2021-44228"
+      ],
+      "owner_groups": [
+        "Edge Platform Security"
+      ],
+      "package_name": "appliance-auth-module",
+      "package_type": "appliance-component",
+      "version_family": "family-2024"
+    },
+    {
+      "asset_count": 1,
+      "known_cve_overlaps": [
+        "CVE-2023-46805",
+        "CVE-2024-21887"
+      ],
+      "owner_groups": [
+        "Remote Access Security"
+      ],
+      "package_name": "federation-validator",
+      "package_type": "identity-component",
+      "version_family": "family-2025"
+    },
+    {
+      "asset_count": 1,
+      "known_cve_overlaps": [
+        "CVE-2021-44228"
+      ],
+      "owner_groups": [
+        "Edge Platform Security"
+      ],
+      "package_name": "log4j-core",
+      "package_type": "java-library",
+      "version_family": "2.x legacy"
+    },
+    {
+      "asset_count": 1,
+      "known_cve_overlaps": [
+        "CVE-2024-3400"
+      ],
+      "owner_groups": [
+        "Perimeter Operations"
+      ],
+      "package_name": "management-api",
+      "package_type": "control-plane-component",
+      "version_family": "family-2025"
+    },
+    {
+      "asset_count": 1,
+      "known_cve_overlaps": [
+        "CVE-2024-3400"
+      ],
+      "owner_groups": [
+        "Perimeter Operations"
+      ],
+      "package_name": "update-channel-verifier",
+      "package_type": "firmware-component",
+      "version_family": "family-2024"
+    },
+    {
+      "asset_count": 1,
+      "known_cve_overlaps": [
+        "CVE-2023-46805",
+        "CVE-2024-21887"
+      ],
+      "owner_groups": [
+        "Remote Access Security"
+      ],
+      "package_name": "web-request-parser",
+      "package_type": "appliance-component",
+      "version_family": "family-2023"
+    }
+  ],
+  "product_family_seeds": [
+    {
+      "asset_count": 1,
+      "exposure_classes": [
+        "edge_appliance"
+      ],
+      "owner_groups": [
+        "Remote Access Security"
+      ],
+      "product_family": "enterprise VPN appliance family"
+    },
+    {
+      "asset_count": 1,
+      "exposure_classes": [
+        "edge_appliance"
+      ],
+      "owner_groups": [
+        "Perimeter Operations"
+      ],
+      "product_family": "managed firewall edge family"
+    },
+    {
+      "asset_count": 1,
+      "exposure_classes": [
+        "edge_appliance"
+      ],
+      "owner_groups": [
+        "Edge Platform Security"
+      ],
+      "product_family": "secure edge appliance family"
+    }
+  ],
+  "query_hints": {
+    "cve_ids": [
+      "CVE-2021-44228",
+      "CVE-2023-46805",
+      "CVE-2024-21887",
+      "CVE-2024-3400"
+    ],
+    "exposure_classes": [
+      "edge_appliance"
+    ],
+    "package_names": [
+      "appliance-auth-module",
+      "federation-validator",
+      "log4j-core",
+      "management-api",
+      "update-channel-verifier",
+      "web-request-parser"
+    ],
+    "product_families": [
+      "enterprise VPN appliance family",
+      "managed firewall edge family",
+      "secure edge appliance family"
+    ]
+  },
+  "recommended_source_ids": [
+    "cveproject_cvelistv5_delta_log",
+    "cisa_vulnrichment_cve_record_seed",
+    "osv_query_api_seed",
+    "redhat_security_data_cve_api"
+  ],
+  "safety_attestation": {
+    "fixture_or_customer_owned": true,
+    "no_collection_performed": true,
+    "no_hostnames": true,
+    "no_ips": true,
+    "no_live_target_names": true,
+    "no_secret_material": true,
+    "sector_level_only": true
+  },
+  "schema_version": "asset_osint_seedset.v0.1",
+  "scope_statement": "Fictional defense-industrial edge appliance inventory. Sector and product-family level only; no live targets are named.",
+  "seedset_id": "asset-seedset-b4f9d06d72509810",
+  "seedset_sha256": "ebd9ed51dbc9ab3b940fc1e1bd4d5238c8106bcde83ce6f1e505f26fa4fbf6f3"
+}

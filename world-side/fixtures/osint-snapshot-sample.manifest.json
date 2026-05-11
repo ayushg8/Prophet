@@ -1,0 +1,51 @@
+{
+  "collection_tier_counts": {
+    "technical_chatter": 4
+  },
+  "failed_sources": [],
+  "generated_at": "2026-05-04T20:00:00Z",
+  "hashes": {
+    "manifest_body_sha256": "79a7b39e9f4fb0569e01ff37acd746ceca7d6bacd06a9212070e79ffdd003cfc",
+    "snapshot_jsonl_sha256": "12ffe21e0b71182732d67698bcf73e1004d2de16db7256f7558b51eb3f13c2da"
+  },
+  "live": false,
+  "record_count": 4,
+  "safety_attestation": {
+    "no_credentials": true,
+    "no_payloads": true,
+    "no_target_lists": true,
+    "raw_content_written": false,
+    "sanitized_records_only": true
+  },
+  "policy": {
+    "policy_id": "prophet-pilot-fixture-localhost-v0.1",
+    "policy_sha256": "7d051922a110f024188b522b89d11782151cce2d58fa606f7c319c48f405075c",
+    "retention": {
+      "audit_log_max_days": 90,
+      "customer_metadata_max_days": 30,
+      "deletion_review_required": true,
+      "raw_collection_retained": false,
+      "runtime_outputs_max_days": 30
+    }
+  },
+  "schema_version": "prophet.osint_snapshot_manifest.v0.1",
+  "snapshot_schema_version": "prophet.osint_snapshot.v0.1",
+  "source_count": 1,
+  "source_type_counts": {
+    "threat_intel_feed": 4
+  },
+  "sources": [
+    {
+      "collection_tier": "technical_chatter",
+      "collector": "sanitized_json",
+      "enabled": true,
+      "records": 4,
+      "source_id": "osint_snapshot_fixture_input",
+      "source_type": "threat_intel_feed",
+      "status": "ok"
+    }
+  ],
+  "successful_sources": [
+    "osint_snapshot_fixture_input"
+  ]
+}

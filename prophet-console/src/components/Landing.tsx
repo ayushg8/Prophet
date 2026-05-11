@@ -40,14 +40,14 @@ export function Landing({ onEnter }: Props) {
       </div>
 
       <div className="landing__sidebar landing__sidebar--left">
-        <span>CISA · KEV FEED · LIVE</span>
-        <span>NVD CVE 2.0 · STREAMING</span>
+        <span>CISA · KEV SEED · CACHED</span>
+        <span>NVD CVE 2.0 · FIXTURE</span>
         <span>EPSS v4 · BASELINE</span>
       </div>
 
       <div className="landing__sidebar landing__sidebar--right">
-        <span>CODEX TERMINAL · READY</span>
-        <span>FIXTURE MODE · ARMED</span>
+        <span>LOCAL CONTROL · READY</span>
+        <span>FIXTURE MODE · READY</span>
         <span>SANDBOX · ISOLATED</span>
       </div>
 
@@ -56,13 +56,13 @@ export function Landing({ onEnter }: Props) {
         <h1 className="landing__title">PROPHET</h1>
         <div className="landing__divider" />
         <div className="landing__tagline">
-          PREDICT &nbsp;·&nbsp; EXPLOIT &nbsp;·&nbsp; DEFEND
+          PRIORITIZE &nbsp;·&nbsp; EXPLAIN &nbsp;·&nbsp; HAND OFF
         </div>
         <p className="landing__lede">
-          An operator-in-the-loop agent workflow that grounds on the CISA KEV
-          catalog to forecast the next class of weaponized vulnerability,
-          validates the exploit class in an isolated sandbox, and co-generates the patch in the
-          same run.
+          A policy-bound evidence workflow that grounds on safe asset context,
+          CISA KEV, EPSS, and seeded source signals to explain which exposure
+          class to harden first, validate it in a localhost fixture, and export
+          review-ready SOC and ticketing handoffs.
         </p>
 
         <button

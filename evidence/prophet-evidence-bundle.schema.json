@@ -1,0 +1,1163 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://prophet.local/schemas/prophet-evidence-bundle.v0.1.json",
+  "title": "Prophet Evidence Bundle",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "bundle_id",
+    "generated_at",
+    "input_refs",
+    "operator_approval",
+    "forecast_summary",
+    "open_source_summary",
+    "prediction_summary",
+    "defense_summary",
+    "validation_summary",
+    "safety_attestation",
+    "redaction_report",
+    "source_refs",
+    "hashes",
+    "bundle_sha256"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "prophet_evidence_bundle.v0.1"
+    },
+    "bundle_id": {
+      "$ref": "#/$defs/id"
+    },
+    "generated_at": {
+      "$ref": "#/$defs/nonEmptyString"
+    },
+    "input_refs": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/$defs/nonEmptyString"
+      },
+      "required": [
+        "forecast_id",
+        "candidate_id",
+        "portfolio_id",
+        "portfolio_forecast_id",
+        "artifact_id",
+        "vector_id",
+        "run_id"
+      ],
+      "properties": {
+        "forecast_id": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "candidate_id": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "portfolio_id": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "portfolio_forecast_id": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "artifact_id": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "vector_id": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "run_id": {
+          "$ref": "#/$defs/nonEmptyString"
+        }
+      }
+    },
+    "operator_approval": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "decision",
+        "operator_label",
+        "timestamp",
+        "approval_mode",
+        "caveats"
+      ],
+      "properties": {
+        "decision": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "operator_label": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "timestamp": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "approval_mode": {
+          "enum": [
+            "fixture_bypass",
+            "human_gate"
+          ]
+        },
+        "approval_record_hash": {
+          "$ref": "#/$defs/sha256"
+        },
+        "approval_event_id": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "approval_chain": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "event_body_sha256",
+            "previous_event_hash",
+            "log_schema_version"
+          ],
+          "properties": {
+            "event_body_sha256": {
+              "$ref": "#/$defs/sha256"
+            },
+            "previous_event_hash": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            "log_schema_version": {
+              "const": "prophet_operator_audit_log.v0.1"
+            }
+          }
+        },
+        "caveats": {
+          "$ref": "#/$defs/stringArray"
+        }
+      }
+    },
+    "forecast_summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "strike_window",
+        "vector",
+        "strategic_frame",
+        "source_ref_ids"
+      ],
+      "properties": {
+        "strike_window": {
+          "type": "object",
+          "additionalProperties": true,
+          "required": [
+            "start_date",
+            "end_date",
+            "confidence",
+            "why_this_window"
+          ],
+          "properties": {
+            "start_date": {
+              "$ref": "#/$defs/nonEmptyString"
+            },
+            "end_date": {
+              "$ref": "#/$defs/nonEmptyString"
+            },
+            "confidence": {
+              "$ref": "#/$defs/nonEmptyString"
+            },
+            "confidence_score": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "why_this_window": {
+              "$ref": "#/$defs/nonEmptyString"
+            }
+          }
+        },
+        "vector": {
+          "type": "object",
+          "additionalProperties": true,
+          "required": [
+            "vector_id",
+            "vector_class",
+            "target_sector",
+            "likely_objective",
+            "confidence",
+            "why_this_vector",
+            "defensive_implication"
+          ],
+          "properties": {
+            "vector_id": {
+              "$ref": "#/$defs/nonEmptyString"
+            },
+            "vector_class": {
+              "$ref": "#/$defs/nonEmptyString"
+            },
+            "target_sector": {
+              "$ref": "#/$defs/nonEmptyString"
+            },
+            "likely_objective": {
+              "$ref": "#/$defs/nonEmptyString"
+            },
+            "confidence": {
+              "$ref": "#/$defs/nonEmptyString"
+            },
+            "confidence_score": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "why_this_vector": {
+              "$ref": "#/$defs/nonEmptyString"
+            },
+            "defensive_implication": {
+              "$ref": "#/$defs/nonEmptyString"
+            }
+          }
+        },
+        "strategic_frame": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "source_ref_ids": {
+          "$ref": "#/$defs/stringArray"
+        }
+      }
+    },
+    "open_source_summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "integrated",
+        "basis_statement",
+        "event_count",
+        "record_count",
+        "source_ref_ids",
+        "successful_sources",
+        "failed_sources",
+        "freshness",
+        "source_health",
+        "source_failures",
+        "collection_tier_counts",
+        "source_type_counts",
+        "snapshot_paths",
+        "manifest_paths",
+        "hashes"
+      ],
+      "properties": {
+        "integrated": {
+          "type": "boolean"
+        },
+        "basis_statement": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "event_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "record_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "source_ref_ids": {
+          "$ref": "#/$defs/stringArray"
+        },
+        "successful_sources": {
+          "$ref": "#/$defs/stringArray"
+        },
+        "failed_sources": {
+          "$ref": "#/$defs/stringArray"
+        },
+        "freshness": {
+          "$ref": "#/$defs/sourceFreshness"
+        },
+        "source_health": {
+          "$ref": "#/$defs/sourceHealth"
+        },
+        "source_failures": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/sourceFailure"
+          }
+        },
+        "collection_tier_counts": {
+          "$ref": "#/$defs/nonNegativeIntegerMap"
+        },
+        "source_type_counts": {
+          "$ref": "#/$defs/nonNegativeIntegerMap"
+        },
+        "snapshot_paths": {
+          "$ref": "#/$defs/stringArray"
+        },
+        "manifest_paths": {
+          "$ref": "#/$defs/stringArray"
+        },
+        "hashes": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "manifest_sha256": {
+              "$ref": "#/$defs/sha256Map"
+            },
+            "snapshot_jsonl_sha256": {
+              "$ref": "#/$defs/sha256Map"
+            }
+          }
+        },
+        "duplicate_source_summary": {
+          "$ref": "#/$defs/duplicateSourceSummary"
+        }
+      }
+    },
+    "prediction_summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "zero_day_count",
+        "one_day_count",
+        "top_zero_day_class",
+        "top_one_day_class",
+        "source_ref_ids"
+      ],
+      "properties": {
+        "zero_day_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "one_day_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "top_zero_day_class": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "top_one_day_class": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "source_ref_ids": {
+          "$ref": "#/$defs/stringArray"
+        }
+      }
+    },
+    "defense_summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "patch_format",
+        "patch_summary",
+        "sigma"
+      ],
+      "properties": {
+        "patch_format": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "patch_summary": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "sigma": {
+          "type": "object",
+          "additionalProperties": true,
+          "required": [
+            "title",
+            "rule_id",
+            "level",
+            "logsources"
+          ],
+          "properties": {
+            "title": {
+              "$ref": "#/$defs/nonEmptyString"
+            },
+            "rule_id": {
+              "$ref": "#/$defs/nonEmptyString"
+            },
+            "level": {
+              "$ref": "#/$defs/nonEmptyString"
+            },
+            "logsources": {
+              "$ref": "#/$defs/stringArray"
+            }
+          }
+        }
+      }
+    },
+    "validation_summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sandbox_id",
+        "sandbox_scope",
+        "pre_patch_status",
+        "post_patch_status",
+        "validation_tool",
+        "wall_time_seconds",
+        "sanitized_excerpts"
+      ],
+      "properties": {
+        "sandbox_id": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "sandbox_scope": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "pre_patch_status": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "post_patch_status": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "validation_tool": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "wall_time_seconds": {
+          "type": "number",
+          "minimum": 0
+        },
+        "sanitized_excerpts": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "pre_patch",
+            "post_patch"
+          ],
+          "properties": {
+            "pre_patch": {
+              "$ref": "#/$defs/nonEmptyString"
+            },
+            "post_patch": {
+              "$ref": "#/$defs/nonEmptyString"
+            }
+          }
+        },
+        "failure_evidence": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "result",
+            "failure_detected",
+            "failure_kind",
+            "timeout_observed",
+            "timeout_seconds",
+            "summary",
+            "operator_action"
+          ],
+          "properties": {
+            "result": {
+              "enum": [
+                "passed",
+                "failed",
+                "timeout"
+              ]
+            },
+            "failure_detected": {
+              "type": "boolean"
+            },
+            "failure_kind": {
+              "enum": [
+                "none",
+                "defense_not_blocked",
+                "validation_error",
+                "timeout"
+              ]
+            },
+            "timeout_observed": {
+              "type": "boolean"
+            },
+            "timeout_seconds": {
+              "type": [
+                "number",
+                "null"
+              ],
+              "minimum": 0
+            },
+            "summary": {
+              "$ref": "#/$defs/nonEmptyString"
+            },
+            "operator_action": {
+              "$ref": "#/$defs/nonEmptyString"
+            }
+          }
+        }
+      }
+    },
+    "safety_attestation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "scope",
+        "fixture_backed",
+        "validation_scope",
+        "no_live_targets",
+        "no_live_target_data_included",
+        "no_payloads",
+        "no_credentials",
+        "no_raw_scraper_text",
+        "no_private_hostnames",
+        "data_boundary_statement",
+        "attested_at"
+      ],
+      "properties": {
+        "scope": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "fixture_backed": {
+          "type": "boolean"
+        },
+        "validation_scope": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "no_live_targets": {
+          "const": true
+        },
+        "no_live_target_data_included": {
+          "const": true
+        },
+        "no_payloads": {
+          "const": true
+        },
+        "no_credentials": {
+          "const": true
+        },
+        "no_raw_scraper_text": {
+          "const": true
+        },
+        "no_private_hostnames": {
+          "const": true
+        },
+        "data_boundary_statement": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "attested_at": {
+          "$ref": "#/$defs/nonEmptyString"
+        }
+      }
+    },
+    "redaction_report": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "summary_fields_only",
+        "source_documents_embedded",
+        "raw_forecast_embedded",
+        "raw_prediction_portfolio_embedded",
+        "raw_defense_artifact_embedded",
+        "raw_validation_logs_embedded",
+        "raw_osint_records_embedded",
+        "raw_asset_inventory_embedded",
+        "sandbox_run_manifest_embedded",
+        "source_refs_emitted",
+        "sanitized_validation_excerpts_emitted",
+        "field_allowlist",
+        "redacted_fields",
+        "blocked_text_classes",
+        "operator_review_required"
+      ],
+      "properties": {
+        "summary_fields_only": {
+          "const": true
+        },
+        "source_documents_embedded": {
+          "const": false
+        },
+        "raw_forecast_embedded": {
+          "const": false
+        },
+        "raw_prediction_portfolio_embedded": {
+          "const": false
+        },
+        "raw_defense_artifact_embedded": {
+          "const": false
+        },
+        "raw_validation_logs_embedded": {
+          "const": false
+        },
+        "raw_osint_records_embedded": {
+          "const": false
+        },
+        "raw_asset_inventory_embedded": {
+          "const": false
+        },
+        "sandbox_run_manifest_embedded": {
+          "type": "boolean"
+        },
+        "source_refs_emitted": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "sanitized_validation_excerpts_emitted": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "field_allowlist": {
+          "$ref": "#/$defs/stringArray"
+        },
+        "redacted_fields": {
+          "$ref": "#/$defs/stringArray"
+        },
+        "blocked_text_classes": {
+          "$ref": "#/$defs/stringArray"
+        },
+        "operator_review_required": {
+          "const": true
+        }
+      }
+    },
+    "source_refs": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "label",
+          "url",
+          "supports"
+        ],
+        "properties": {
+          "id": {
+            "$ref": "#/$defs/nonEmptyString"
+          },
+          "label": {
+            "$ref": "#/$defs/nonEmptyString"
+          },
+          "url": {
+            "$ref": "#/$defs/nonEmptyString"
+          },
+          "supports": {
+            "$ref": "#/$defs/nonEmptyString"
+          },
+          "date": {
+            "$ref": "#/$defs/nonEmptyString"
+          }
+        }
+      }
+    },
+    "hashes": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "forecast_sha256",
+        "portfolio_sha256",
+        "artifact_sha256",
+        "bundle_body_sha256"
+      ],
+      "properties": {
+        "forecast_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "portfolio_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "artifact_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "asset_inventory_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "asset_seedset_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "policy_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "approval_record_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "sandbox_run_manifest_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "bundle_body_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "osint_snapshot_hashes": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "manifest_sha256": {
+              "$ref": "#/$defs/sha256Map"
+            },
+            "snapshot_jsonl_sha256": {
+              "$ref": "#/$defs/sha256Map"
+            }
+          }
+        }
+      }
+    },
+    "bundle_sha256": {
+      "$ref": "#/$defs/sha256"
+    },
+    "asset_context": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "schema_version",
+        "inventory_id",
+        "fixture_context",
+        "affected_asset_count",
+        "context_statement"
+      ],
+      "properties": {
+        "schema_version": {
+          "const": "asset_inventory.v0.1"
+        },
+        "inventory_id": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "fixture_context": {
+          "type": "boolean"
+        },
+        "affected_asset_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "context_statement": {
+          "$ref": "#/$defs/nonEmptyString"
+        }
+      }
+    },
+    "asset_seed_summary": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "schema_version",
+        "seedset_id",
+        "fixture_context",
+        "asset_count",
+        "package_seed_count",
+        "cve_seed_count",
+        "basis_statement"
+      ],
+      "properties": {
+        "schema_version": {
+          "const": "asset_osint_seedset.v0.1"
+        },
+        "seedset_id": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "seedset_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "fixture_context": {
+          "type": "boolean"
+        },
+        "asset_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "package_seed_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "cve_seed_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "basis_statement": {
+          "$ref": "#/$defs/nonEmptyString"
+        }
+      }
+    },
+    "sandbox_provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "manifest_id",
+        "run_id",
+        "profile",
+        "mode",
+        "artifact_id",
+        "artifact_schema_version",
+        "artifact_content_sha256",
+        "artifact_file_sha256",
+        "artifact_path",
+        "manifest_sha256",
+        "sanitized_logs_sha256",
+        "raw_logs_retained",
+        "stored_raw_log_bytes",
+        "stored_log_excerpt_count",
+        "policy_id",
+        "policy_sha256",
+        "localhost_only",
+        "fixture_backed",
+        "no_network_egress",
+        "no_live_targets",
+        "no_payloads",
+        "no_credentials",
+        "no_raw_logs"
+      ],
+      "properties": {
+        "schema_version": {
+          "const": "prophet.sandbox_run_manifest.v0.1"
+        },
+        "manifest_id": {
+          "$ref": "#/$defs/id"
+        },
+        "run_id": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "profile": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "mode": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "artifact_id": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "artifact_schema_version": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "artifact_content_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "artifact_file_sha256": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "artifact_path": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "manifest_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "sanitized_logs_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "raw_logs_retained": {
+          "const": false
+        },
+        "stored_raw_log_bytes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "stored_log_excerpt_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "policy_id": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "policy_sha256": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "localhost_only": {
+          "const": true
+        },
+        "fixture_backed": {
+          "const": true
+        },
+        "no_network_egress": {
+          "const": true
+        },
+        "no_live_targets": {
+          "const": true
+        },
+        "no_payloads": {
+          "const": true
+        },
+        "no_credentials": {
+          "const": true
+        },
+        "no_raw_logs": {
+          "const": true
+        }
+      }
+    },
+    "policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "policy_id",
+        "policy_sha256",
+        "enforced",
+        "allowed_modes",
+        "controls",
+        "retention"
+      ],
+      "properties": {
+        "schema_version": {
+          "const": "prophet_pilot_policy.v0.1"
+        },
+        "policy_id": {
+          "$ref": "#/$defs/id"
+        },
+        "policy_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "enforced": {
+          "const": true
+        },
+        "allowed_modes": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/stringArray"
+          }
+        },
+        "controls": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "live_targets_allowed",
+            "live_vm_scraper_allowed",
+            "arbitrary_target_input_allowed",
+            "payload_generation_allowed",
+            "raw_scraper_text_allowed",
+            "private_hostnames_allowed",
+            "credentials_allowed"
+          ],
+          "properties": {
+            "live_targets_allowed": {
+              "const": false
+            },
+            "live_vm_scraper_allowed": {
+              "const": false
+            },
+            "arbitrary_target_input_allowed": {
+              "const": false
+            },
+            "payload_generation_allowed": {
+              "const": false
+            },
+            "raw_scraper_text_allowed": {
+              "const": false
+            },
+            "private_hostnames_allowed": {
+              "const": false
+            },
+            "credentials_allowed": {
+              "const": false
+            }
+          }
+        },
+        "retention": {
+          "type": "object",
+          "additionalProperties": true,
+          "required": [
+            "runtime_outputs_max_days",
+            "audit_log_max_days",
+            "customer_metadata_max_days",
+            "raw_collection_retained",
+            "deletion_review_required"
+          ],
+          "properties": {
+            "runtime_outputs_max_days": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 90
+            },
+            "audit_log_max_days": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 365
+            },
+            "customer_metadata_max_days": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 90
+            },
+            "raw_collection_retained": {
+              "const": false
+            },
+            "deletion_review_required": {
+              "const": true
+            }
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "nonEmptyString": {
+      "type": "string",
+      "minLength": 1
+    },
+    "id": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,180}$"
+    },
+    "sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "stringArray": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/nonEmptyString"
+      }
+    },
+    "nonNegativeIntegerMap": {
+      "type": "object",
+      "propertyNames": {
+        "$ref": "#/$defs/nonEmptyString"
+      },
+      "additionalProperties": {
+        "type": "integer",
+        "minimum": 0
+      }
+    },
+    "sha256Map": {
+      "type": "object",
+      "propertyNames": {
+        "$ref": "#/$defs/nonEmptyString"
+      },
+      "additionalProperties": {
+        "$ref": "#/$defs/sha256"
+      }
+    },
+    "sourceFreshness": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "snapshot_generated_at",
+        "oldest_record_observed_at",
+        "newest_record_observed_at",
+        "newest_record_age_days",
+        "record_span_days",
+        "freshness_window_days"
+      ],
+      "properties": {
+        "status": {
+          "enum": [
+            "current",
+            "stale",
+            "unknown",
+            "not_provided"
+          ]
+        },
+        "snapshot_generated_at": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "oldest_record_observed_at": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "newest_record_observed_at": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "newest_record_age_days": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "record_span_days": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "freshness_window_days": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "sourceHealth": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "manifest_count",
+        "successful_source_count",
+        "failed_source_count",
+        "failure_policy"
+      ],
+      "properties": {
+        "status": {
+          "enum": [
+            "ok",
+            "degraded",
+            "unknown",
+            "not_provided"
+          ]
+        },
+        "manifest_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "successful_source_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "failed_source_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "failure_policy": {
+          "$ref": "#/$defs/nonEmptyString"
+        }
+      }
+    },
+    "sourceFailure": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "source_id",
+        "status",
+        "collector",
+        "source_type",
+        "collection_tier",
+        "records",
+        "error"
+      ],
+      "properties": {
+        "source_id": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "status": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "collector": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "source_type": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "collection_tier": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "records": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "error": {
+          "$ref": "#/$defs/nonEmptyString"
+        }
+      }
+    },
+    "duplicateSourceSummary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "collapsed_duplicate_count",
+        "duplicate_source_ids",
+        "duplicate_path_count",
+        "dedupe_policy"
+      ],
+      "properties": {
+        "collapsed_duplicate_count": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "duplicate_source_ids": {
+          "$ref": "#/$defs/stringArray"
+        },
+        "duplicate_path_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "dedupe_policy": {
+          "$ref": "#/$defs/nonEmptyString"
+        }
+      }
+    }
+  }
+}

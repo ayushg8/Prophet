@@ -21,19 +21,19 @@ const SECTIONS: RunbookSection[] = [
     id: 'mission',
     heading: 'MISSION',
     steps: [
-      'Prophet predicts the strike window, strike vector, and exploit class, then renders the defense artifact.',
+      'Prophet prioritizes an exposure class, explains why now, and renders a reviewable defense evidence package.',
       'Keep the demo sector-level and localhost-only. Do not name live targets or raw sources.',
-      'Use DEMO REFRESH and LOAD FIXTURE as the reliable path; use RUN SCRAPER VM only after readiness checks pass.',
+      'Use DEMO REFRESH and LOAD FIXTURE as the reliable path; live collection stays disabled for buyer reviews.',
     ],
   },
   {
     id: 'services',
     heading: 'SERVICES',
     steps: [
-      'Run the console: cd prophet-console && npm run dev.',
+      'Run the console: cd prophet-console && npm run dev:evaluator.',
       'Run the local control server: cd prophet-console && npm run dev:control.',
       'Open http://127.0.0.1:5173 and enter the operator console.',
-      'Optional VM check: world-side/scripts/check-scraper-vm.sh.',
+      'Keep the standard buyer path on fixture-backed seeded source data.',
     ],
   },
   {
@@ -43,16 +43,16 @@ const SECTIONS: RunbookSection[] = [
       'Click DEMO REFRESH to rebuild the forecast from sanitized fixture chatter.',
       'Read the two deliverables aloud: Attack Method / Strike Vector and Timeframe / Strike Window.',
       'Click the top strike-window bar to show trigger signals and historical analogies.',
-      'If RUN SCRAPER VM is used, confirm the status line says the VM run completed before narrating it as live.',
+      'If a source refresh is requested, confirm policy allows it before narrating any result.',
     ],
   },
   {
     id: 'cyber',
-    heading: 'CYBER FIXTURE FLOW',
+    heading: 'DEFENSE FIXTURE FLOW',
     steps: [
-      'Click LOAD FIXTURE in Defence Artifacts to load the cyber-side Direction C artifact.',
-      'Confirm Exploit Status flips to BLOCKED and the post-patch validation excerpt appears.',
-      'Show PATCH and SIGMA tabs as the generated zero-day defense output.',
+      'Click LOAD FIXTURE in Defence Artifacts to load the Direction C defense artifact.',
+      'Confirm Defense Validation flips to BLOCKED and the post-patch validation excerpt appears.',
+      'Show PATCH and SIGMA tabs as reviewable defense outputs.',
       'Use INITIATE PROPHET LOOP for the full replay stream if time allows.',
     ],
   },
@@ -60,19 +60,19 @@ const SECTIONS: RunbookSection[] = [
     id: 'talktrack',
     heading: 'TALK TRACK',
     steps: [
-      'Problem: reactive patching starts after weaponization and disclosure.',
-      'Method: Forecaster predicts when and how; Exploit Engine predicts what; Console renders the defense.',
-      'Safety: scraper VM collects, sanitizer validates, main box only sees sanitized JSONL.',
-      'Close: predict the strike, generate the defense, ship before the campaign runs.',
+      'Problem: under KEV, EPSS, customer, or mission pressure, teams need to prove why one exposure class moves first.',
+      'Method: Prophet combines safe asset context, public-source pressure, policy, sandbox evidence, and handoff hashes.',
+      'Safety: the buyer path is fixture-backed, localhost-only, and review-template-only.',
+      'Close: prioritize the exposure, explain the evidence, validate safely, and hand off review artifacts.',
     ],
   },
   {
     id: 'recovery',
     heading: 'RECOVERY',
     steps: [
-      'If the VM is unreachable, use DEMO REFRESH and say live collection is disabled for stage safety.',
+      'If source refresh is unavailable, use DEMO REFRESH and say live collection is disabled for buyer safety.',
       'If the control server is offline, start npm run dev:control and retry the fixture buttons.',
-      'If the replay stalls, load the cyber fixture and continue from the defense panels.',
+      'If the replay stalls, load the defense fixture and continue from the defense panels.',
       'If two failures happen, finish the pitch using the script and offer a booth rerun.',
     ],
   },
@@ -112,6 +112,7 @@ export function RunbookDrawer({ open, onClose }: RunbookDrawerProps) {
             className="runbook-close"
             onClick={onClose}
             aria-label="Close runbook"
+            tabIndex={open ? 0 : -1}
           >
             [ CLOSE ]
           </button>
@@ -120,7 +121,7 @@ export function RunbookDrawer({ open, onClose }: RunbookDrawerProps) {
         <div className="runbook-subheader">
           <span className="runbook-cve">PS4 DIGITAL DEFENSE</span>
           <span className="runbook-sep">·</span>
-          <span>Forecaster + Exploit Engine + Console</span>
+          <span>Forecaster + Defense Evidence + Console</span>
           <span className="runbook-sep">·</span>
           <span>fixture-safe mode</span>
         </div>

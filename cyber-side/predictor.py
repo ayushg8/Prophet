@@ -213,7 +213,7 @@ def _zero_day_predictions(
     objective = _objective_from_vector(vector)
     target_scope = context["target_scope"]
 
-    templates = [
+    templates = _financial_zero_day_templates() if _is_financial_context(context) else [
         {
             "label": "edge appliance authentication-state bypass",
             "surface": "enterprise VPN and secure edge administrative access plane",
@@ -295,6 +295,69 @@ def _zero_day_predictions(
     ]
 
 
+def _financial_zero_day_templates() -> list[dict[str, Any]]:
+    return [
+        {
+            "label": "financial workflow authorization-state bypass",
+            "surface": "transaction approval and settlement workflow policy checks",
+            "cwes": ["CWE-862", "CWE-863"],
+            "rationale": (
+                "The forecast favors financial workflow abuse during a revenue-pressure window, "
+                "so ambiguous approval state is a high-value defensive review area without "
+                "describing institution-specific transfer behavior."
+            ),
+            "patch": "Centralize approval-state enforcement, deny inconsistent transitions, and require independent review for high-risk workflow changes.",
+            "detection": "Alert on high-risk approvals missing expected policy context, reviewer separation, or normal business-event correlation.",
+        },
+        {
+            "label": "custody policy-engine assertion validation gap",
+            "surface": "digital-asset custody policy evaluation and identity assertions",
+            "cwes": ["CWE-287", "CWE-347"],
+            "rationale": (
+                "Custody workflows depend on strict identity and policy assertions; the strike "
+                "window elevates validation gaps because they can affect approval integrity "
+                "while remaining defensible in synthetic fixture data."
+            ),
+            "patch": "Require strict assertion issuer, audience, expiry, replay, and policy-binding checks before approving privileged custody actions.",
+            "detection": "Correlate assertion anomalies, unusual policy-engine decisions, and privileged workflow activity outside expected approval patterns.",
+        },
+        {
+            "label": "financial workflow event-parser trust-boundary flaw",
+            "surface": "payment operations event parsing, reconciliation, and audit pipelines",
+            "cwes": ["CWE-20", "CWE-116"],
+            "rationale": (
+                "Payment operations depend on trusted event normalization; parser trust-boundary "
+                "errors are plausible burn classes for defenders to test with synthetic logs."
+            ),
+            "patch": "Validate event schemas before enrichment, reject ambiguous fields, and preserve immutable audit records for reconciliation.",
+            "detection": "Flag schema drift, reconciliation gaps, and high-risk workflow events whose normalized form differs from immutable audit evidence.",
+        },
+        {
+            "label": "privileged action queue replay-control weakness",
+            "surface": "approval queues, privileged action tickets, and workflow deduplication logic",
+            "cwes": ["CWE-294", "CWE-345"],
+            "rationale": (
+                "Revenue-driven activity benefits from confusing repeated privileged actions, so "
+                "defenders should test replay controls without modeling financial instructions."
+            ),
+            "patch": "Bind approvals to single-use workflow intents, enforce deduplication keys, and expire stale privileged-action requests.",
+            "detection": "Watch for repeated approval identifiers, stale queue items becoming active, and privileged actions without matching fresh intent.",
+        },
+        {
+            "label": "settlement report integrity-control gap",
+            "surface": "settlement reporting, audit export, and exception-review workflows",
+            "cwes": ["CWE-345", "CWE-353"],
+            "rationale": (
+                "Financial defenders need confidence that review evidence cannot drift from "
+                "business events; integrity-control gaps are a useful prediction class for "
+                "evidence-focused pilots."
+            ),
+            "patch": "Hash-chain settlement reports, require signed export metadata, and block report updates that cannot be tied to source events.",
+            "detection": "Detect report hash mismatches, missing export provenance, and exception-review decisions without matching source evidence.",
+        },
+    ]
+
+
 def _one_day_predictions(
     context: dict[str, Any],
     sources: list[dict[str, str]],
@@ -304,7 +367,7 @@ def _one_day_predictions(
     objective = _objective_from_vector(vector)
     target_scope = context["target_scope"]
 
-    templates = [
+    templates = _financial_one_day_templates() if _is_financial_context(context) else [
         {
             "label": "Log4Shell-class Java logging framework remote code execution",
             "surface": "Java services and logging paths exposed through perimeter applications",
@@ -385,6 +448,71 @@ def _one_day_predictions(
             known_cve_ids=item["cves"],
         )
         for idx, item in enumerate(templates, start=1)
+    ]
+
+
+def _financial_one_day_templates() -> list[dict[str, Any]]:
+    return [
+        {
+            "label": "Log4Shell-class Java logging framework compromise",
+            "surface": "Java-backed financial workflow services and application logging paths",
+            "cves": ["CVE-2021-44228"],
+            "cwes": ["CWE-917", "CWE-20"],
+            "rationale": "Log4Shell remains a useful one-day analog for financial workflow services because application logging often sits near approval and audit paths.",
+            "patch": "Upgrade the vulnerable library family, disable unsafe lookup behavior, and require dependency inventory checks for workflow services.",
+            "detection": "Detect suspicious lookup strings in application logs and correlate with abnormal approval or reconciliation events.",
+            "sources": [
+                _static_source("src_cisa_log4shell", "CISA Log4j advisory", "https://www.cisa.gov/news-events/cybersecurity-advisories/aa21-356a", "authoritative mitigation context for CVE-2021-44228"),
+            ],
+        },
+        {
+            "label": "secure-access gateway authentication bypass class",
+            "surface": "financial operations remote-access gateways and identity broker paths",
+            "cves": ["CVE-2023-46805", "CVE-2024-21887"],
+            "cwes": ["CWE-287", "CWE-78"],
+            "rationale": "Secure-access gateway one-days are relevant because financial workflow operators often depend on remote administration and vendor support paths.",
+            "patch": "Apply vendor remediation, rebuild clean access baselines, and require fresh approval for privileged workflow access after gateway exposure.",
+            "detection": "Hunt for anomalous access sessions, configuration integrity drift, and privileged workflow activity following gateway errors.",
+            "sources": [
+                _static_source("src_cisa_kev_ivanti", "CISA KEV: Ivanti secure access CVEs", "https://www.cisa.gov/known-exploited-vulnerabilities-catalog", "known exploited secure-access gateway vulnerabilities for one-day replay planning"),
+            ],
+        },
+        {
+            "label": "managed file-transfer data-exposure class",
+            "surface": "statement exchange, reconciliation files, and managed file-transfer workflows",
+            "cves": ["CVE-2023-34362"],
+            "cwes": ["CWE-89"],
+            "rationale": "Financial institutions rely on managed file-transfer workflows, making data-exposure one-days a practical defensive rehearsal class.",
+            "patch": "Update affected file-transfer components, isolate exchange workflows, and validate downstream reconciliation evidence.",
+            "detection": "Track unusual file-export volume, unexpected partner exchange patterns, and reconciliation gaps after file-transfer service errors.",
+            "sources": [
+                _static_source("src_cisa_kev_moveit", "CISA KEV: MOVEit Transfer CVE-2023-34362", "https://www.cisa.gov/known-exploited-vulnerabilities-catalog", "known exploited file-transfer vulnerability used as a defensive analog"),
+            ],
+        },
+        {
+            "label": "legacy file-transfer appliance compromise class",
+            "surface": "legacy exchange appliances and financial document handoff paths",
+            "cves": ["CVE-2021-27101", "CVE-2021-27104"],
+            "cwes": ["CWE-22", "CWE-78"],
+            "rationale": "Older file-transfer appliances are a useful one-day analog for financial-sector evidence review because they concentrate sensitive document workflows.",
+            "patch": "Retire or isolate legacy exchange appliances, apply fixed versions, and require hash-based review of exported documents.",
+            "detection": "Alert on abnormal export volume, appliance integrity drift, and document handoff events missing expected approval context.",
+            "sources": [
+                _static_source("src_cisa_kev_accellion", "CISA KEV: Accellion FTA CVEs", "https://www.cisa.gov/known-exploited-vulnerabilities-catalog", "known exploited legacy file-transfer vulnerabilities for one-day replay planning"),
+            ],
+        },
+        {
+            "label": "collaboration platform privilege-boundary class",
+            "surface": "operations runbooks, approval evidence stores, and collaboration-backed workflow notes",
+            "cves": ["CVE-2023-22518"],
+            "cwes": ["CWE-287", "CWE-863"],
+            "rationale": "Financial workflow evidence often depends on collaboration systems, so privilege-boundary one-days can affect approval records and review artifacts.",
+            "patch": "Apply fixed collaboration-platform versions, restrict administrative paths, and review evidence-store permissions.",
+            "detection": "Monitor unusual evidence-page changes, unexpected administrator activity, and approval-note edits without matching workflow events.",
+            "sources": [
+                _static_source("src_cisa_kev_confluence", "CISA KEV: Atlassian Confluence CVE-2023-22518", "https://www.cisa.gov/known-exploited-vulnerabilities-catalog", "known exploited collaboration platform vulnerability for evidence-store review"),
+            ],
+        },
     ]
 
 
@@ -545,6 +673,14 @@ def _objective_from_vector(vector: str) -> str:
     if "disruption" in lowered:
         return "disruption"
     return "persistence"
+
+
+def _is_financial_context(context: dict[str, Any]) -> bool:
+    haystack = " ".join(
+        _str(context.get(key), "")
+        for key in ("target_scope", "strike_vector", "candidate_class", "adversary_class")
+    ).lower()
+    return any(token in haystack for token in ("financial", "payment", "custody", "settlement"))
 
 
 def _first(value: Any) -> dict[str, Any]:

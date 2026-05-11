@@ -10,7 +10,8 @@
     "forecast_assumptions": [
       "The Stage 1 candidate is an edge-appliance access class rather than a named CVE.",
       "Forecasting is sector-level only and does not identify live targets.",
-      "Current context includes May 2026 US-PRC and Indo-Pacific diplomatic events."
+      "Current context includes May 2026 US-PRC and Indo-Pacific diplomatic events.",
+      "Asset/SBOM seedset is fictional and product-family level; it contains no live hosts or network addresses."
     ],
     "excluded_uses": [
       "No exploit payloads",
@@ -27,24 +28,36 @@
       "confidence": "medium",
       "confidence_score": 0.67,
       "why_this_window": "The May 14-15 Trump-Xi summit creates a high-value collection and positioning window around US-PRC negotiations. The historical Volt Typhoon and Ivanti anchors support edge and perimeter infrastructure as a durable PRC-nexus access pattern rather than a one-day burn event.",
-      "trigger_signals": ["Trump-Xi bilateral summit", "US-PRC diplomatic collection window", "edge-appliance pre-positioning pattern"],
+      "trigger_signals": [
+        "Trump-Xi bilateral summit",
+        "US-PRC diplomatic collection window",
+        "edge-appliance pre-positioning pattern"
+      ],
       "historical_analogies": [
         {
           "case_id": "hist_8",
           "case_name": "Volt Typhoon / Taiwan Strait pre-positioning",
           "pattern_matched": "Long-dwell access against US critical infrastructure can be held for a later crisis trigger.",
           "time_to_burn": "multi-year dwell; activation tied to future crisis",
-          "source_ref_ids": ["src_hist_8"]
+          "source_ref_ids": [
+            "src_hist_8"
+          ]
         },
         {
           "case_id": "hist_10",
           "case_name": "Ivanti Connect Secure / UNC5221",
           "pattern_matched": "PRC-nexus actors have repeatedly targeted enterprise edge and VPN appliances across diplomatic and Taiwan-related windows.",
           "time_to_burn": "weeks of stealth exploitation around public disclosure and Taiwan election timing",
-          "source_ref_ids": ["src_hist_10"]
+          "source_ref_ids": [
+            "src_hist_10"
+          ]
         }
       ],
-      "source_ref_ids": ["src_calendar_trump_xi", "src_hist_8", "src_hist_10"]
+      "source_ref_ids": [
+        "src_calendar_trump_xi",
+        "src_hist_8",
+        "src_hist_10"
+      ]
     },
     {
       "window_id": "win_2",
@@ -54,17 +67,27 @@
       "confidence": "medium",
       "confidence_score": 0.6,
       "why_this_window": "The Shangri-La Dialogue and Tiananmen anniversary form an Indo-Pacific defense and political-symbolism cluster. The corpus supports PRC-nexus pre-positioning through edge infrastructure when Taiwan, dissident, or defense-ministry collection incentives rise.",
-      "trigger_signals": ["Shangri-La Dialogue", "Tiananmen anniversary", "Indo-Pacific defense-ministry collection"],
+      "trigger_signals": [
+        "Shangri-La Dialogue",
+        "Tiananmen anniversary",
+        "Indo-Pacific defense-ministry collection"
+      ],
       "historical_analogies": [
         {
           "case_id": "hist_8",
           "case_name": "Volt Typhoon / Taiwan Strait pre-positioning",
           "pattern_matched": "Pre-positioning against US and allied critical infrastructure is linked to Taiwan-crisis contingency planning.",
           "time_to_burn": "no destructive burn observed; access can remain dormant",
-          "source_ref_ids": ["src_hist_8"]
+          "source_ref_ids": [
+            "src_hist_8"
+          ]
         }
       ],
-      "source_ref_ids": ["src_calendar_shangri_la", "src_calendar_tiananmen", "src_hist_8"]
+      "source_ref_ids": [
+        "src_calendar_shangri_la",
+        "src_calendar_tiananmen",
+        "src_hist_8"
+      ]
     }
   ],
   "strike_vectors": [
@@ -80,7 +103,11 @@
       "confidence_score": 0.72,
       "why_this_vector": "Volt Typhoon and Ivanti anchors both show edge or perimeter appliance access as a recurring state-linked pattern against US and allied infrastructure.",
       "defensive_implication": "Prioritize detection, inventory, configuration review, and safe localhost validation around the selected perimeter-service class.",
-      "source_ref_ids": ["src_hist_8", "src_hist_10", "src_cisa_aa24_038a"]
+      "source_ref_ids": [
+        "src_hist_8",
+        "src_hist_10",
+        "src_cisa_aa24_038a"
+      ]
     },
     {
       "vector_id": "vec_2",
@@ -94,7 +121,10 @@
       "confidence_score": 0.61,
       "why_this_vector": "CISA's Volt Typhoon reporting describes long-term access and living-off-the-land behavior in critical-infrastructure environments.",
       "defensive_implication": "Stage 3 can validate detections for anomalous administrative activity in a safe toy environment.",
-      "source_ref_ids": ["src_cisa_aa24_038a", "src_hist_8"]
+      "source_ref_ids": [
+        "src_cisa_aa24_038a",
+        "src_hist_8"
+      ]
     }
   ],
   "summary": {
@@ -103,7 +133,9 @@
     "stage3_priority": "Validate a defensive block and alert around perimeter-service access indicators in a local demo environment.",
     "analyst_notes": [
       "Confidence is medium because the window is diplomatically motivated, while the Volt Typhoon anchor shows access can remain dormant until a future crisis.",
-      "All vector descriptions are intentionally non-actionable and sector-level."
+      "All vector descriptions are intentionally non-actionable and sector-level.",
+      "Open-source basis includes a sanitized OSINT snapshot with CVE, vendor, ATT&CK, and D3FEND metadata; raw source text is excluded.",
+      "Asset/SBOM seedset contributes 4 CVE seeds and 6 package seeds for targeted open-source enrichment."
     ]
   },
   "source_refs": [
@@ -148,6 +180,134 @@
       "url": "https://www.cisa.gov/news-events/cybersecurity-advisories/aa24-038a",
       "date": "2024-02-07",
       "supports": "PRC state-sponsored actors maintained persistent access to US critical infrastructure for possible future disruption"
+    },
+    {
+      "id": "src_context_osint_snapshot",
+      "label": "World Side current context: open-source metadata snapshot",
+      "url": "world-side/fixtures/osint-snapshot-sample.jsonl, world-side/fixtures/osint-snapshot-sample.manifest.json",
+      "date": "2026-05-04",
+      "supports": "4 sanitized open-source metadata signal(s) cleared for forecast use"
+    },
+    {
+      "id": "src_osint_cvelistv5_delta_fixture",
+      "label": "CVEProject cvelistV5 delta log fixture",
+      "url": "https://github.com/CVEProject/cvelistV5",
+      "date": "2026-05-02",
+      "supports": "metadata-only CVE publication timing signal for edge-appliance exposure"
+    },
+    {
+      "id": "src_osint_redhat_security_fixture",
+      "label": "Red Hat Security Data API fixture",
+      "url": "https://access.redhat.com/hydra/rest/securitydata/cve.json",
+      "date": "2026-05-02",
+      "supports": "vendor CVE metadata signal for Linux-based product exposure"
+    },
+    {
+      "id": "src_osint_attack_stix_fixture",
+      "label": "MITRE ATT&CK Enterprise STIX fixture",
+      "url": "https://github.com/mitre-attack/attack-stix-data",
+      "date": "2026-05-02",
+      "supports": "ATT&CK taxonomy metadata for low-noise access behavior"
+    },
+    {
+      "id": "src_osint_d3fend_fixture",
+      "label": "MITRE D3FEND ontology fixture",
+      "url": "https://d3fend.mitre.org/ontologies/d3fend.json",
+      "date": "2026-05-02",
+      "supports": "D3FEND defensive taxonomy metadata for network traffic analysis"
+    },
+    {
+      "id": "src_context_asset_seedset",
+      "label": "World Side current context: asset/SBOM OSINT seedset",
+      "url": "assets/fixtures/dib-edge-appliance-seedset.json",
+      "date": "2026-05-04",
+      "supports": "1 asset-derived open-source seedset cleared for forecast use"
     }
-  ]
+  ],
+  "open_source_signals": {
+    "schema_version": "prophet.open_source_signals.v0.1",
+    "integrated": true,
+    "record_count": 4,
+    "event_count": 4,
+    "manifest_record_count": 4,
+    "source_type_counts": {
+      "manual_analyst_note": 1,
+      "threat_intel_feed": 2,
+      "vendor_advisory": 1
+    },
+    "collection_tier_counts": {
+      "analyst_context": 1,
+      "technical_chatter": 3
+    },
+    "successful_sources": [
+      "osint_snapshot_fixture_input"
+    ],
+    "failed_sources": [],
+    "snapshot_paths": [
+      "world-side/fixtures/osint-snapshot-sample.jsonl"
+    ],
+    "manifest_paths": [
+      "world-side/fixtures/osint-snapshot-sample.manifest.json"
+    ],
+    "hashes": {
+      "snapshot_jsonl_sha256": {
+        "world-side/fixtures/osint-snapshot-sample.jsonl": "12ffe21e0b71182732d67698bcf73e1004d2de16db7256f7558b51eb3f13c2da"
+      },
+      "manifest_sha256": {
+        "world-side/fixtures/osint-snapshot-sample.manifest.json": "6060212af28e435478a284a9b13847e6e594dd3048922e2a1eeed165d56276da"
+      }
+    },
+    "source_ref_ids": [
+      "src_context_osint_snapshot",
+      "src_osint_cvelistv5_delta_fixture",
+      "src_osint_redhat_security_fixture",
+      "src_osint_attack_stix_fixture",
+      "src_osint_d3fend_fixture"
+    ],
+    "basis_statement": "Sanitized open-source metadata was integrated into the pilot evidence basis."
+  },
+  "asset_seed_context": {
+    "schema_version": "prophet.asset_seed_context.v0.1",
+    "integrated": true,
+    "seedset_count": 1,
+    "asset_count": 3,
+    "fixture_context": true,
+    "exposure_classes": [
+      "edge_appliance"
+    ],
+    "product_family_count": 3,
+    "product_families": [
+      "enterprise VPN appliance family",
+      "managed firewall edge family",
+      "secure edge appliance family"
+    ],
+    "package_seed_count": 6,
+    "cve_seed_count": 4,
+    "owner_queues": [
+      "Edge Platform Security",
+      "Perimeter Operations",
+      "Remote Access Security"
+    ],
+    "recommended_source_ids": [
+      "cveproject_cvelistv5_delta_log",
+      "cisa_vulnrichment_cve_record_seed",
+      "osv_query_api_seed",
+      "redhat_security_data_cve_api"
+    ],
+    "seedset_paths": [
+      "assets/fixtures/dib-edge-appliance-seedset.json"
+    ],
+    "hashes": {
+      "asset_seedset_sha256": {
+        "assets/fixtures/dib-edge-appliance-seedset.json": "a568d36d10dc015a1b15ecac2980be5440ef8bd6012e3f76338c60893018eebb"
+      },
+      "seedset_body_sha256": {
+        "asset-seedset-b4f9d06d72509810": "ebd9ed51dbc9ab3b940fc1e1bd4d5238c8106bcde83ce6f1e505f26fa4fbf6f3"
+      }
+    },
+    "source_ref_ids": [
+      "src_context_asset_seedset"
+    ],
+    "basis_statement": "Asset/SBOM-derived CVE, package, product-family, and exposure-class seeds narrowed open-source enrichment to customer-relevant metadata."
+  }
 }

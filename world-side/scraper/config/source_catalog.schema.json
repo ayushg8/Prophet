@@ -233,6 +233,8 @@
           "enum": [
             "json",
             "rss",
+            "xml",
+            "xml_zip",
             "html",
             "csv",
             "metadata_jsonl",

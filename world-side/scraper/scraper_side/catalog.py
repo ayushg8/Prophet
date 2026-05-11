@@ -21,6 +21,7 @@ class CatalogEntry:
     source_type: str = "official_government"
     collection_tier: str = "official_signal"
     url: str = ""
+    url_template: str = ""
     format: str = "json"
     local_path: Path | None = None
     enabled: bool = True
@@ -59,6 +60,15 @@ CATALOG_COLLECTOR_MAP = {
     "cisa_cybersecurity_advisories": "html_link_index",
     "cisa_ics_advisories": "html_link_index",
     "github_advisory_database": "github_advisories",
+    "cveproject_cvelistv5_delta_log": "cve_delta_log",
+    "cisa_vulnrichment_repo_commits": "github_commits",
+    "cisa_vulnrichment_cve_record_seed": "cisa_vulnrichment",
+    "osv_query_api_seed": "osv_vulnerabilities",
+    "redhat_security_data_cve_api": "redhat_security_data",
+    "mitre_attack_enterprise_stix": "attack_stix",
+    "mitre_cwe_latest_xml": "cwe_catalog",
+    "mitre_capec_latest_xml": "capec_catalog",
+    "mitre_d3fend_ontology_json": "d3fend_ontology",
     "nuclei_templates_cve_commits": "github_commits",
     "openwall_oss_security_index": "html_link_index",
     "fortinet_psirt_rss": "official_rss",
@@ -91,6 +101,15 @@ READY_COLLECTORS = {
     "ofac_sdn_csv",
     "github_advisories",
     "github_commits",
+    "cve_delta_log",
+    "cve_record_v5",
+    "cisa_vulnrichment",
+    "osv_vulnerabilities",
+    "redhat_security_data",
+    "attack_stix",
+    "cwe_catalog",
+    "capec_catalog",
+    "d3fend_ontology",
     "reddit_listing",
     "reliefweb_disasters",
     "gdelt_articles",
@@ -230,6 +249,7 @@ def _entry_from_mapping(
         or CATALOG_LANE_TIER_MAP.get(lane, "official_signal")
     )
     url = _str_value(value, "url") or _str_value(collection, "url")
+    url_template = _str_value(value, "url_template") or _str_value(collection, "url_template")
     feed_format = _str_value(collection, "format") or "json"
 
     return CatalogEntry(
@@ -238,6 +258,7 @@ def _entry_from_mapping(
         source_type=source_type,
         collection_tier=collection_tier,
         url=url,
+        url_template=url_template,
         format=feed_format,
         local_path=local_path,
         enabled=bool(value.get("enabled", True)),
@@ -265,6 +286,26 @@ def normalize_collector(value: str) -> str:
         "github_advisories_api": "github_advisories",
         "github_commit": "github_commits",
         "github_commits_api": "github_commits",
+        "cvelistv5": "cve_delta_log",
+        "cve_delta": "cve_delta_log",
+        "cve_delta_log": "cve_delta_log",
+        "cve_record": "cve_record_v5",
+        "cve_record_v5": "cve_record_v5",
+        "vulnrichment": "cisa_vulnrichment",
+        "cisa_vulnrichment": "cisa_vulnrichment",
+        "osv": "osv_vulnerabilities",
+        "osv_vulnerability": "osv_vulnerabilities",
+        "redhat": "redhat_security_data",
+        "redhat_security": "redhat_security_data",
+        "attack": "attack_stix",
+        "attack_stix": "attack_stix",
+        "mitre_attack": "attack_stix",
+        "cwe": "cwe_catalog",
+        "cwe_catalog": "cwe_catalog",
+        "capec": "capec_catalog",
+        "capec_catalog": "capec_catalog",
+        "d3fend": "d3fend_ontology",
+        "d3fend_ontology": "d3fend_ontology",
         "msrc": "microsoft_msrc_updates",
         "microsoft_msrc": "microsoft_msrc_updates",
         "reddit": "reddit_listing",

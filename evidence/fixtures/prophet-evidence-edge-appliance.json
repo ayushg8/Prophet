@@ -1,0 +1,512 @@
+{
+  "asset_context": {
+    "affected_asset_count": 3,
+    "context_statement": "Fictional defense-industrial edge appliance inventory. Sector and product-family level only; no live targets are named.",
+    "criticality_summary": {
+      "high": 2,
+      "medium": 1
+    },
+    "fixture_context": true,
+    "inventory_id": "asset-fixture-dib-edge-001",
+    "matched_exposure_class": "edge_appliance",
+    "package_cve_overlap_summary": {
+      "known_cve_overlaps": {
+        "CVE-2021-44228": 1,
+        "CVE-2023-46805": 1,
+        "CVE-2024-21887": 1,
+        "CVE-2024-3400": 1
+      },
+      "packages": {
+        "appliance-auth-module": 1,
+        "federation-validator": 1,
+        "log4j-core": 1,
+        "management-api": 1,
+        "update-channel-verifier": 1,
+        "web-request-parser": 1
+      }
+    },
+    "recommended_owner_queue": [
+      "Edge Platform Security",
+      "Remote Access Security",
+      "Perimeter Operations"
+    ],
+    "schema_version": "asset_inventory.v0.1"
+  },
+  "asset_seed_summary": {
+    "asset_count": 3,
+    "basis_statement": "Asset/SBOM-derived seeds identify CVE, package, product-family, and exposure-class metadata for targeted open-source enrichment.",
+    "cve_seed_count": 4,
+    "exposure_classes": [
+      "edge_appliance"
+    ],
+    "fixture_context": true,
+    "owner_queues": [
+      "Edge Platform Security",
+      "Perimeter Operations",
+      "Remote Access Security"
+    ],
+    "package_seed_count": 6,
+    "product_families": [
+      "enterprise VPN appliance family",
+      "managed firewall edge family",
+      "secure edge appliance family"
+    ],
+    "recommended_source_ids": [
+      "cveproject_cvelistv5_delta_log",
+      "cisa_vulnrichment_cve_record_seed",
+      "osv_query_api_seed",
+      "redhat_security_data_cve_api"
+    ],
+    "schema_version": "asset_osint_seedset.v0.1",
+    "seedset_id": "asset-seedset-b4f9d06d72509810",
+    "seedset_sha256": "ebd9ed51dbc9ab3b940fc1e1bd4d5238c8106bcde83ce6f1e505f26fa4fbf6f3"
+  },
+  "bundle_id": "peb-8195e8d2e7cf9717",
+  "bundle_sha256": "bc8328c9ef05ea539f9472be35e8aa2694c940ffc694385ce3ead3622a77c2a4",
+  "defense_summary": {
+    "patch_format": "unified_diff",
+    "patch_summary": "Disable JNDI message lookups globally and harden the appender pattern; remove the lookup class as a defense-in-depth fallback.",
+    "sigma": {
+      "level": "critical",
+      "logsources": [
+        "webserver",
+        "app_log"
+      ],
+      "rule_id": "b7e4f2a1-9c83-4d56-a0e7-12f3456789ab",
+      "title": "Log4Shell JNDI Injection — HTTP Header and App Log Detection"
+    }
+  },
+  "forecast_summary": {
+    "source_ref_ids": [
+      "src_calendar_trump_xi",
+      "src_hist_8",
+      "src_hist_10",
+      "src_cisa_aa24_038a"
+    ],
+    "strategic_frame": {
+      "adversary_class": "PRC-prepositioning-class",
+      "geographic_scope": "US federal and allied Indo-Pacific defense ecosystem",
+      "target_scope": "US federal, defense-industrial, and critical-infrastructure perimeter services"
+    },
+    "strike_window": {
+      "confidence": "medium",
+      "confidence_score": 0.67,
+      "end_date": "2026-05-18",
+      "start_date": "2026-05-08",
+      "why_this_window": "The May 14-15 Trump-Xi summit creates a high-value collection and positioning window around US-PRC negotiations. The historical Volt Typhoon and Ivanti anchors support edge and perimeter infrastructure as a durable PRC-nexus access pattern rather than a one-day burn event."
+    },
+    "vector": {
+      "confidence": "medium",
+      "confidence_score": 0.72,
+      "defensive_implication": "Prioritize detection, inventory, configuration review, and safe localhost validation around the selected perimeter-service class.",
+      "likely_objective": "persistence",
+      "target_sector": "federal civilian agencies, defense contractors, and critical-infrastructure perimeter services",
+      "vector_class": "edge-appliance initial access and persistence",
+      "vector_id": "vec_1",
+      "why_this_vector": "Volt Typhoon and Ivanti anchors both show edge or perimeter appliance access as a recurring state-linked pattern against US and allied infrastructure."
+    }
+  },
+  "generated_at": "2026-05-04T20:20:00Z",
+  "hashes": {
+    "artifact_sha256": "7a1c0da471d17d4f0fba63dfa4d7249e4f9cdf3f3d890f20f36c3988b912eca3",
+    "asset_inventory_sha256": "cf50bb18c212e1dc4a316ac6011659f3b129472ac45d039ccb63b2bc2f61f119",
+    "asset_seedset_sha256": "9369ef1bfe055a0b3417ac64d873ecf56b84c0153eb22cff4bb0b78ae15e019a",
+    "bundle_body_sha256": "bc8328c9ef05ea539f9472be35e8aa2694c940ffc694385ce3ead3622a77c2a4",
+    "forecast_sha256": "0e8c85dceef66e176cb810d4a0707479a1309b674cd96b5ad257c1dbb5d390a4",
+    "osint_snapshot_hashes": {
+      "manifest_sha256": {
+        "world-side/fixtures/osint-snapshot-sample.manifest.json": "6060212af28e435478a284a9b13847e6e594dd3048922e2a1eeed165d56276da"
+      },
+      "snapshot_jsonl_sha256": {
+        "world-side/fixtures/osint-snapshot-sample.jsonl": "12ffe21e0b71182732d67698bcf73e1004d2de16db7256f7558b51eb3f13c2da"
+      }
+    },
+    "policy_sha256": "fd7fc162a324c926e02aca0c1093798f1ec94e4d76daedbe7dc0acb480783163",
+    "portfolio_sha256": "34d30c672460a8c9083a677a71dbe654a76699ede458d06206886ee8737162cd"
+  },
+  "input_refs": {
+    "artifact_id": "ee-fixture-edge-appliance-001",
+    "asset_seedset_id": "asset-seedset-b4f9d06d72509810",
+    "candidate_id": "cs-fixture-edge-appliance-001",
+    "forecast_id": "ws-golden-edge-appliance-001",
+    "portfolio_forecast_id": "ws-20260502-ecb820b2",
+    "portfolio_id": "ep-74e96d6f37",
+    "run_id": "fixture-edge-appliance",
+    "vector_id": "vec_1"
+  },
+  "open_source_summary": {
+    "basis_statement": "Sanitized open-source metadata was integrated into the pilot evidence basis.",
+    "collection_tier_counts": {
+      "analyst_context": 1,
+      "technical_chatter": 3
+    },
+    "event_count": 4,
+    "failed_sources": [],
+    "freshness": {
+      "freshness_window_days": 7,
+      "newest_record_age_days": null,
+      "newest_record_observed_at": "not supplied",
+      "oldest_record_observed_at": "not supplied",
+      "record_span_days": null,
+      "snapshot_generated_at": "not supplied",
+      "status": "not_provided"
+    },
+    "hashes": {
+      "manifest_sha256": {
+        "world-side/fixtures/osint-snapshot-sample.manifest.json": "6060212af28e435478a284a9b13847e6e594dd3048922e2a1eeed165d56276da"
+      },
+      "snapshot_jsonl_sha256": {
+        "world-side/fixtures/osint-snapshot-sample.jsonl": "12ffe21e0b71182732d67698bcf73e1004d2de16db7256f7558b51eb3f13c2da"
+      }
+    },
+    "integrated": true,
+    "manifest_paths": [
+      "world-side/fixtures/osint-snapshot-sample.manifest.json"
+    ],
+    "record_count": 4,
+    "snapshot_paths": [
+      "world-side/fixtures/osint-snapshot-sample.jsonl"
+    ],
+    "source_failures": [],
+    "source_health": {
+      "failed_source_count": 0,
+      "failure_policy": "Failed sources are summarized in evidence; raw collection text remains excluded.",
+      "manifest_count": 0,
+      "status": "not_provided",
+      "successful_source_count": 0
+    },
+    "source_ref_ids": [
+      "src_context_osint_snapshot",
+      "src_osint_cvelistv5_delta_fixture",
+      "src_osint_redhat_security_fixture",
+      "src_osint_attack_stix_fixture",
+      "src_osint_d3fend_fixture"
+    ],
+    "source_type_counts": {
+      "manual_analyst_note": 1,
+      "threat_intel_feed": 2,
+      "vendor_advisory": 1
+    },
+    "successful_sources": [
+      "osint_snapshot_fixture_input"
+    ]
+  },
+  "operator_approval": {
+    "approval_mode": "fixture_bypass",
+    "caveats": [
+      "This artifact is a fixture and was not produced by a live engine run.",
+      "All target identifiers are placeholders ([LAB-HOST]); no live infrastructure is referenced.",
+      "Validation result mirrors the canonical Log4Shell mitigation outcome and is included only for Console rendering."
+    ],
+    "decision": "bypassed_for_fixture",
+    "operator_label": "fixture",
+    "timestamp": "2026-05-03T00:42:00Z"
+  },
+  "policy": {
+    "allowed_modes": {
+      "asset_context": [
+        "fixture",
+        "customer_owned_metadata"
+      ],
+      "evidence_generation": [
+        "fixture",
+        "localhost_sandbox"
+      ],
+      "forecast_generation": [
+        "fixture",
+        "seeded_osint"
+      ],
+      "osint_collection": [
+        "fixture",
+        "seeded_osint"
+      ],
+      "validation": [
+        "fixture",
+        "localhost_sandbox"
+      ]
+    },
+    "controls": {
+      "arbitrary_target_input_allowed": false,
+      "credentials_allowed": false,
+      "live_targets_allowed": false,
+      "live_vm_scraper_allowed": false,
+      "payload_generation_allowed": false,
+      "private_hostnames_allowed": false,
+      "raw_scraper_text_allowed": false
+    },
+    "enforced": true,
+    "policy_id": "prophet-pilot-fixture-localhost-v0.1",
+    "policy_sha256": "fd7fc162a324c926e02aca0c1093798f1ec94e4d76daedbe7dc0acb480783163",
+    "retention": {
+      "audit_log_max_days": 90,
+      "customer_metadata_max_days": 30,
+      "deletion_review_required": true,
+      "raw_collection_retained": false,
+      "runtime_outputs_max_days": 30
+    },
+    "schema_version": "prophet_pilot_policy.v0.1"
+  },
+  "prediction_summary": {
+    "one_day_count": 5,
+    "source_ref_ids": [
+      "src_cisa_log4shell",
+      "src_hist_10_corpus",
+      "src_hist_8_corpus",
+      "src_hist_9_corpus"
+    ],
+    "top_one_day_class": "Log4Shell-class Java logging framework remote code execution",
+    "top_zero_day_class": "edge appliance authentication-state bypass",
+    "zero_day_count": 5
+  },
+  "redaction_report": {
+    "blocked_text_classes": [
+      "credential-like text",
+      "hostname-like text",
+      "IP-like text",
+      "payload-like tokens",
+      "procedural exploit text",
+      "raw scraper text"
+    ],
+    "field_allowlist": [
+      "asset_context summary",
+      "asset_seed_summary summary",
+      "bundle_id",
+      "defense_summary",
+      "forecast_summary",
+      "hashes",
+      "input_refs",
+      "open_source_summary",
+      "operator_approval",
+      "policy",
+      "prediction_summary",
+      "safety_attestation",
+      "source_refs",
+      "validation_summary.sanitized_excerpts"
+    ],
+    "operator_review_required": true,
+    "raw_asset_inventory_embedded": false,
+    "raw_defense_artifact_embedded": false,
+    "raw_forecast_embedded": false,
+    "raw_osint_records_embedded": false,
+    "raw_prediction_portfolio_embedded": false,
+    "raw_validation_logs_embedded": false,
+    "sandbox_run_manifest_embedded": false,
+    "redacted_fields": [
+      "raw forecast artifact body",
+      "raw prediction portfolio body",
+      "raw defense artifact body",
+      "raw validation logs and traffic",
+      "raw OSINT snapshot records",
+      "raw customer asset rows",
+      "exploit payload strings",
+      "credentials and secrets",
+      "private hostnames and live IPs"
+    ],
+    "sanitized_validation_excerpts_emitted": 2,
+    "source_documents_embedded": false,
+    "source_refs_emitted": 27,
+    "summary_fields_only": true
+  },
+  "safety_attestation": {
+    "attested_at": "2026-05-04T20:20:00Z",
+    "data_boundary_statement": "No live target data is included; evidence contains only fixture, seeded-OSINT, product-family, and localhost sandbox metadata.",
+    "fixture_backed": true,
+    "no_credentials": true,
+    "no_live_target_data_included": true,
+    "no_live_targets": true,
+    "no_payloads": true,
+    "no_private_hostnames": true,
+    "no_raw_scraper_text": true,
+    "scope": "fixture_or_localhost_sandbox",
+    "validation_scope": "localhost only; vulnerable-by-design sandbox container; no network egress beyond the sandbox validation channel"
+  },
+  "schema_version": "prophet_evidence_bundle.v0.1",
+  "source_refs": [
+    {
+      "date": "2026-05-02",
+      "id": "src_calendar_trump_xi",
+      "label": "Calendar events: Trump-Xi bilateral summit",
+      "supports": "May 14-15, 2026 US-PRC diplomatic summit is a high-value collection window",
+      "url": "world-side/data/calendar_events.md#master-chronological-table"
+    },
+    {
+      "date": "2026-05-02",
+      "id": "src_calendar_shangri_la",
+      "label": "Calendar events: Shangri-La Dialogue",
+      "supports": "May 29-31, 2026 Indo-Pacific defense forum is a defense-ministry collection window",
+      "url": "world-side/data/calendar_events.md#master-chronological-table"
+    },
+    {
+      "date": "2026-05-02",
+      "id": "src_calendar_tiananmen",
+      "label": "Calendar events: Tiananmen anniversary",
+      "supports": "June 4 anniversary creates PRC dissident and political-symbolism pressure",
+      "url": "world-side/data/calendar_events.md#master-chronological-table"
+    },
+    {
+      "date": "2026-05-02",
+      "id": "src_hist_8",
+      "label": "Historical corpus: Volt Typhoon",
+      "supports": "PRC-linked pre-positioning against US critical infrastructure can persist for years pending a crisis trigger",
+      "url": "world-side/data/historical_pairings.md#8-volt-typhoon--taiwan-strait-pre-positioning-campaign"
+    },
+    {
+      "date": "2026-05-02",
+      "id": "src_hist_10",
+      "label": "Historical corpus: Ivanti Connect Secure",
+      "supports": "PRC-nexus actors have targeted enterprise VPN and edge appliances",
+      "url": "world-side/data/historical_pairings.md#10-ivanti-connect-secure-unc5221--prc-ops-dec-2023jan-2024"
+    },
+    {
+      "date": "2024-02-07",
+      "id": "src_cisa_aa24_038a",
+      "label": "CISA AA24-038A",
+      "supports": "PRC state-sponsored actors maintained persistent access to US critical infrastructure for possible future disruption",
+      "url": "https://www.cisa.gov/news-events/cybersecurity-advisories/aa24-038a"
+    },
+    {
+      "date": "2026-05-04",
+      "id": "src_context_osint_snapshot",
+      "label": "World Side current context: open-source metadata snapshot",
+      "supports": "4 sanitized open-source metadata signal(s) cleared for forecast use",
+      "url": "world-side/fixtures/osint-snapshot-sample.jsonl, world-side/fixtures/osint-snapshot-sample.manifest.json"
+    },
+    {
+      "date": "2026-05-02",
+      "id": "src_osint_cvelistv5_delta_fixture",
+      "label": "CVEProject cvelistV5 delta log fixture",
+      "supports": "metadata-only CVE publication timing signal for edge-appliance exposure",
+      "url": "https://github.com/CVEProject/cvelistV5"
+    },
+    {
+      "date": "2026-05-02",
+      "id": "src_osint_redhat_security_fixture",
+      "label": "Red Hat Security Data API fixture",
+      "supports": "vendor CVE metadata signal for Linux-based product exposure",
+      "url": "https://access.redhat.com/hydra/rest/securitydata/cve.json"
+    },
+    {
+      "date": "2026-05-02",
+      "id": "src_osint_attack_stix_fixture",
+      "label": "MITRE ATT&CK Enterprise STIX fixture",
+      "supports": "ATT&CK taxonomy metadata for low-noise access behavior",
+      "url": "https://github.com/mitre-attack/attack-stix-data"
+    },
+    {
+      "date": "2026-05-02",
+      "id": "src_osint_d3fend_fixture",
+      "label": "MITRE D3FEND ontology fixture",
+      "supports": "D3FEND defensive taxonomy metadata for network traffic analysis",
+      "url": "https://d3fend.mitre.org/ontologies/d3fend.json"
+    },
+    {
+      "date": "2026-05-04",
+      "id": "src_context_asset_seedset",
+      "label": "World Side current context: asset/SBOM OSINT seedset",
+      "supports": "1 asset-derived open-source seedset cleared for forecast use",
+      "url": "assets/fixtures/dib-edge-appliance-seedset.json"
+    },
+    {
+      "id": "src_hist_10_corpus",
+      "label": "Historical corpus: Ivanti Connect Secure (UNC5221) / PRC ops, Dec 2023–Jan 2024",
+      "supports": "PRC-nexus → enterprise edge/perimeter appliances (VPN, NetScaler, Fortigate, SonicWall, Citrix) at scale; vector = chained 0-days in security appliances themselves (the ironic tar.",
+      "url": "world-side/data/historical_pairings.md#10-ivanti-connect-secure-unc5221-prc-ops-dec-2023-jan-2024"
+    },
+    {
+      "id": "src_hist_8_corpus",
+      "label": "Historical corpus: Volt Typhoon / Taiwan Strait pre-positioning campaign",
+      "supports": "PRC → US/allied critical infrastructure (water, power, comms, transport) in geographies *adjacent to a likely Taiwan-conflict supply line* (Guam, Hawaii observed); vector = LotL +.",
+      "url": "world-side/data/historical_pairings.md#8-volt-typhoon-taiwan-strait-pre-positioning-campaign"
+    },
+    {
+      "id": "src_hist_9_corpus",
+      "label": "Historical corpus: MOVEit / Cl0p / Russia-aligned summer 2023",
+      "supports": "Russia-tolerated criminal → Western enterprise SaaS / managed file-transfer appliances; vector = pre-stockpiled n-day or 0-day in widely-deployed B2B appliances; timing = aligned.",
+      "url": "world-side/data/historical_pairings.md#9-moveit-cl0p-russia-aligned-summer-2023"
+    },
+    {
+      "id": "src_chatter_fixture_001",
+      "label": "Sanitized chatter fixture: public Telegram edge-access themes",
+      "supports": "current public chatter signal for edge-appliance access timing",
+      "url": "sanitized://scraper-record/chat_fixture_001"
+    },
+    {
+      "id": "src_chatter_fixture_003",
+      "label": "CISA AA24-038A public advisory context",
+      "supports": "public advisory context for state-sponsored pre-positioning risk",
+      "url": "https://www.cisa.gov/news-events/cybersecurity-advisories/aa24-038a"
+    },
+    {
+      "id": "src_context_chatter",
+      "label": "World Side current context: sanitized chatter",
+      "supports": "3 sanitized chatter signal(s) cleared for forecast use",
+      "url": "world-side/fixtures/sanitized-chatter-sample.jsonl"
+    },
+    {
+      "id": "src_context_calendar",
+      "label": "World Side current context: calendar events",
+      "supports": "scheduled geopolitical and infrastructure stress windows",
+      "url": "world-side/data/calendar_events.md"
+    },
+    {
+      "id": "src_cisa_log4shell",
+      "label": "CISA Log4j advisory",
+      "supports": "authoritative mitigation context for CVE-2021-44228",
+      "url": "https://www.cisa.gov/news-events/cybersecurity-advisories/aa21-356a"
+    },
+    {
+      "id": "src_cisa_kev_pulse",
+      "label": "CISA KEV: CVE-2019-11510",
+      "supports": "known exploited VPN gateway vulnerability used as a one-day replay analog",
+      "url": "https://www.cisa.gov/known-exploited-vulnerabilities-catalog"
+    },
+    {
+      "id": "src_cisa_kev_netscaler",
+      "label": "CISA KEV: CVE-2023-3519",
+      "supports": "known exploited NetScaler gateway vulnerability for one-day replay planning",
+      "url": "https://www.cisa.gov/known-exploited-vulnerabilities-catalog"
+    },
+    {
+      "id": "src_cisa_kev_globalprotect",
+      "label": "CISA KEV: CVE-2024-3400",
+      "supports": "known exploited firewall edge vulnerability for one-day replay planning",
+      "url": "https://www.cisa.gov/known-exploited-vulnerabilities-catalog"
+    },
+    {
+      "id": "src_mandiant_ivanti",
+      "label": "Mandiant Ivanti zero-day analysis",
+      "supports": "public reporting on PRC-nexus edge-appliance exploitation",
+      "url": "https://cloud.google.com/blog/topics/threat-intelligence/ivanti-connect-secure-vpn-zero-day"
+    },
+    {
+      "id": "src_nvd_log4shell",
+      "label": "NVD entry for CVE-2021-44228",
+      "supports": "CVSS 10.0 critical scoring and affected version range for Log4j.",
+      "url": "https://nvd.nist.gov/vuln/detail/CVE-2021-44228"
+    },
+    {
+      "id": "src_world_forecast",
+      "label": "Forecaster output: ws-golden-edge-appliance-001",
+      "supports": "Direction B forecast that this artifact is responding to.",
+      "url": "world-side/outputs/golden-forecast-edge-appliance.json"
+    },
+    {
+      "id": "src_cyber_candidate",
+      "label": "Exploit candidate: cs-fixture-edge-appliance-001",
+      "supports": "Direction A candidate that anchors the predicted exploit class.",
+      "url": "world-side/fixtures/exploit-candidate-edge-appliance.json"
+    }
+  ],
+  "validation_summary": {
+    "post_patch_status": "blocked",
+    "pre_patch_status": "vulnerable",
+    "sandbox_id": "[LAB-HOST]:8080",
+    "sandbox_scope": "localhost only; vulnerable-by-design sandbox container; no network egress beyond the sandbox validation channel",
+    "sanitized_excerpts": {
+      "post_patch": "fixture validation: post_patch_status=blocked · NOT VULNERABLE",
+      "pre_patch": "fixture validation: pre_patch_status=vulnerable · localhost only"
+    },
+    "validation_tool": "nuclei v3.x against Log4j 2.14.0 sandbox container",
+    "wall_time_seconds": 5.45
+  }
+}

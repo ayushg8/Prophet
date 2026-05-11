@@ -25,6 +25,9 @@ def main(argv: list[str] | None = None) -> int:
             data_dir=args.data_dir,
             generated_at=args.generated_at,
             chatter_paths=args.chatter,
+            osint_snapshot_paths=args.osint_snapshot,
+            osint_manifest_paths=args.osint_manifest,
+            asset_seedset_paths=args.asset_seedset,
         )
         _write_forecast(forecast, args.out, compact=args.compact)
     except (OSError, json.JSONDecodeError, ValueError) as exc:
@@ -73,6 +76,33 @@ def _build_parser() -> argparse.ArgumentParser:
         help=(
             "Optional sanitized chatter JSONL file. May be repeated. "
             "Raw scraper output must never be passed here."
+        ),
+    )
+    parser.add_argument(
+        "--osint-snapshot",
+        action="append",
+        type=Path,
+        default=[],
+        help=(
+            "Optional sanitized OSINT snapshot JSONL file. May be repeated. "
+            "Only scraper_side.snapshot output or equivalent sanitized JSONL is allowed."
+        ),
+    )
+    parser.add_argument(
+        "--osint-manifest",
+        action="append",
+        type=Path,
+        default=[],
+        help="Optional OSINT snapshot manifest JSON file. May be repeated.",
+    )
+    parser.add_argument(
+        "--asset-seedset",
+        action="append",
+        type=Path,
+        default=[],
+        help=(
+            "Optional asset_osint_seedset.v0.1 JSON file. May be repeated. "
+            "Use assets.inventory output, not raw asset exports."
         ),
     )
     parser.add_argument(

@@ -15,7 +15,9 @@ from predictor import (
 
 ROOT = Path(__file__).resolve().parents[2]
 FORECAST = ROOT / "world-side" / "outputs" / "generated-forecast-edge-appliance-with-chatter.json"
+FINANCIAL_FORECAST = ROOT / "world-side" / "outputs" / "golden-forecast-financial-theft.json"
 CANDIDATE = ROOT / "world-side" / "fixtures" / "exploit-candidate-edge-appliance.json"
+FINANCIAL_CANDIDATE = ROOT / "world-side" / "fixtures" / "exploit-candidate-financial-theft.json"
 FIXTURE = ROOT / "cyber-side" / "fixtures" / "predicted-exploit-portfolio-edge-appliance.json"
 
 
@@ -39,6 +41,25 @@ class PredictorPortfolioTests(unittest.TestCase):
         self.assertEqual(
             portfolio["strike_context"]["strike_vector"],
             "edge-appliance initial access and pre-positioning",
+        )
+
+    def test_generates_financial_workflow_predictions(self) -> None:
+        portfolio = generate_prediction_portfolio(
+            _load(FINANCIAL_FORECAST),
+            _load(FINANCIAL_CANDIDATE),
+            generated_at="2026-05-04T20:30:00Z",
+        )
+
+        validate_prediction_portfolio(portfolio)
+        self.assertEqual(len(portfolio["zero_day_predictions"]), 5)
+        self.assertEqual(len(portfolio["one_day_predictions"]), 5)
+        self.assertIn(
+            "financial workflow",
+            portfolio["zero_day_predictions"][0]["exploit_class_label"],
+        )
+        self.assertEqual(
+            portfolio["strike_context"]["strike_vector"],
+            "financial-messaging or custody workflow compromise",
         )
 
     def test_each_prediction_has_sources_and_defense_primitive(self) -> None:

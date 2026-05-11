@@ -1,0 +1,93 @@
+{
+  "schema_version": "asset_inventory.v0.1",
+  "inventory_id": "asset-fixture-financial-workflow-001",
+  "generated_at": "2026-05-04T19:35:00Z",
+  "fixture": true,
+  "scope": "Fictional financial workflow inventory. Product-family and workflow-class metadata only; no institutions, accounts, hosts, or live systems are named.",
+  "assets": [
+    {
+      "asset_id": "asset-fin-001",
+      "product_family": "financial messaging workflow family",
+      "exposure_class": "financial_workflow",
+      "owner_group": "Financial Platform Security",
+      "environment": "settlement operations enclave",
+      "business_criticality": "high",
+      "sbom_components": [
+        {
+          "name": "transaction-approval-service",
+          "version_family": "family-2025",
+          "package_type": "workflow-component"
+        },
+        {
+          "name": "log4j-core",
+          "version_family": "2.x legacy",
+          "package_type": "java-library"
+        }
+      ],
+      "known_cve_overlaps": [
+        "CVE-2021-44228"
+      ],
+      "compensating_controls": [
+        "dual approval workflow",
+        "transaction anomaly review",
+        "centralized application logging"
+      ]
+    },
+    {
+      "asset_id": "asset-fin-002",
+      "product_family": "digital asset custody workflow family",
+      "exposure_class": "custody_workflow",
+      "owner_group": "Custody Platform Security",
+      "environment": "restricted operations enclave",
+      "business_criticality": "high",
+      "sbom_components": [
+        {
+          "name": "custody-policy-engine",
+          "version_family": "family-2025",
+          "package_type": "workflow-component"
+        },
+        {
+          "name": "identity-assertion-validator",
+          "version_family": "family-2024",
+          "package_type": "identity-component"
+        }
+      ],
+      "known_cve_overlaps": [
+        "CVE-2023-46805"
+      ],
+      "compensating_controls": [
+        "separation of duties",
+        "privileged action review",
+        "configuration integrity checks"
+      ]
+    },
+    {
+      "asset_id": "asset-fin-003",
+      "product_family": "payment operations console family",
+      "exposure_class": "payment_operations",
+      "owner_group": "Payment Operations Security",
+      "environment": "operations support enclave",
+      "business_criticality": "medium",
+      "sbom_components": [
+        {
+          "name": "workflow-event-parser",
+          "version_family": "family-2024",
+          "package_type": "application-component"
+        },
+        {
+          "name": "audit-exporter",
+          "version_family": "family-2025",
+          "package_type": "reporting-component"
+        }
+      ],
+      "known_cve_overlaps": [
+        "CVE-2024-21887"
+      ],
+      "compensating_controls": [
+        "high-risk action queue review",
+        "business event reconciliation",
+        "restricted administrative role policy"
+      ]
+    }
+  ]
+}

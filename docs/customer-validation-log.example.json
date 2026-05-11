@@ -1,0 +1,30 @@
+{
+  "schema_version": "prophet_customer_validation_log.v0.1",
+  "updated_at": "2026-05-05",
+  "notes": "Example only. Keep real validation logs private and anonymized; do not commit names, emails, phone numbers, private hostnames, IPs, raw screenshots, transcripts, or customer-owned artifacts.",
+  "interviews": [
+    {
+      "account_label": "example-dib-platform-001",
+      "segment": "dib_platform_security",
+      "persona": "director_product_security",
+      "qualified": true,
+      "current_workflow": "Scanner, KEV review, SBOM notes, spreadsheet prioritization, manual leadership briefing.",
+      "recent_painful_event": "Had to justify edge software remediation order after a high-profile vulnerability disclosure.",
+      "existing_tools": ["scanner", "ticketing", "sbom", "threat_intel"],
+      "status_quo_gap": "Tools ranked findings but did not produce a defensible evidence packet for leadership and SOC handoff.",
+      "desired_output": "A short evidence packet with source basis, affected product-family context, recommended first action, and ticket/SIEM review templates.",
+      "workflow_pain_theme": "evidence_packet_gap",
+      "pain_score": 5,
+      "urgency_score": 4,
+      "status_quo_weakness_score": 4,
+      "buyer_access_score": 3,
+      "data_feasibility_score": 4,
+      "pilot_pull_score": 3,
+      "budget_signal": "could_sponsor_design_partner",
+      "pilot_signal": "asked_for_scoped_pilot",
+      "objections": ["Needs to see how policy and data boundaries work."],
+      "next_step": "Send pilot scope and evidence sample.",
+      "safe_artifact_offer": "Sanitized SBOM package-family export."
+    }
+  ]
+}

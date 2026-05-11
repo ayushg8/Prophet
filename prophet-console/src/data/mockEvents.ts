@@ -1,6 +1,6 @@
 import { sanitize } from '../lib/sanitize';
 import { forecastsByCandidateId } from './forecastIndex';
-import type { StrikeForecast, HistoricalAnalogy, SourceRef as WorldSourceRef } from './worldSide';
+import type { StrikeForecast, HistoricalAnalogy, SourceRef as ForecastSourceRef } from './worldSide';
 
 // ── Existing event-kind union (unchanged names) ─────────────────────────────
 
@@ -13,7 +13,7 @@ export type EventKind =
   | 'exploit_status'
   | 'patch_diff'
   | 'sigma_rule'
-  // New World-Side event variants
+  // New forecast event variants
   | 'forecast_summary'
   | 'historical_analogy'
   | 'source_ref';
@@ -63,7 +63,7 @@ export interface SigmaRuleEvent {
   content: string;
 }
 
-// ── New World-Side event variants ───────────────────────────────────────────
+// ── New forecast event variants ─────────────────────────────────────────────
 
 /** Carries the full StrikeForecast object for the active candidate. */
 export interface ForecastSummaryEvent {
@@ -71,17 +71,17 @@ export interface ForecastSummaryEvent {
   forecast: StrikeForecast;
 }
 
-/** Agent cites a historical analogy from the World-Side corpus. */
+/** Agent cites a historical analogy from the forecast corpus. */
 export interface HistoricalAnalogyEvent {
   kind: 'historical_analogy';
   analogy: HistoricalAnalogy;
   windowId: string;
 }
 
-/** Inline citation chip referencing a World-Side source. */
+/** Inline citation chip referencing a forecast source. */
 export interface SourceRefEvent {
   kind: 'source_ref';
-  ref: WorldSourceRef;
+  ref: ForecastSourceRef;
 }
 
 export type AgentEvent =
@@ -180,7 +180,7 @@ falsepositives:
 level: critical
 `;
 
-// ── World-Side context for the edge-appliance demo path ─────────────────────
+// ── Forecast context for the edge-appliance demo path ───────────────────────
 const edgeForecast = forecastsByCandidateId['cs-fixture-edge-appliance-001'];
 const topWindow = edgeForecast?.strike_windows[0];
 const topVector = edgeForecast?.strike_vectors[0];
@@ -243,8 +243,8 @@ export const mockEvents: AgentEvent[] = [
   {
     kind: 'tool_call',
     id: 'tc-004',
-    tool: 'probe_target_lab',
-    args: { host: '[LAB-HOST]', port: 8080 },
+    tool: 'check_local_fixture',
+    args: { fixture: 'localhost-sandbox-profile' },
     durationMs: 890,
     result:
       'localhost fixture reachable · Java sandbox profile · vulnerable dependency detected',
@@ -260,7 +260,7 @@ export const mockEvents: AgentEvent[] = [
   {
     kind: 'tool_call',
     id: 'tc-005',
-    tool: 'check_nuclei_template',
+    tool: 'check_validation_metadata',
     args: { cve: 'CVE-2021-44228' },
     durationMs: 45,
     result:
@@ -270,11 +270,11 @@ export const mockEvents: AgentEvent[] = [
   {
     kind: 'tool_call',
     id: 'tc-006',
-    tool: 'search_exploitdb',
+    tool: 'count_public_index_refs',
     args: { cve: 'CVE-2021-44228' },
     durationMs: 88,
     result:
-      'public exploit-index metadata present · raw entries not loaded',
+      'public reference-index metadata present · raw entries not loaded',
   },
 
   {
@@ -287,7 +287,7 @@ export const mockEvents: AgentEvent[] = [
       'T1190 — Exploit Public-Facing Application · technique family mapped · no procedure loaded',
   },
 
-  // World-Side: query_world_side returns the strike-window forecast
+  // Forecast query returns the strike-window forecast
   {
     kind: 'tool_call',
     id: 'tc-007b',
@@ -312,7 +312,7 @@ export const mockEvents: AgentEvent[] = [
   {
     kind: 'text',
     content: sanitize(
-      'Signal summary for CVE-2021-44228: KEV rank #4, EPSS 0.97 (99.9th percentile), public validation metadata available, exploit-index metadata counted without loading raw entries, and ATT&CK T1190 mapped. The localhost fixture uses an affected Log4j profile. Designating CVE-2021-44228 as the representative exploit class for the demo. Proceeding to Phase II planning.'
+      'Signal summary for CVE-2021-44228: KEV rank #4, EPSS 0.97 (99.9th percentile), public validation metadata available, public reference-index metadata counted without loading raw entries, and ATT&CK T1190 mapped. The localhost fixture uses an affected Log4j profile. Designating CVE-2021-44228 as the representative exposure class for the demo. Proceeding to Phase II planning.'
     ),
   },
 
@@ -329,8 +329,8 @@ export const mockEvents: AgentEvent[] = [
   {
     kind: 'tool_call',
     id: 'tc-008',
-    tool: 'read_nuclei_template',
-    args: { path: 'http/cves/2021/CVE-2021-44228.yaml' },
+    tool: 'read_validation_profile',
+    args: { profile: 'CVE-2021-44228-fixture-summary' },
     durationMs: 38,
     result:
       'Template metadata loaded · public validation profile · no raw request material displayed',
@@ -339,9 +339,9 @@ export const mockEvents: AgentEvent[] = [
   {
     kind: 'tool_call',
     id: 'tc-009',
-    tool: 'inspect_target',
+    tool: 'inspect_fixture_profile',
     args: {
-      target: '[LAB-HOST]:8080',
+      scope: 'localhost sandbox fixture',
       service: 'VulnerableApp · Java 8 + Log4j 2.14.0',
     },
     durationMs: 210,
@@ -359,7 +359,7 @@ export const mockEvents: AgentEvent[] = [
   {
     kind: 'text',
     content: sanitize(
-      'World-Side context — Adversary class: PRC-prepositioning. Top strike window: 2026-05-08 to 2026-05-18, confidence 0.67 (medium). Primary trigger: Trump-Xi bilateral summit (May 14-15, 2026). Historical anchor: Volt Typhoon / Taiwan Strait pre-positioning — long-dwell access against US critical infrastructure held pending a future crisis trigger. Vector class: edge-appliance initial access and persistence targeting federal civilian agencies, defense contractors, and critical-infrastructure perimeter services.'
+      'Forecast context — Adversary class: PRC-prepositioning. Top strike window: 2026-05-08 to 2026-05-18, confidence 0.67 (medium). Primary trigger: Trump-Xi bilateral summit (May 14-15, 2026). Historical anchor: Volt Typhoon / Taiwan Strait pre-positioning — long-dwell access against US critical infrastructure held pending a future crisis trigger. Vector class: edge-appliance initial access and persistence targeting federal civilian agencies, defense contractors, and critical-infrastructure perimeter services.'
     ),
   },
 
@@ -394,10 +394,9 @@ export const mockEvents: AgentEvent[] = [
   {
     kind: 'tool_call',
     id: 'tc-010',
-    tool: 'run_nuclei',
+    tool: 'run_fixture_validation',
     args: {
-      template: 'http/cves/2021/CVE-2021-44228.yaml',
-      target: '[LAB-HOST]:8080',
+      profile: 'CVE-2021-44228-fixture-summary',
       scope: 'localhost fixture',
     },
     durationMs: 2840,
@@ -409,7 +408,7 @@ export const mockEvents: AgentEvent[] = [
     kind: 'tool_call',
     id: 'tc-011',
     tool: 'inspect_response',
-    args: { target: '[LAB-HOST]:8080', method: 'GET' },
+    args: { scope: 'localhost fixture', method: 'sanitized summary' },
     durationMs: 420,
     result:
       'fixture response observed · validation evidence recorded · no request material displayed',
@@ -418,7 +417,7 @@ export const mockEvents: AgentEvent[] = [
   {
     kind: 'text',
     content: sanitize(
-      `Validation template complete. The vulnerable-by-design sandbox returns the expected pre-patch class-level status without displaying request material or target-control steps.\n\nStatus: representative exploit class confirmed in localhost fixture · sandbox containment OK.\n\nForecaster vector match: ${topVector?.vector_class ?? 'edge-appliance initial access'} — perimeter-appliance access class validated in an isolated environment. Proceeding to Phase IV — Defence Co-generation.`
+      `Validation template complete. The vulnerable-by-design sandbox returns the expected pre-patch class-level status without displaying request material or target-control steps.\n\nStatus: representative exposure class confirmed in localhost fixture · sandbox containment OK.\n\nForecaster vector match: ${topVector?.vector_class ?? 'edge-appliance initial access'} — perimeter-appliance access class validated in an isolated environment. Proceeding to Phase IV — Defence Co-generation.`
     ),
   },
 
@@ -438,9 +437,9 @@ export const mockEvents: AgentEvent[] = [
   {
     kind: 'tool_call',
     id: 'tc-012',
-    tool: 'apply_patch',
+    tool: 'render_patch_recommendation',
     args: {
-      target: '[LAB-HOST]:8080',
+      scope: 'localhost fixture',
       jvm_flag: '-Dlog4j2.formatMsgNoLookups=true',
       layout: '%msg{nolookups}',
     },
@@ -451,15 +450,15 @@ export const mockEvents: AgentEvent[] = [
   {
     kind: 'text',
     content: sanitize(
-      `Generating two-layer defence for CVE-2021-44228 on the lab target:\n\nPrimary mitigation: set JVM system property -Dlog4j2.formatMsgNoLookups=true. This disables JNDI message lookups globally in Log4j without requiring a library version upgrade. Takes effect on service restart.\n\nSecondary / defence-in-depth: update log4j2.xml PatternLayout to use %msg{nolookups}. This ensures the logging appender never evaluates lookup expressions even if the JVM flag is removed.\n\nFallback: remove org/apache/logging/log4j/core/lookup/JndiLookup.class from the log4j-core JAR. This eliminates the lookup mechanism entirely at the classpath level — the recommended approach for Log4j versions 2.10 through 2.14.x where upgrading is not immediately feasible.\n\nWorld-Side defensive implication: ${topVector?.defensive_implication ?? 'Prioritize detection, inventory, configuration review, and safe localhost validation around the selected perimeter-service class.'}`
+      `Generating reviewable mitigation package for CVE-2021-44228 on the localhost fixture:\n\nPrimary mitigation: set JVM system property -Dlog4j2.formatMsgNoLookups=true. This disables JNDI message lookups globally in Log4j without requiring a library version upgrade. Takes effect on service restart.\n\nSecondary / defence-in-depth: update log4j2.xml PatternLayout to use %msg{nolookups}. This ensures the logging appender never evaluates lookup expressions even if the JVM flag is removed.\n\nFallback: remove org/apache/logging/log4j/core/lookup/JndiLookup.class from the log4j-core JAR. This eliminates the lookup mechanism entirely at the classpath level — the recommended approach for Log4j versions 2.10 through 2.14.x where upgrading is not immediately feasible.\n\nForecast defensive implication: ${topVector?.defensive_implication ?? 'Prioritize detection, inventory, configuration review, and safe localhost validation around the selected perimeter-service class.'}`
     ),
   },
 
   {
     kind: 'tool_call',
     id: 'tc-013',
-    tool: 'restart_service',
-    args: { service: 'VulnerableApp', host: '[LAB-HOST]' },
+    tool: 'simulate_service_restart',
+    args: { service: 'fixture Java service', scope: 'localhost sandbox' },
     durationMs: 1340,
     result:
       'Service restarted · VulnerableApp running · Log4j 2.14.0 with formatMsgNoLookups=true',
@@ -493,8 +492,8 @@ export const mockEvents: AgentEvent[] = [
     id: 'tc-015',
     tool: 'verify_blocked',
     args: {
-      template: 'http/cves/2021/CVE-2021-44228.yaml',
-      target: '[LAB-HOST]:8080',
+      profile: 'CVE-2021-44228-fixture-summary',
+      scope: 'localhost fixture',
     },
     durationMs: 2610,
     result:
@@ -525,7 +524,7 @@ export const mockEvents: AgentEvent[] = [
     tool: 'emit_maven_fusion_object',
     args: {
       cve: 'CVE-2021-44228',
-      exploit_class: 'JNDI lookup exploit class',
+      exposure_class: 'logging-path exposure class',
       sandbox_result: 'BLOCKED',
       patch_applied: true,
       kev_rank: 4,

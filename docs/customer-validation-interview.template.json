@@ -1,0 +1,28 @@
+{
+  "account_label": "example-dib-platform-002",
+  "segment": "dib_platform_security",
+  "persona": "director_product_security",
+  "qualified": true,
+  "current_workflow": "Scanner, SBOM review, ticket queue, manual briefing.",
+  "recent_painful_event": "Had to justify edge appliance remediation order.",
+  "existing_tools": [
+    "scanner",
+    "ticketing"
+  ],
+  "status_quo_gap": "No audit-ready packet for why this first.",
+  "desired_output": "Evidence packet with source basis and SOC review handoff.",
+  "workflow_pain_theme": "evidence_packet_gap",
+  "pain_score": 5,
+  "urgency_score": 4,
+  "status_quo_weakness_score": 4,
+  "buyer_access_score": 3,
+  "data_feasibility_score": 4,
+  "pilot_pull_score": 3,
+  "budget_signal": "could_sponsor_design_partner",
+  "pilot_signal": "asked_for_scoped_pilot",
+  "objections": [
+    "Needs security review."
+  ],
+  "next_step": "Send pilot scope.",
+  "safe_artifact_offer": "Sanitized SBOM family export."
+}

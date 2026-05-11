@@ -144,14 +144,14 @@ targets, and no raw scraper output. See
   },
 
   "validation": {
-    "sandbox_id":            "string", // e.g. "lab-host:8080" or "localhost-vulhub-log4shell"
+    "sandbox_id":            "string", // e.g. "localhost-fixture-harness"
     "scope":                 "string", // must include "localhost only"
     "pre_patch_status":      "vulnerable | not_vulnerable | error",
     "pre_patch_excerpt":     "string", // sanitized indicator, e.g. nuclei single-line summary
     "post_patch_status":     "vulnerable | not_vulnerable | blocked | error",
     "post_patch_excerpt":    "string", // sanitized indicator after defense applied
-    "validation_tool":       "string", // e.g. "nuclei v3.x against vulhub container"
-    "validation_template":   "string | null", // e.g. "http/cves/2021/CVE-2021-44228.yaml"
+    "validation_tool":       "string", // e.g. "prophet deterministic sandbox runner"
+    "validation_template":   "string | null", // e.g. "edge-appliance-fixture-profile"
     "wall_time_seconds":     "number"
   },
 
@@ -214,6 +214,13 @@ Mapping for `ExploitPanel.status`:
 `cyber-side/validator.py` validates an artifact against this contract using
 only the Python standard library. `cyber-side/tests/test_exploit_engine_artifact.py`
 exercises the validator on the golden fixture in `cyber-side/fixtures/`.
+
+`sandbox_runner/sandbox-artifact.schema.json` publishes the stricter schema for
+artifacts emitted by the deterministic localhost sandbox runner. The runner
+validates its output against both this schema and the Direction C contract before
+writing. `cyber-side/fixtures/exploit-engine-output-edge-appliance-defense-failed.json`
+is the safe negative fixture for a defensive change that did not block in the
+localhost harness.
 
 Run:
 

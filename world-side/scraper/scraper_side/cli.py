@@ -77,6 +77,15 @@ def _build_parser() -> argparse.ArgumentParser:
             "ofac-sdn-csv",
             "github-advisories",
             "github-commits",
+            "cve-delta-log",
+            "cve-record-v5",
+            "cisa-vulnrichment",
+            "osv-vulnerabilities",
+            "redhat-security-data",
+            "attack-stix",
+            "cwe-catalog",
+            "capec-catalog",
+            "d3fend-ontology",
             "microsoft-msrc-updates",
             "reddit-listing",
             "reliefweb-disasters",
@@ -152,22 +161,36 @@ def _entry_from_direct_args(args: argparse.Namespace) -> CatalogEntry:
 
     source_type = (
         "official_government"
-        if collector in {"cisa_kev", "nvd_cve", "doj_press_releases", "federal_register_documents", "ofac_sdn_csv"}
+        if collector in {
+            "cisa_kev",
+            "nvd_cve",
+            "doj_press_releases",
+            "federal_register_documents",
+            "ofac_sdn_csv",
+            "cisa_vulnrichment",
+        }
         else "public_social"
         if collector == "reddit_listing"
         else "manual_analyst_note"
-        if collector in {"reliefweb_disasters", "gdelt_articles"}
+        if collector in {"reliefweb_disasters", "gdelt_articles", "d3fend_ontology"}
         else "vendor_advisory"
-        if collector == "microsoft_msrc_updates"
+        if collector in {"microsoft_msrc_updates", "redhat_security_data"}
         else "threat_intel_feed"
     )
     collection_tier = (
         "official_signal"
-        if collector in {"cisa_kev", "nvd_cve", "doj_press_releases", "federal_register_documents", "ofac_sdn_csv"}
+        if collector in {
+            "cisa_kev",
+            "nvd_cve",
+            "doj_press_releases",
+            "federal_register_documents",
+            "ofac_sdn_csv",
+            "cisa_vulnrichment",
+        }
         else "public_chatter"
         if collector == "reddit_listing"
         else "analyst_context"
-        if collector in {"reliefweb_disasters", "gdelt_articles"}
+        if collector in {"reliefweb_disasters", "gdelt_articles", "d3fend_ontology"}
         else "technical_chatter"
     )
     url = args.feed_url or ""
@@ -181,6 +204,13 @@ def _entry_from_direct_args(args: argparse.Namespace) -> CatalogEntry:
         feed_format = "rss"
     elif collector == "ofac_sdn_csv":
         feed_format = "csv"
+    elif collector in {"cwe_catalog", "capec_catalog"}:
+        feed_format = (
+            "xml_zip"
+            if (args.input and args.input.suffix.lower() == ".zip")
+            or (args.feed_url or "").lower().endswith(".zip")
+            else "xml"
+        )
     elif collector == "html_link_index":
         feed_format = "html"
     elif collector == "geojson_features":

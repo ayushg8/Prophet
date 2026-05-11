@@ -1,6 +1,7 @@
 // ForecastPanel: analyst-readable forecast brief for the mission context strip.
 
 import type { SourceRefProps } from './SourceCitation';
+import type { EvidenceAssetContext } from './EvidencePanel';
 import './forecast.css';
 
 // ── Types ─────────────────────────────────────────────────────────────────
@@ -47,6 +48,15 @@ export interface ForecastSummaryProps {
   analyst_notes?: string[];
 }
 
+export interface ForecastAssetSeedContext {
+  integrated?: boolean;
+  asset_count?: number;
+  exposure_classes?: string[];
+  owner_queues?: string[];
+  cve_seed_count?: number;
+  package_seed_count?: number;
+}
+
 export interface ForecastPanelData {
   forecast_id: string;
   generated_at: string;
@@ -55,6 +65,7 @@ export interface ForecastPanelData {
   strike_windows?: StrikeWindowProps[];
   strike_vectors: StrikeVectorProps[];
   summary: ForecastSummaryProps;
+  asset_seed_context?: ForecastAssetSeedContext;
   source_refs?: SourceRefProps[];
 }
 
@@ -73,9 +84,11 @@ interface CandidateRailProps {
 interface ForecastPanelProps {
   forecast?: ForecastPanelData | null;
   candidate?: CandidateRailProps;
+  assetContext?: EvidenceAssetContext | null;
   onScraperRun?: () => void;
   onDemoRefresh?: () => void;
-  scraperRunState?: 'idle' | 'running' | 'ok' | 'error';
+  sourceRefreshGateStatus?: 'unknown' | 'allowed' | 'blocked';
+  scraperRunState?: 'idle' | 'running' | 'ok' | 'error' | 'blocked';
   scraperStatusMessage?: string;
 }
 
@@ -94,7 +107,7 @@ const DEFAULT_FORECAST: ForecastPanelData = {
     target_scope: 'US federal, defense-industrial, and critical-infrastructure perimeter services',
     geographic_scope: 'US federal and allied Indo-Pacific defense ecosystem',
     forecast_assumptions: [
-      'The Stage 1 candidate is an edge-appliance access class rather than a named CVE.',
+      'The forecast candidate is an edge-appliance access class rather than a named CVE.',
       'Forecasting is sector-level only and does not identify live targets.',
     ],
   },
@@ -136,7 +149,7 @@ const DEFAULT_FORECAST: ForecastPanelData = {
     one_line:
       'For an edge-appliance candidate, the strongest forecast is PRC-style pre-positioning around May 2026 diplomatic and Indo-Pacific defense windows.',
     recommended_demo_path:
-      'Use a safe edge-service fixture and show how timing context prioritizes perimeter detection over payload generation.',
+      'Use a safe edge-service fixture and show how timing context prioritizes perimeter detection over unsafe output generation.',
     stage3_priority:
       'Validate a defensive block and alert around perimeter-service access indicators in a local demo environment.',
   },
@@ -242,8 +255,10 @@ function sourcePreview(refs: SourceRefProps[]): string {
 export function ForecastPanel({
   forecast,
   candidate,
+  assetContext,
   onScraperRun,
   onDemoRefresh,
+  sourceRefreshGateStatus = 'unknown',
   scraperRunState = 'idle',
   scraperStatusMessage,
 }: ForecastPanelProps) {
@@ -255,6 +270,37 @@ export function ForecastPanel({
   const sourceRails = buildSourceRails(data.source_refs);
   const triggerSignals = topWindow?.trigger_signals?.slice(0, 4) ?? [];
   const confidenceScore = topVector?.confidence_score ?? topWindow?.confidence_score ?? 0;
+  const forecastAssetContext = data.asset_seed_context?.integrated
+    ? data.asset_seed_context
+    : null;
+  const sourceRefreshAllowed = sourceRefreshGateStatus === 'allowed';
+  const sourceRefreshPolicyMessage =
+    sourceRefreshGateStatus === 'blocked'
+      ? 'Policy blocks live source refresh; use the sanitized demo refresh.'
+      : sourceRefreshGateStatus === 'unknown'
+        ? 'Checking policy before enabling source refresh.'
+        : null;
+  const sourceRefreshButtonText =
+    scraperRunState === 'running'
+      ? 'Checking policy'
+      : sourceRefreshGateStatus === 'blocked'
+        ? 'Source refresh blocked'
+        : sourceRefreshGateStatus === 'unknown'
+          ? 'Checking policy'
+          : 'Request source refresh';
+  const exposureMatch = assetContext
+    ? {
+        count: assetContext.affected_asset_count ?? 0,
+        label: assetContext.matched_exposure_class,
+        owners: assetContext.recommended_owner_queue ?? [],
+      }
+    : forecastAssetContext
+      ? {
+          count: forecastAssetContext.asset_count ?? 0,
+          label: forecastAssetContext.exposure_classes?.[0],
+          owners: forecastAssetContext.owner_queues ?? [],
+        }
+      : null;
 
   if (!data || !frame) {
     return (
@@ -292,12 +338,21 @@ export function ForecastPanel({
                 className="fp-action-button"
                 type="button"
                 onClick={onScraperRun}
-                disabled={scraperRunState === 'running'}
-                aria-label="Run isolated scraper VM workflow"
-                title="Runs local control server -> SSH scraper VM -> sanitized JSONL -> forecast"
+                disabled={scraperRunState === 'running' || !sourceRefreshAllowed}
+                aria-label="Request policy-gated source refresh"
+                title={
+                  sourceRefreshAllowed
+                    ? 'Requests the local control server to run an approved source refresh and return sanitized forecast data'
+                    : 'Policy has not allowed live source refresh; use the sanitized demo refresh'
+                }
               >
-                {scraperRunState === 'running' ? 'Running VM' : 'Run scraper VM'}
+                {sourceRefreshButtonText}
               </button>
+            )}
+            {sourceRefreshPolicyMessage && scraperRunState === 'idle' && (
+              <span className="fp-control-status fp-control-status--blocked">
+                {sourceRefreshPolicyMessage}
+              </span>
             )}
             {scraperStatusMessage && scraperRunState !== 'idle' && (
               <span className={`fp-control-status fp-control-status--${scraperRunState}`}>
@@ -333,6 +388,19 @@ export function ForecastPanel({
             {candidate && <span>KEV {formatDate(candidate.kevDateAdded)}</span>}
           </div>
         </article>
+
+        {exposureMatch && (
+          <article className="fp-primary-card fp-primary-card--asset">
+            <span className="fp-card-label">Customer exposure match</span>
+            <strong>{exposureMatch.count} fictional assets</strong>
+            <p>{readable(exposureMatch.label)}</p>
+            <div className="fp-mini-metrics" aria-label="Asset context metrics">
+              {exposureMatch.owners.slice(0, 3).map((owner) => (
+                <span key={owner}>{owner}</span>
+              ))}
+            </div>
+          </article>
+        )}
       </div>
 
       <div className="fp-support-grid">

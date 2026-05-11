@@ -18,15 +18,15 @@ export function ApprovalGate({ onAuthorize, onHold }: ApprovalGateProps) {
           <div className="gate-divider" aria-hidden />
 
           <p className="gate-subtitle">
-            Phase III — Nuclei template execution pending operator approval
+            Fixture validation pending operator approval
           </p>
         </div>
 
         <div className="gate-body">
           <div className="gate-detail-grid">
             <div className="gate-detail-row">
-              <span className="gate-detail-key">TARGET</span>
-              <span className="gate-detail-val mono">[LAB-HOST]:8080 · VulnerableApp · sandboxed</span>
+              <span className="gate-detail-key">SCOPE</span>
+              <span className="gate-detail-val mono">localhost fixture profile · sandboxed</span>
             </div>
             <div className="gate-detail-row">
               <span className="gate-detail-key">CVE</span>
@@ -34,11 +34,11 @@ export function ApprovalGate({ onAuthorize, onHold }: ApprovalGateProps) {
             </div>
             <div className="gate-detail-row">
               <span className="gate-detail-key">CLASS</span>
-              <span className="gate-detail-val">JNDI lookup exploit class</span>
+              <span className="gate-detail-val">Logging-path exposure class</span>
             </div>
             <div className="gate-detail-row">
-              <span className="gate-detail-key">TEMPLATE</span>
-              <span className="gate-detail-val mono">http/cves/2021/CVE-2021-44228.yaml</span>
+              <span className="gate-detail-key">CHECK</span>
+              <span className="gate-detail-val mono">fixture validation summary · no request material</span>
             </div>
             <div className="gate-detail-row">
               <span className="gate-detail-key">EXECUTOR</span>
@@ -54,14 +54,14 @@ export function ApprovalGate({ onAuthorize, onHold }: ApprovalGateProps) {
             </div>
             <div className="gate-detail-row">
               <span className="gate-detail-key">SCOPE</span>
-              <span className="gate-detail-val">Sandbox-isolated lab target · fixture fallback available · no live infrastructure</span>
+              <span className="gate-detail-val">Sandbox-isolated localhost fixture · fixture fallback available · no live infrastructure</span>
             </div>
           </div>
 
           <div className="gate-warning" role="alert">
             <span className="gate-warning-icon" aria-hidden>△</span>
             <span>
-              Execution is scoped to a network-isolated, vulnerable-by-design container.
+              Validation is scoped to a network-isolated, vulnerable-by-design container.
               No live infrastructure will be contacted. Operator assumes responsibility
               for confirming sandbox containment before proceeding.
             </span>

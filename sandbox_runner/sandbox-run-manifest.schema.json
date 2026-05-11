@@ -1,0 +1,279 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://prophet.local/schemas/sandbox-run-manifest.v0.1.json",
+  "title": "Prophet Sandbox Run Manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "manifest_id",
+    "generated_at",
+    "run_id",
+    "profile",
+    "mode",
+    "artifact",
+    "validation",
+    "log_evidence",
+    "policy",
+    "safety"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "prophet.sandbox_run_manifest.v0.1"
+    },
+    "manifest_id": {
+      "type": "string",
+      "pattern": "^srm-[0-9a-f]{16}$"
+    },
+    "generated_at": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T"
+    },
+    "run_id": {
+      "$ref": "#/$defs/non_empty_string"
+    },
+    "profile": {
+      "enum": [
+        "edge-appliance-fixture",
+        "financial-workflow-fixture"
+      ]
+    },
+    "mode": {
+      "enum": [
+        "fixture"
+      ]
+    },
+    "artifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "artifact_id",
+        "schema_version",
+        "content_sha256",
+        "file_sha256",
+        "path"
+      ],
+      "properties": {
+        "artifact_id": {
+          "$ref": "#/$defs/non_empty_string"
+        },
+        "schema_version": {
+          "const": "exploit_engine_artifact.v0.1"
+        },
+        "content_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "file_sha256": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/sha256"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "path": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/non_empty_string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "validation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sandbox_id",
+        "scope",
+        "pre_patch_status",
+        "post_patch_status",
+        "validation_tool",
+        "validation_template",
+        "wall_time_seconds"
+      ],
+      "properties": {
+        "sandbox_id": {
+          "const": "localhost-fixture-harness"
+        },
+        "scope": {
+          "type": "string",
+          "pattern": "localhost only"
+        },
+        "pre_patch_status": {
+          "enum": [
+            "vulnerable",
+            "not_vulnerable",
+            "error"
+          ]
+        },
+        "post_patch_status": {
+          "enum": [
+            "vulnerable",
+            "not_vulnerable",
+            "blocked",
+            "error"
+          ]
+        },
+        "validation_tool": {
+          "const": "prophet deterministic sandbox runner"
+        },
+        "validation_template": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/non_empty_string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "wall_time_seconds": {
+          "type": "number",
+          "minimum": 0
+        }
+      }
+    },
+    "log_evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "raw_logs_retained",
+        "raw_log_path",
+        "stored_raw_log_bytes",
+        "stored_log_excerpt_count",
+        "sanitized_logs_sha256",
+        "sanitized_summary"
+      ],
+      "properties": {
+        "raw_logs_retained": {
+          "const": false
+        },
+        "raw_log_path": {
+          "type": "null"
+        },
+        "stored_raw_log_bytes": {
+          "const": 0
+        },
+        "stored_log_excerpt_count": {
+          "const": 0
+        },
+        "sanitized_logs_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "sanitized_summary": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "pre_patch_status",
+            "post_patch_status",
+            "validation_result",
+            "wall_time_seconds"
+          ],
+          "properties": {
+            "pre_patch_status": {
+              "enum": [
+                "vulnerable",
+                "not_vulnerable",
+                "error"
+              ]
+            },
+            "post_patch_status": {
+              "enum": [
+                "vulnerable",
+                "not_vulnerable",
+                "blocked",
+                "error"
+              ]
+            },
+            "validation_result": {
+              "$ref": "#/$defs/non_empty_string"
+            },
+            "wall_time_seconds": {
+              "type": "number",
+              "minimum": 0
+            }
+          }
+        }
+      }
+    },
+    "policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "policy_id",
+        "policy_sha256",
+        "retention"
+      ],
+      "properties": {
+        "policy_id": {
+          "$ref": "#/$defs/non_empty_string"
+        },
+        "policy_sha256": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/sha256"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "retention": {
+          "type": "object"
+        }
+      }
+    },
+    "safety": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "localhost_only",
+        "fixture_backed",
+        "no_network_egress",
+        "no_live_targets",
+        "no_payloads",
+        "no_credentials",
+        "no_raw_logs"
+      ],
+      "properties": {
+        "localhost_only": {
+          "const": true
+        },
+        "fixture_backed": {
+          "const": true
+        },
+        "no_network_egress": {
+          "const": true
+        },
+        "no_live_targets": {
+          "const": true
+        },
+        "no_payloads": {
+          "const": true
+        },
+        "no_credentials": {
+          "const": true
+        },
+        "no_raw_logs": {
+          "const": true
+        }
+      }
+    }
+  },
+  "$defs": {
+    "non_empty_string": {
+      "type": "string",
+      "minLength": 1
+    },
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    }
+  }
+}

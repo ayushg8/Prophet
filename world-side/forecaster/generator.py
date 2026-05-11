@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import datetime as _dt
 import hashlib
+import json
 import re
 from pathlib import Path
 from typing import Any, Iterable
@@ -27,6 +28,15 @@ except ImportError:  # pragma: no cover - direct script fallback
 
         def validate_world_forecast(_forecast: dict[str, Any]) -> None:
             return None
+
+try:
+    from assets.inventory import (  # type: ignore
+        summarize_asset_seedset,
+        validate_asset_seedset,
+    )
+except ImportError:  # pragma: no cover - assets package may be absent in minimal lanes.
+    summarize_asset_seedset = None  # type: ignore
+    validate_asset_seedset = None  # type: ignore
 
 
 SCHEMA_VERSION = "world_forecast.v0.1"
@@ -55,6 +65,9 @@ def assemble_forecast(
     chatter_path: str | Path | None = None,
     chatter_paths: Iterable[str | Path] | None = None,
     chatter_records: Iterable[Any] | None = None,
+    osint_snapshot_paths: Iterable[str | Path] | None = None,
+    osint_manifest_paths: Iterable[str | Path] | None = None,
+    asset_seedset_paths: Iterable[str | Path] | None = None,
 ) -> dict[str, Any]:
     """Build a Direction B forecast from a Direction A candidate.
 
@@ -65,6 +78,9 @@ def assemble_forecast(
         chatter_path: Optional sanitized JSONL chatter file.
         chatter_paths: Optional iterable of sanitized JSONL chatter files.
         chatter_records: Optional already-parsed sanitized chatter records.
+        osint_snapshot_paths: Optional sanitized OSINT snapshot JSONL files.
+        osint_manifest_paths: Optional OSINT snapshot manifest JSON files.
+        asset_seedset_paths: Optional asset_osint_seedset.v0.1 JSON files.
 
     Returns:
         A dict matching the world_forecast.v0.1 shape in INTERFACE.md.
@@ -103,7 +119,13 @@ def assemble_forecast(
         chatter_paths=chatter_paths,
         chatter_records=chatter_records,
     )
+    sanitized_osint = _load_chatter_inputs(
+        chatter_path=None,
+        chatter_paths=osint_snapshot_paths,
+        chatter_records=None,
+    )
     chatter_events = _chatter_events(sanitized_chatter)
+    osint_events = _osint_events(sanitized_osint)
     if chatter_events:
         current_events.extend(chatter_events)
         context_sources.append(
@@ -113,15 +135,34 @@ def assemble_forecast(
                 event_count=len(chatter_events),
             )
         )
+    if osint_events:
+        current_events.extend(osint_events)
+        context_sources.append(
+            _osint_context_source(
+                osint_snapshot_paths=osint_snapshot_paths,
+                osint_manifest_paths=osint_manifest_paths,
+                event_count=len(osint_events),
+            )
+        )
+    osint_manifests = _load_osint_manifests(osint_manifest_paths)
+    asset_seedsets = _load_asset_seedsets(asset_seedset_paths)
+    if asset_seedsets:
+        context_sources.append(
+            _asset_seedset_context_source(
+                asset_seedset_paths=asset_seedset_paths,
+                seedset_count=len(asset_seedsets),
+            )
+        )
 
     features = _candidate_features(candidate)
+    features = _apply_asset_seed_features(features, asset_seedsets)
     analogy_matches = _rank_historical_cases(historical_cases, features)
     windows = _build_strike_windows(current_events, analogy_matches, features, as_of=as_of)
     vectors = _build_strike_vectors(
         candidate,
         analogy_matches,
         features,
-        chatter_events=chatter_events,
+        chatter_events=[*chatter_events, *osint_events],
     )
 
     source_refs = _SourceRegistry()
@@ -129,12 +170,14 @@ def assemble_forecast(
     _register_context_sources(source_refs, context_sources)
     _register_window_sources(source_refs, windows)
     _register_vector_sources(source_refs, vectors)
+    _register_osint_sources(source_refs, osint_events)
     _register_analogy_sources(source_refs, analogy_matches[:5])
 
     strategic_frame = _build_strategic_frame(
         candidate,
         features,
         has_chatter=bool(chatter_events),
+        asset_seedset_count=len(asset_seedsets),
     )
     forecast_id = _forecast_id(candidate, generated_at)
 
@@ -152,6 +195,19 @@ def assemble_forecast(
             vectors,
             features,
             chatter_count=len(chatter_events),
+            osint_count=len(osint_events),
+            asset_seedset_count=len(asset_seedsets),
+        ),
+        "open_source_signals": _build_open_source_signals(
+            records=sanitized_osint,
+            events=osint_events,
+            snapshot_paths=osint_snapshot_paths,
+            manifest_paths=osint_manifest_paths,
+            manifests=osint_manifests,
+        ),
+        "asset_seed_context": _build_asset_seed_context(
+            seedsets=asset_seedsets,
+            seedset_paths=asset_seedset_paths,
         ),
         "source_refs": source_refs.items(),
     }
@@ -169,6 +225,9 @@ def generate_forecast(
     chatter_path: str | Path | None = None,
     chatter_paths: Iterable[str | Path] | None = None,
     chatter_records: Iterable[Any] | None = None,
+    osint_snapshot_paths: Iterable[str | Path] | None = None,
+    osint_manifest_paths: Iterable[str | Path] | None = None,
+    asset_seedset_paths: Iterable[str | Path] | None = None,
 ) -> dict[str, Any]:
     """Backward-compatible alias for callers that expect generate_forecast."""
 
@@ -179,6 +238,9 @@ def generate_forecast(
         chatter_path=chatter_path,
         chatter_paths=chatter_paths,
         chatter_records=chatter_records,
+        osint_snapshot_paths=osint_snapshot_paths,
+        osint_manifest_paths=osint_manifest_paths,
+        asset_seedset_paths=asset_seedset_paths,
     )
 
 
@@ -231,6 +293,13 @@ def _chatter_events(records: list[Any]) -> list[dict[str, Any]]:
     if chatter_records_to_events is None:
         raise ValueError("sanitized chatter event converter is unavailable")
     return chatter_records_to_events(records)
+
+
+def _osint_events(records: list[Any]) -> list[dict[str, Any]]:
+    events = _chatter_events(records)
+    for event in events:
+        event["context_type"] = "osint_signal"
+    return events
 
 
 def _candidate_features(candidate: dict[str, Any]) -> dict[str, Any]:
@@ -652,6 +721,95 @@ def _chatter_context_source(
     }
 
 
+def _osint_context_source(
+    *,
+    osint_snapshot_paths: Iterable[str | Path] | None,
+    osint_manifest_paths: Iterable[str | Path] | None,
+    event_count: int,
+) -> dict[str, str]:
+    snapshot_paths = [_repo_relative(Path(path)) for path in osint_snapshot_paths or []]
+    manifest_paths = [_repo_relative(Path(path)) for path in osint_manifest_paths or []]
+    locations = snapshot_paths + manifest_paths
+    location = ", ".join(locations) if locations else "runtime sanitized OSINT snapshot"
+    return {
+        "id": "src_context_osint_snapshot",
+        "label": "World Side current context: open-source metadata snapshot",
+        "url": location,
+        "date": "2026-05-04",
+        "supports": f"{event_count} sanitized open-source metadata signal(s) cleared for forecast use",
+    }
+
+
+def _asset_seedset_context_source(
+    *,
+    asset_seedset_paths: Iterable[str | Path] | None,
+    seedset_count: int,
+) -> dict[str, str]:
+    paths = [_repo_relative(Path(path)) for path in asset_seedset_paths or []]
+    location = ", ".join(paths) if paths else "runtime asset/SBOM OSINT seedset"
+    return {
+        "id": "src_context_asset_seedset",
+        "label": "World Side current context: asset/SBOM OSINT seedset",
+        "url": location,
+        "date": "2026-05-04",
+        "supports": f"{seedset_count} asset-derived open-source seedset(s) cleared for forecast use",
+    }
+
+
+def _load_osint_manifests(paths: Iterable[str | Path] | None) -> list[dict[str, Any]]:
+    manifests: list[dict[str, Any]] = []
+    for path_like in paths or []:
+        path = Path(path_like)
+        if not path.exists():
+            raise FileNotFoundError(f"OSINT snapshot manifest not found: {path}")
+        data = json.loads(path.read_text(encoding="utf-8"))
+        if not isinstance(data, dict):
+            raise ValueError(f"OSINT snapshot manifest must be an object: {path}")
+        manifests.append(data)
+    return manifests
+
+
+def _load_asset_seedsets(paths: Iterable[str | Path] | None) -> list[dict[str, Any]]:
+    seedsets: list[dict[str, Any]] = []
+    for path_like in paths or []:
+        path = Path(path_like)
+        if not path.exists():
+            raise FileNotFoundError(f"asset seedset not found: {path}")
+        data = json.loads(path.read_text(encoding="utf-8"))
+        if not isinstance(data, dict):
+            raise ValueError(f"asset seedset must be an object: {path}")
+        if validate_asset_seedset is not None:
+            validate_asset_seedset(data)
+        seedsets.append(data)
+    return seedsets
+
+
+def _apply_asset_seed_features(
+    features: dict[str, Any],
+    seedsets: list[dict[str, Any]],
+) -> dict[str, Any]:
+    if not seedsets:
+        return features
+    enriched = dict(features)
+    tags: set[str] = set(features.get("tags") or set())
+    for seedset in seedsets:
+        for item in seedset.get("exposure_class_seeds") or []:
+            if not isinstance(item, dict):
+                continue
+            exposure = str(item.get("exposure_class") or "")
+            tags.update(_tags_from_text(exposure.replace("_", " ")))
+            if "edge" in exposure.lower():
+                tags.update({"edge", "appliance", "us_gov"})
+        for item in seedset.get("product_family_seeds") or []:
+            if not isinstance(item, dict):
+                continue
+            tags.update(_tags_from_text(str(item.get("product_family") or "")))
+        if seedset.get("cve_seeds"):
+            tags.add("appliance")
+    enriched["tags"] = tags
+    return enriched
+
+
 def _build_strike_windows(
     events: list[dict[str, Any]],
     analogies: list[dict[str, Any]],
@@ -725,7 +883,7 @@ def _event_relevance(
             score += 2
         if {"prc", "russia", "iran", "dprk"} & candidate_tags:
             score += 1
-    if context_type == "chatter":
+    if context_type in {"chatter", "osint_signal"}:
         score += 3
         if event_tags & candidate_tags:
             score += min(6, len(event_tags & candidate_tags) * 2)
@@ -778,7 +936,7 @@ def _expand_window(event: dict[str, Any]) -> tuple[_dt.date, _dt.date]:
     end: _dt.date = event["end"]
     motive = str(event.get("motive", "")).upper()
     context_type = str(event.get("context_type", "calendar"))
-    if context_type == "chatter":
+    if context_type in {"chatter", "osint_signal"}:
         extra_days = 21 if event.get("confidence") == "high" else 14
         return start, end + _dt.timedelta(days=extra_days)
     if context_type == "sanctions":
@@ -813,6 +971,14 @@ def _window_rationale(
             f"points to {motive}. Raw collection artifacts remain outside the "
             "forecast pipeline."
         )
+    if event.get("context_type") == "osint_signal":
+        confidence = event.get("confidence") or "unknown"
+        return (
+            f"{event_name} is ranked because sanitized {confidence}-confidence "
+            f"open-source metadata overlaps the candidate's {candidate_phrase} "
+            "profile. Raw advisory bodies and scraper artifacts remain outside "
+            "the forecast pipeline."
+        )
     if top:
         return (
             f"{event_name} is ranked because its {motive} timing overlaps the "
@@ -835,16 +1001,17 @@ def _candidate_phrase(features: dict[str, Any]) -> str:
 
 def _trigger_signals(event: dict[str, Any], features: dict[str, Any]) -> list[str]:
     signals = [str(event.get("motive") or "current context")]
-    if event.get("context_type") == "chatter":
+    if event.get("context_type") in {"chatter", "osint_signal"}:
         source_type = str(event.get("source_type") or "sanitized source").replace("_", " ")
         tier = str(event.get("collection_tier") or "chatter").replace("_", " ")
         tier_label = f"{tier} context" if "signal" in tier else f"{tier} signal"
         confidence = str(event.get("confidence") or "unknown")
+        source_label = "open-source metadata" if event.get("context_type") == "osint_signal" else source_type
         signals.extend(
             [
-                f"sanitized {source_type}",
+                f"sanitized {source_label}",
                 tier_label,
-                f"chatter confidence: {confidence}",
+                f"source confidence: {confidence}",
             ]
         )
     why = str(event.get("why") or "")
@@ -1100,6 +1267,7 @@ def _build_strategic_frame(
     features: dict[str, Any],
     *,
     has_chatter: bool,
+    asset_seedset_count: int = 0,
 ) -> dict[str, Any]:
     tags: set[str] = set(features["tags"])
     identity = features["identity"]
@@ -1136,6 +1304,10 @@ def _build_strategic_frame(
         assumptions.append(
             "Current chatter is sanitized JSONL only; raw scraper artifacts stay off the main box."
         )
+    if asset_seedset_count:
+        assumptions.append(
+            f"{asset_seedset_count} asset/SBOM seedset(s) are used only for sector-level exposure matching."
+        )
 
     return {
         "adversary_class": adversary,
@@ -1153,6 +1325,8 @@ def _build_summary(
     features: dict[str, Any],
     *,
     chatter_count: int,
+    osint_count: int,
+    asset_seedset_count: int,
 ) -> dict[str, Any]:
     top_window = windows[0] if windows else None
     top_vector = vectors[0] if vectors else None
@@ -1185,6 +1359,14 @@ def _build_summary(
         analyst_notes.append(
             f"Included {chatter_count} sanitized chatter signal(s); raw scraper output is excluded."
         )
+    if osint_count:
+        analyst_notes.append(
+            f"Included {osint_count} sanitized open-source metadata signal(s) from OSINT snapshot input."
+        )
+    if asset_seedset_count:
+        analyst_notes.append(
+            f"Included {asset_seedset_count} asset/SBOM seedset(s) for targeted OSINT context."
+        )
     if not candidate_sources:
         analyst_notes.append(
             "Stage 1 candidate did not include source_refs; unsupported technical claims are treated as assumptions."
@@ -1194,6 +1376,351 @@ def _build_summary(
         "recommended_demo_path": demo,
         "stage3_priority": priority,
         "analyst_notes": analyst_notes,
+    }
+
+
+def _build_open_source_signals(
+    *,
+    records: list[Any],
+    events: list[dict[str, Any]],
+    snapshot_paths: Iterable[str | Path] | None,
+    manifest_paths: Iterable[str | Path] | None,
+    manifests: list[dict[str, Any]],
+) -> dict[str, Any]:
+    source_type_counts: dict[str, int] = {}
+    collection_tier_counts: dict[str, int] = {}
+    for record in records:
+        source_type = str(getattr(record, "source_type", "") or "unknown")
+        collection_tier = str(getattr(record, "collection_tier", "") or "unknown")
+        source_type_counts[source_type] = source_type_counts.get(source_type, 0) + 1
+        collection_tier_counts[collection_tier] = collection_tier_counts.get(collection_tier, 0) + 1
+
+    snapshot_list = [_repo_relative(Path(path)) for path in snapshot_paths or []]
+    manifest_list = [_repo_relative(Path(path)) for path in manifest_paths or []]
+    snapshot_hashes = {
+        _repo_relative(Path(path)): _file_sha256(Path(path))
+        for path in snapshot_paths or []
+        if Path(path).exists()
+    }
+    manifest_hashes = {
+        _repo_relative(Path(path)): _file_sha256(Path(path))
+        for path in manifest_paths or []
+        if Path(path).exists()
+    }
+    manifest_record_count = sum(
+        int(manifest.get("record_count") or 0)
+        for manifest in manifests
+        if isinstance(manifest.get("record_count"), int)
+    )
+    failed_sources = sorted(
+        {
+            str(source)
+            for manifest in manifests
+            for source in manifest.get("failed_sources", [])
+            if isinstance(source, str)
+        }
+    )
+    successful_sources = sorted(
+        {
+            str(source)
+            for manifest in manifests
+            for source in manifest.get("successful_sources", [])
+            if isinstance(source, str)
+        }
+    )
+    source_failures = _osint_source_failures(manifests)
+
+    return {
+        "schema_version": "prophet.open_source_signals.v0.1",
+        "integrated": bool(records),
+        "record_count": len(records),
+        "event_count": len(events),
+        "manifest_record_count": manifest_record_count,
+        "source_type_counts": dict(sorted(source_type_counts.items())),
+        "collection_tier_counts": dict(sorted(collection_tier_counts.items())),
+        "successful_sources": successful_sources,
+        "failed_sources": failed_sources,
+        "freshness": _osint_freshness(records=records, manifests=manifests),
+        "source_health": _osint_source_health(
+            manifests=manifests,
+            successful_sources=successful_sources,
+            failed_sources=failed_sources,
+        ),
+        "source_failures": source_failures,
+        "snapshot_paths": snapshot_list,
+        "manifest_paths": manifest_list,
+        "hashes": {
+            "snapshot_jsonl_sha256": snapshot_hashes,
+            "manifest_sha256": manifest_hashes,
+        },
+        "source_ref_ids": _dedupe(
+            [
+                "src_context_osint_snapshot",
+                *[
+                    str(getattr(record, "source_ref", {}).get("id"))
+                    for record in records
+                    if isinstance(getattr(record, "source_ref", {}), dict)
+                    and getattr(record, "source_ref", {}).get("id")
+                ],
+            ]
+        )
+        if records
+        else [],
+        "basis_statement": (
+            "Sanitized open-source metadata was integrated into ranked windows and vectors."
+            if records
+            else "No OSINT snapshot was provided for this forecast run."
+        ),
+    }
+
+
+def _osint_freshness(
+    *,
+    records: list[Any],
+    manifests: list[dict[str, Any]],
+) -> dict[str, Any]:
+    generated_times = [
+        parsed
+        for parsed in (
+            _parse_datetime(str(manifest.get("generated_at") or ""))
+            for manifest in manifests
+        )
+        if parsed is not None
+    ]
+    observed_times = [
+        parsed
+        for parsed in (
+            _parse_datetime(str(getattr(record, "observed_at", "") or ""))
+            for record in records
+        )
+        if parsed is not None
+    ]
+    snapshot_generated_at = max(generated_times) if generated_times else None
+    newest_observed_at = max(observed_times) if observed_times else None
+    oldest_observed_at = min(observed_times) if observed_times else None
+    basis_time = snapshot_generated_at or newest_observed_at
+    newest_record_age_days: float | None = None
+    if basis_time is not None and newest_observed_at is not None:
+        age_seconds = max(0.0, (basis_time - newest_observed_at).total_seconds())
+        newest_record_age_days = round(age_seconds / 86400, 2)
+    record_span_days: float | None = None
+    if newest_observed_at is not None and oldest_observed_at is not None:
+        span_seconds = max(0.0, (newest_observed_at - oldest_observed_at).total_seconds())
+        record_span_days = round(span_seconds / 86400, 2)
+
+    freshness_window_days = 7
+    if not records:
+        status = "not_provided"
+    elif newest_record_age_days is None:
+        status = "unknown"
+    elif newest_record_age_days <= freshness_window_days:
+        status = "current"
+    else:
+        status = "stale"
+
+    return {
+        "status": status,
+        "snapshot_generated_at": _format_datetime(snapshot_generated_at),
+        "oldest_record_observed_at": _format_datetime(oldest_observed_at),
+        "newest_record_observed_at": _format_datetime(newest_observed_at),
+        "newest_record_age_days": newest_record_age_days,
+        "record_span_days": record_span_days,
+        "freshness_window_days": freshness_window_days,
+    }
+
+
+def _osint_source_health(
+    *,
+    manifests: list[dict[str, Any]],
+    successful_sources: list[str],
+    failed_sources: list[str],
+) -> dict[str, Any]:
+    if not manifests:
+        status = "not_provided"
+    elif failed_sources:
+        status = "degraded"
+    else:
+        status = "ok"
+    return {
+        "status": status,
+        "manifest_count": len(manifests),
+        "successful_source_count": len(successful_sources),
+        "failed_source_count": len(failed_sources),
+        "failure_policy": (
+            "Failed sources are summarized in evidence; raw collection text remains excluded."
+        ),
+    }
+
+
+def _osint_source_failures(manifests: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    failures: list[dict[str, Any]] = []
+    for manifest in manifests:
+        for source in manifest.get("sources") or []:
+            if not isinstance(source, dict):
+                continue
+            status = str(source.get("status") or "unknown")
+            if status == "ok":
+                continue
+            failures.append(
+                {
+                    "source_id": str(source.get("source_id") or "unknown_source"),
+                    "status": status,
+                    "collector": str(source.get("collector") or "unknown"),
+                    "source_type": str(source.get("source_type") or "unknown"),
+                    "collection_tier": str(source.get("collection_tier") or "unknown"),
+                    "records": int(source.get("records") or 0)
+                    if not isinstance(source.get("records"), bool)
+                    else 0,
+                    "error": _truncate(str(source.get("error") or "not supplied"), 180),
+                }
+            )
+    return failures
+
+
+def _parse_datetime(value: str) -> _dt.datetime | None:
+    if not value:
+        return None
+    try:
+        parsed = _dt.datetime.fromisoformat(value.replace("Z", "+00:00"))
+    except ValueError:
+        return None
+    if parsed.tzinfo is None:
+        parsed = parsed.replace(tzinfo=_dt.timezone.utc)
+    return parsed.astimezone(_dt.timezone.utc)
+
+
+def _format_datetime(value: _dt.datetime | None) -> str:
+    if value is None:
+        return "not supplied"
+    return value.astimezone(_dt.timezone.utc).replace(microsecond=0).isoformat().replace(
+        "+00:00", "Z"
+    )
+
+
+def _build_asset_seed_context(
+    *,
+    seedsets: list[dict[str, Any]],
+    seedset_paths: Iterable[str | Path] | None,
+) -> dict[str, Any]:
+    seedset_list = [_repo_relative(Path(path)) for path in seedset_paths or []]
+    seedset_hashes = {
+        _repo_relative(Path(path)): _file_sha256(Path(path))
+        for path in seedset_paths or []
+        if Path(path).exists()
+    }
+    if not seedsets:
+        return {
+            "schema_version": "prophet.asset_seed_context.v0.1",
+            "integrated": False,
+            "seedset_count": 0,
+            "asset_count": 0,
+            "fixture_context": False,
+            "exposure_classes": [],
+            "product_family_count": 0,
+            "package_seed_count": 0,
+            "cve_seed_count": 0,
+            "owner_queues": [],
+            "recommended_source_ids": [],
+            "seedset_paths": seedset_list,
+            "hashes": {"asset_seedset_sha256": seedset_hashes},
+            "basis_statement": "No asset/SBOM seedset was provided for this forecast run.",
+        }
+
+    summaries: list[dict[str, Any]] = []
+    for seedset in seedsets:
+        if summarize_asset_seedset is not None:
+            summaries.append(summarize_asset_seedset(seedset))
+        else:
+            summaries.append(_fallback_asset_seed_summary(seedset))
+
+    exposure_classes = _dedupe(
+        [
+            exposure
+            for summary in summaries
+            for exposure in summary.get("exposure_classes", [])
+            if isinstance(exposure, str)
+        ]
+    )
+    product_families = _dedupe(
+        [
+            product
+            for summary in summaries
+            for product in summary.get("product_families", [])
+            if isinstance(product, str)
+        ]
+    )
+    owner_queues = _dedupe(
+        [
+            owner
+            for summary in summaries
+            for owner in summary.get("owner_queues", [])
+            if isinstance(owner, str)
+        ]
+    )
+    recommended_source_ids = _dedupe(
+        [
+            source_id
+            for summary in summaries
+            for source_id in summary.get("recommended_source_ids", [])
+            if isinstance(source_id, str)
+        ]
+    )
+
+    return {
+        "schema_version": "prophet.asset_seed_context.v0.1",
+        "integrated": True,
+        "seedset_count": len(seedsets),
+        "asset_count": sum(int(summary.get("asset_count") or 0) for summary in summaries),
+        "fixture_context": all(bool(summary.get("fixture_context", True)) for summary in summaries),
+        "exposure_classes": exposure_classes,
+        "product_family_count": len(product_families),
+        "product_families": product_families,
+        "package_seed_count": sum(int(summary.get("package_seed_count") or 0) for summary in summaries),
+        "cve_seed_count": sum(int(summary.get("cve_seed_count") or 0) for summary in summaries),
+        "owner_queues": owner_queues,
+        "recommended_source_ids": recommended_source_ids,
+        "seedset_paths": seedset_list,
+        "hashes": {
+            "asset_seedset_sha256": seedset_hashes,
+            "seedset_body_sha256": {
+                str(seedset.get("seedset_id") or f"seedset_{idx}"): str(
+                    seedset.get("seedset_sha256") or ""
+                )
+                for idx, seedset in enumerate(seedsets, start=1)
+            },
+        },
+        "source_ref_ids": ["src_context_asset_seedset"],
+        "basis_statement": (
+            "Asset/SBOM-derived CVE, package, product-family, and exposure-class "
+            "seeds narrowed open-source enrichment to customer-relevant metadata."
+        ),
+    }
+
+
+def _fallback_asset_seed_summary(seedset: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "asset_count": int(_as_dict(seedset.get("input_refs")).get("asset_count") or 0),
+        "fixture_context": bool(seedset.get("fixture_context", True)),
+        "exposure_classes": [
+            str(item.get("exposure_class"))
+            for item in seedset.get("exposure_class_seeds", [])
+            if isinstance(item, dict) and item.get("exposure_class")
+        ],
+        "product_families": [
+            str(item.get("product_family"))
+            for item in seedset.get("product_family_seeds", [])
+            if isinstance(item, dict) and item.get("product_family")
+        ],
+        "package_seed_count": len(seedset.get("package_seeds") or []),
+        "cve_seed_count": len(seedset.get("cve_seeds") or []),
+        "recommended_source_ids": [
+            str(item) for item in seedset.get("recommended_source_ids", []) if isinstance(item, str)
+        ],
+        "owner_queues": [
+            str(item.get("owner_group"))
+            for item in seedset.get("owner_queues", [])
+            if isinstance(item, dict) and item.get("owner_group")
+        ],
     }
 
 
@@ -1256,6 +1783,8 @@ def _context_source_for_event(event: dict[str, Any]) -> str:
         return "src_context_sanctions"
     if context_type == "chatter":
         return "src_context_chatter"
+    if context_type == "osint_signal":
+        return "src_context_osint_snapshot"
     return "src_context_calendar"
 
 
@@ -1378,6 +1907,14 @@ def _register_vector_sources(
             registry.ensure_event(event)
 
 
+def _register_osint_sources(
+    registry: _SourceRegistry,
+    osint_events: list[dict[str, Any]],
+) -> None:
+    for event in osint_events:
+        registry.ensure_event(event)
+
+
 def _register_analogy_sources(
     registry: _SourceRegistry,
     analogies: list[dict[str, Any]],
@@ -1428,10 +1965,19 @@ def _slugify_heading(number: str, heading: str) -> str:
 
 def _repo_relative(path: Path) -> str:
     parts = path.parts
-    if "world-side" in parts:
-        idx = parts.index("world-side")
-        return "/".join(parts[idx:])
+    for anchor in ("world-side", "cyber-side", "assets", "evidence", "docs"):
+        if anchor in parts:
+            idx = parts.index(anchor)
+            return "/".join(parts[idx:])
     return str(path)
+
+
+def _file_sha256(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
 
 
 def _source_date(value: str) -> str:

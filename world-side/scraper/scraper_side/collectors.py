@@ -13,8 +13,9 @@ from pathlib import Path
 import re
 from typing import Any, Iterable, Mapping
 from urllib.parse import urlencode, urljoin, urlparse
-from urllib.request import Request, urlopen
+from urllib.request import HTTPRedirectHandler, Request, build_opener
 import xml.etree.ElementTree as ET
+import zipfile
 
 from .catalog import CatalogEntry, DEFAULT_CISA_KEV_URL, normalize_collector
 from .records import RecordValidationError, SanitizedRecord, make_source_ref, stable_id, utc_now
@@ -52,6 +53,17 @@ ALLOWED_LIVE_HOSTS = {
     "docs.cloud.google.com",
     "www.cert.europa.eu",
     "cert.europa.eu",
+    "raw.githubusercontent.com",
+    "github.com",
+    "www.cve.org",
+    "cve.org",
+    "api.osv.dev",
+    "osv-vulnerabilities.storage.googleapis.com",
+    "access.redhat.com",
+    "cwe.mitre.org",
+    "capec.mitre.org",
+    "attack.mitre.org",
+    "d3fend.mitre.org",
 }
 
 JSON_COLLECTORS = {
@@ -67,6 +79,13 @@ JSON_COLLECTORS = {
     "gdelt_articles",
     "geojson_features",
     "microsoft_msrc_updates",
+    "cve_delta_log",
+    "cve_record_v5",
+    "cisa_vulnrichment",
+    "osv_vulnerabilities",
+    "redhat_security_data",
+    "attack_stix",
+    "d3fend_ontology",
     "sanitized_json",
 }
 
@@ -74,6 +93,8 @@ TEXT_COLLECTORS = {
     "official_rss",
     "ofac_sdn_csv",
     "html_link_index",
+    "cwe_catalog",
+    "capec_catalog",
 }
 
 
@@ -133,6 +154,24 @@ def collect_entry(
         records = collect_github_commits(data, entry)
     elif collector == "microsoft_msrc_updates":
         records = collect_microsoft_msrc_updates(data, entry)
+    elif collector == "cve_delta_log":
+        records = collect_cve_delta_log(data, entry)
+    elif collector == "cve_record_v5":
+        records = collect_cve_record_v5(data, entry)
+    elif collector == "cisa_vulnrichment":
+        records = collect_cisa_vulnrichment(data, entry)
+    elif collector == "osv_vulnerabilities":
+        records = collect_osv_vulnerabilities(data, entry)
+    elif collector == "redhat_security_data":
+        records = collect_redhat_security_data(data, entry)
+    elif collector == "attack_stix":
+        records = collect_attack_stix(data, entry)
+    elif collector == "cwe_catalog":
+        records = collect_cwe_catalog(data, entry)
+    elif collector == "capec_catalog":
+        records = collect_capec_catalog(data, entry)
+    elif collector == "d3fend_ontology":
+        records = collect_d3fend_ontology(data, entry)
     elif collector == "reddit_listing":
         records = collect_reddit_listing(data, entry)
     elif collector == "reliefweb_disasters":
@@ -678,6 +717,488 @@ def collect_microsoft_msrc_updates(data: Any, entry: CatalogEntry) -> list[Sanit
     return records
 
 
+def collect_cve_delta_log(data: Any, entry: CatalogEntry) -> list[SanitizedRecord]:
+    """Collect CVEProject cvelistV5 delta metadata without CVE record bodies."""
+
+    batches = data if isinstance(data, list) else [data]
+    max_records = _collector_item_limit(entry)
+    records: list[SanitizedRecord] = []
+    for batch in batches:
+        if not isinstance(batch, Mapping):
+            continue
+        observed = _date_string(batch.get("fetchTime")) or _today()
+        for change_type in ("new", "updated"):
+            changes = batch.get(change_type, [])
+            if not isinstance(changes, list):
+                continue
+            for item in changes:
+                if len(records) >= max_records:
+                    return records
+                if not isinstance(item, Mapping):
+                    continue
+                cve_id = _clean_cve(item.get("cveId") or item.get("cveID"))
+                if not cve_id:
+                    continue
+                updated = _date_string(item.get("dateUpdated")) or observed
+                link = _safe_url(item.get("cveOrgLink")) or _safe_url(item.get("githubLink")) or entry.url
+                summary = (
+                    f"CVEProject cvelistV5 delta metadata marks {cve_id} as {change_type} "
+                    f"on {updated}. Only CVE ID, update time, and public record link are "
+                    "retained; CVE record text is omitted."
+                )
+                _append_record(
+                    records,
+                    {
+                        "record_id": stable_id("cvelistv5_delta", cve_id, change_type, updated),
+                        "observed_at": f"{updated}T00:00:00Z",
+                        "source_type": entry.source_type,
+                        "collection_tier": entry.collection_tier,
+                        "actor_hint": "unknown actors",
+                        "region_hint": "global",
+                        "target_sector": "organizations tracking newly published CVE records",
+                        "vector_class": "public vulnerability disclosure timing signal",
+                        "motive_hint": "official CVE publication or update timing",
+                        "confidence": "medium",
+                        "summary": summary,
+                        "source_ref": make_source_ref(
+                            label="CVEProject cvelistV5 delta log",
+                            url=link,
+                            date_value=updated,
+                            supports=f"cvelistV5 delta metadata for {cve_id}",
+                        ),
+                        "tags": _record_tags(["cve", "cvelistv5", change_type, "vulnerability_metadata"]),
+                    },
+                    source_name=f"{entry.name}:{cve_id}:{change_type}",
+                )
+    return records
+
+
+def collect_cve_record_v5(data: Any, entry: CatalogEntry) -> list[SanitizedRecord]:
+    """Collect safe metadata from CVE JSON 5 records."""
+
+    records: list[SanitizedRecord] = []
+    for item in _cve_record_items(data):
+        if len(records) >= _collector_item_limit(entry):
+            break
+        cve_meta = item.get("cveMetadata", {})
+        if not isinstance(cve_meta, Mapping):
+            cve_meta = {}
+        cve_id = _clean_cve(cve_meta.get("cveId") or item.get("id"))
+        if not cve_id:
+            continue
+        updated = (
+            _date_string(cve_meta.get("dateUpdated"))
+            or _date_string(cve_meta.get("datePublished"))
+            or _today()
+        )
+        products = _cve_record_products(item)
+        cwes = _cve_record_cwes(item)
+        vector_class = _vector_from_terms(" ".join([*products, *cwes]))
+        product_phrase = f"; affected product family {', '.join(products[:3])}" if products else ""
+        cwe_phrase = f"; weakness tags {', '.join(cwes[:3])}" if cwes else ""
+        summary = (
+            f"CVE JSON 5 metadata lists {cve_id} updated {updated}{product_phrase}{cwe_phrase}. "
+            "Descriptions, references, and actionable details are omitted."
+        )
+        _append_record(
+            records,
+            {
+                "record_id": stable_id("cve_json_v5", entry.name, cve_id, updated),
+                "observed_at": f"{updated}T00:00:00Z",
+                "source_type": entry.source_type,
+                "collection_tier": entry.collection_tier,
+                "actor_hint": "unknown actors",
+                "region_hint": "global",
+                "target_sector": _target_from_products(products) or "organizations using affected public software",
+                "vector_class": vector_class,
+                "motive_hint": "public vulnerability disclosure timing context",
+                "confidence": "medium",
+                "summary": summary,
+                "source_ref": make_source_ref(
+                    label=_option(entry, "display_label") or "CVE JSON 5 record",
+                    url=_cve_record_url(cve_id, entry),
+                    date_value=updated,
+                    supports=f"CVE JSON 5 metadata for {cve_id}",
+                ),
+                "tags": _record_tags(["cve", "json_v5", *cwes, *products, *_keyword_tags(vector_class)]),
+            },
+            source_name=f"{entry.name}:{cve_id}",
+        )
+    return records
+
+
+def collect_cisa_vulnrichment(data: Any, entry: CatalogEntry) -> list[SanitizedRecord]:
+    """Collect CISA Vulnrichment ADP metadata without raw CVE text."""
+
+    records: list[SanitizedRecord] = []
+    for item in _cve_record_items(data):
+        if len(records) >= _collector_item_limit(entry):
+            break
+        cve_meta = item.get("cveMetadata", {})
+        if not isinstance(cve_meta, Mapping):
+            cve_meta = {}
+        cve_id = _clean_cve(cve_meta.get("cveId") or item.get("id"))
+        if not cve_id:
+            continue
+        updated = _date_string(cve_meta.get("dateUpdated")) or _date_string(cve_meta.get("datePublished")) or _today()
+        cwes = _cve_record_cwes(item)
+        adp_labels = _cve_adp_labels(item)
+        cwe_phrase = f"; CISA-linked weakness tags {', '.join(cwes[:3])}" if cwes else ""
+        adp_phrase = f"; ADP containers {', '.join(adp_labels[:2])}" if adp_labels else ""
+        summary = (
+            f"CISA Vulnrichment metadata enriches {cve_id} with ADP/SSVC context "
+            f"updated {updated}{cwe_phrase}{adp_phrase}. Descriptions, examples, and "
+            "record references are omitted."
+        )
+        _append_record(
+            records,
+            {
+                "record_id": stable_id("cisa_vulnrichment", cve_id, updated),
+                "observed_at": f"{updated}T00:00:00Z",
+                "source_type": entry.source_type,
+                "collection_tier": entry.collection_tier,
+                "actor_hint": "unknown actors",
+                "region_hint": "US / global",
+                "target_sector": "public-sector and enterprise defenders tracking CISA-enriched CVEs",
+                "vector_class": _vector_from_terms(" ".join(cwes)),
+                "motive_hint": "official vulnerability enrichment and triage timing",
+                "confidence": "medium",
+                "summary": summary,
+                "source_ref": make_source_ref(
+                    label="CISA Vulnrichment repository",
+                    url=_cve_record_url(cve_id, entry),
+                    date_value=updated,
+                    supports=f"CISA Vulnrichment metadata for {cve_id}",
+                ),
+                "tags": _record_tags(["cisa", "vulnrichment", "adp", "ssvc", *cwes]),
+            },
+            source_name=f"{entry.name}:{cve_id}",
+        )
+    return records
+
+
+def collect_osv_vulnerabilities(data: Any, entry: CatalogEntry) -> list[SanitizedRecord]:
+    """Collect OSV vulnerability metadata without details, events, or raw ranges."""
+
+    values = [data] if isinstance(data, Mapping) and data.get("id") else _json_items(
+        data,
+        entry.name,
+        "OSV vulnerabilities",
+    )
+    records: list[SanitizedRecord] = []
+    for item in values:
+        if len(records) >= _collector_item_limit(entry):
+            break
+        if not isinstance(item, Mapping):
+            continue
+        osv_id = _safe_label(item.get("id"), fallback="")
+        if not osv_id:
+            continue
+        published = _date_string(item.get("published")) or _date_string(item.get("modified")) or _today()
+        aliases = _osv_aliases(item)
+        ecosystems = _osv_ecosystems(item)
+        severity = _osv_severity(item)
+        cve_phrase = f" linked to {', '.join(aliases[:3])}" if aliases else ""
+        ecosystem_phrase = f" across {', '.join(ecosystems[:3])}" if ecosystems else ""
+        severity_phrase = f"; severity metadata {severity}" if severity else ""
+        summary = (
+            f"OSV vulnerability metadata lists {osv_id}{cve_phrase}{ecosystem_phrase}; "
+            f"published {published}{severity_phrase}. Details, event ranges, and references are omitted."
+        )
+        _append_record(
+            records,
+            {
+                "record_id": stable_id("osv", osv_id, published),
+                "observed_at": f"{published}T00:00:00Z",
+                "source_type": entry.source_type,
+                "collection_tier": entry.collection_tier,
+                "actor_hint": "unknown actors",
+                "region_hint": "global",
+                "target_sector": "open-source package consumers",
+                "vector_class": _vector_from_terms(" ".join([osv_id, *aliases, *ecosystems, severity])),
+                "motive_hint": "open-source vulnerability disclosure timing",
+                "confidence": "medium",
+                "summary": summary,
+                "source_ref": make_source_ref(
+                    label="OSV vulnerability database",
+                    url=_safe_url(item.get("url")) or entry.url,
+                    date_value=published,
+                    supports=f"OSV metadata for {osv_id}",
+                ),
+                "tags": _record_tags(["osv", "open_source", severity, *aliases, *ecosystems]),
+            },
+            source_name=f"{entry.name}:{osv_id}",
+        )
+    return records
+
+
+def collect_redhat_security_data(data: Any, entry: CatalogEntry) -> list[SanitizedRecord]:
+    """Collect Red Hat Security Data API CVE metadata."""
+
+    values = [data] if isinstance(data, Mapping) and (data.get("CVE") or data.get("cve")) else _json_items(
+        data,
+        entry.name,
+        "Red Hat Security Data CVEs",
+    )
+    records: list[SanitizedRecord] = []
+    for item in values:
+        if len(records) >= _collector_item_limit(entry):
+            break
+        if not isinstance(item, Mapping):
+            continue
+        cve_id = _clean_cve(item.get("CVE") or item.get("cve"))
+        if not cve_id:
+            continue
+        published = _date_string(item.get("public_date")) or _today()
+        severity = _safe_label(item.get("severity"), fallback="unspecified")
+        cwe = _clean_cwe(item.get("CWE") or item.get("cwe"))
+        packages = _redhat_packages(item)
+        package_phrase = f"; package families {', '.join(packages[:3])}" if packages else ""
+        cwe_phrase = f"; weakness tag {cwe}" if cwe else ""
+        summary = (
+            f"Red Hat Security Data metadata lists {cve_id} with {severity} severity; "
+            f"public date {published}{cwe_phrase}{package_phrase}. Advisory bodies and "
+            "scoring vectors are omitted."
+        )
+        _append_record(
+            records,
+            {
+                "record_id": stable_id("redhat_security_data", cve_id, published),
+                "observed_at": f"{published}T00:00:00Z",
+                "source_type": entry.source_type,
+                "collection_tier": entry.collection_tier,
+                "actor_hint": "unknown actors",
+                "region_hint": "global",
+                "target_sector": "organizations using Red Hat product families",
+                "vector_class": _vector_from_terms(" ".join([severity, cwe, *packages])),
+                "motive_hint": "vendor vulnerability disclosure and patch timing",
+                "confidence": "medium",
+                "summary": summary,
+                "source_ref": make_source_ref(
+                    label="Red Hat Security Data API",
+                    url=_safe_url(item.get("resource_url")) or entry.url,
+                    date_value=published,
+                    supports=f"Red Hat Security Data metadata for {cve_id}",
+                ),
+                "tags": _record_tags(["redhat", "vendor_advisory", severity, cwe, *packages]),
+            },
+            source_name=f"{entry.name}:{cve_id}",
+        )
+    return records
+
+
+def collect_attack_stix(data: Any, entry: CatalogEntry) -> list[SanitizedRecord]:
+    """Collect MITRE ATT&CK STIX object metadata without procedure text."""
+
+    if not isinstance(data, Mapping):
+        raise ValueError(f"{entry.name}: ATT&CK STIX JSON must be an object")
+    values = data.get("objects", [])
+    if not isinstance(values, list):
+        raise ValueError(f"{entry.name}: ATT&CK STIX objects must be a list")
+
+    records: list[SanitizedRecord] = []
+    allowed_types = {"attack-pattern", "course-of-action", "intrusion-set", "malware", "tool"}
+    for item in values:
+        if len(records) >= _collector_item_limit(entry):
+            break
+        if not isinstance(item, Mapping) or item.get("type") not in allowed_types:
+            continue
+        if item.get("revoked") is True or item.get("x_mitre_deprecated") is True:
+            continue
+        name = _safe_label(item.get("name"), fallback="")
+        if not name:
+            continue
+        stix_type = _safe_label(item.get("type"), fallback="stix object")
+        external_id, link = _attack_external_ref(item)
+        observed = _date_string(item.get("modified")) or _date_string(item.get("created")) or _today()
+        tactics = _attack_tactics(item)
+        tactic_phrase = f"; tactics {', '.join(tactics[:3])}" if tactics else ""
+        identifier = external_id or str(item.get("id") or name)
+        summary = (
+            f"MITRE ATT&CK STIX metadata lists {identifier} {name} as {stix_type}"
+            f"{tactic_phrase}; modified {observed}. Procedure text and relationship bodies are omitted."
+        )
+        _append_record(
+            records,
+            {
+                "record_id": stable_id("attack_stix", identifier, observed),
+                "observed_at": f"{observed}T00:00:00Z",
+                "source_type": entry.source_type,
+                "collection_tier": entry.collection_tier,
+                "actor_hint": "documented adversary behavior taxonomy",
+                "region_hint": "global",
+                "target_sector": "defenders mapping ATT&CK behavior to defensive priorities",
+                "vector_class": "adversary behavior taxonomy signal",
+                "motive_hint": "public adversary-behavior knowledge-base context",
+                "confidence": "medium",
+                "summary": summary,
+                "source_ref": make_source_ref(
+                    label="MITRE ATT&CK STIX data",
+                    url=link or entry.url,
+                    date_value=observed,
+                    supports=f"ATT&CK STIX metadata for {identifier}",
+                ),
+                "tags": _record_tags(["attack", "stix", stix_type, identifier, *tactics]),
+            },
+            source_name=f"{entry.name}:{identifier}",
+        )
+    return records
+
+
+def collect_cwe_catalog(data: Any, entry: CatalogEntry) -> list[SanitizedRecord]:
+    """Collect MITRE CWE weakness taxonomy metadata from XML."""
+
+    if not isinstance(data, str):
+        raise ValueError(f"{entry.name}: CWE catalog payload must be XML text")
+    try:
+        root = ET.fromstring(data)
+    except ET.ParseError as exc:
+        raise ValueError(f"{entry.name}: invalid CWE XML") from exc
+
+    date_value = _date_string(root.attrib.get("Date")) or _today()
+    records: list[SanitizedRecord] = []
+    for weakness in _xml_elements(root, "Weakness"):
+        if len(records) >= _collector_item_limit(entry):
+            break
+        if weakness.attrib.get("Status", "").lower() == "deprecated":
+            continue
+        cwe_id = _clean_cwe(f"CWE-{weakness.attrib.get('ID', '')}")
+        name = _safe_label(weakness.attrib.get("Name"), fallback="")
+        if not cwe_id or not name:
+            continue
+        summary = (
+            f"MITRE CWE catalog lists {cwe_id} {name} as software weakness taxonomy "
+            f"metadata as of {date_value}. Extended descriptions, examples, and references are omitted."
+        )
+        _append_record(
+            records,
+            {
+                "record_id": stable_id("mitre_cwe", cwe_id, date_value),
+                "observed_at": f"{date_value}T00:00:00Z",
+                "source_type": entry.source_type,
+                "collection_tier": entry.collection_tier,
+                "actor_hint": "software weakness taxonomy",
+                "region_hint": "global",
+                "target_sector": "defenders mapping software weakness classes",
+                "vector_class": _vector_from_terms(f"{cwe_id} {name}"),
+                "motive_hint": "public vulnerability-class taxonomy context",
+                "confidence": "medium",
+                "summary": summary,
+                "source_ref": make_source_ref(
+                    label="MITRE CWE catalog",
+                    url=entry.url,
+                    date_value=date_value,
+                    supports=f"CWE taxonomy metadata for {cwe_id}",
+                ),
+                "tags": _record_tags(["mitre", "cwe", cwe_id, *_keyword_tags(name)]),
+            },
+            source_name=f"{entry.name}:{cwe_id}",
+        )
+    return records
+
+
+def collect_capec_catalog(data: Any, entry: CatalogEntry) -> list[SanitizedRecord]:
+    """Collect MITRE CAPEC attack-pattern taxonomy metadata from XML."""
+
+    if not isinstance(data, str):
+        raise ValueError(f"{entry.name}: CAPEC catalog payload must be XML text")
+    try:
+        root = ET.fromstring(data)
+    except ET.ParseError as exc:
+        raise ValueError(f"{entry.name}: invalid CAPEC XML") from exc
+
+    date_value = _date_string(root.attrib.get("Date")) or _today()
+    records: list[SanitizedRecord] = []
+    for pattern in _xml_elements(root, "Attack_Pattern"):
+        if len(records) >= _collector_item_limit(entry):
+            break
+        capec_id = _safe_label(f"CAPEC-{pattern.attrib.get('ID', '')}", fallback="")
+        name = _safe_label(pattern.attrib.get("Name"), fallback="")
+        abstraction = _safe_label(pattern.attrib.get("Abstraction"), fallback="pattern")
+        if not capec_id or not name:
+            continue
+        summary = (
+            f"MITRE CAPEC catalog lists {capec_id} {name} as {abstraction} "
+            f"attack-pattern taxonomy metadata as of {date_value}. Execution flows and examples are omitted."
+        )
+        _append_record(
+            records,
+            {
+                "record_id": stable_id("mitre_capec", capec_id, date_value),
+                "observed_at": f"{date_value}T00:00:00Z",
+                "source_type": entry.source_type,
+                "collection_tier": entry.collection_tier,
+                "actor_hint": "attack-pattern taxonomy",
+                "region_hint": "global",
+                "target_sector": "defenders mapping attack-pattern classes",
+                "vector_class": "attack-pattern taxonomy signal",
+                "motive_hint": "public attack-pattern taxonomy context",
+                "confidence": "medium",
+                "summary": summary,
+                "source_ref": make_source_ref(
+                    label="MITRE CAPEC catalog",
+                    url=entry.url,
+                    date_value=date_value,
+                    supports=f"CAPEC taxonomy metadata for {capec_id}",
+                ),
+                "tags": _record_tags(["mitre", "capec", capec_id, abstraction]),
+            },
+            source_name=f"{entry.name}:{capec_id}",
+        )
+    return records
+
+
+def collect_d3fend_ontology(data: Any, entry: CatalogEntry) -> list[SanitizedRecord]:
+    """Collect MITRE D3FEND defensive taxonomy metadata from JSON-LD."""
+
+    if not isinstance(data, Mapping):
+        raise ValueError(f"{entry.name}: D3FEND JSON-LD must be an object")
+    values = data.get("@graph", [])
+    if not isinstance(values, list):
+        raise ValueError(f"{entry.name}: D3FEND @graph must be a list")
+
+    date_value = _today()
+    records: list[SanitizedRecord] = []
+    for item in values:
+        if len(records) >= _collector_item_limit(entry):
+            break
+        if not isinstance(item, Mapping):
+            continue
+        d3fend_id = _safe_label(_jsonld_text(item.get("d3f:d3fend-id")), fallback="")
+        label = _safe_label(_jsonld_text(item.get("rdfs:label")), fallback="")
+        if not d3fend_id or not label:
+            continue
+        summary = (
+            f"MITRE D3FEND ontology lists {label} ({d3fend_id}) as defensive taxonomy "
+            "metadata. Definitions and inferred relationships are omitted."
+        )
+        _append_record(
+            records,
+            {
+                "record_id": stable_id("mitre_d3fend", d3fend_id, label),
+                "observed_at": f"{date_value}T00:00:00Z",
+                "source_type": entry.source_type,
+                "collection_tier": entry.collection_tier,
+                "actor_hint": "defensive technique taxonomy",
+                "region_hint": "global",
+                "target_sector": "defenders mapping countermeasure options",
+                "vector_class": "defensive taxonomy signal",
+                "motive_hint": "public countermeasure taxonomy context",
+                "confidence": "medium",
+                "summary": summary,
+                "source_ref": make_source_ref(
+                    label="MITRE D3FEND ontology",
+                    url=entry.url,
+                    date_value=date_value,
+                    supports=f"D3FEND taxonomy metadata for {d3fend_id}",
+                ),
+                "tags": _record_tags(["mitre", "d3fend", d3fend_id, label]),
+            },
+            source_name=f"{entry.name}:{d3fend_id}",
+        )
+    return records
+
+
 def collect_reddit_listing(data: Any, entry: CatalogEntry) -> list[SanitizedRecord]:
     """Collect public Reddit listing metadata without authors, comments, or bodies."""
 
@@ -1026,11 +1547,246 @@ def _json_items(data: Any, source_name: str, label: str) -> list[Any]:
     if isinstance(data, list):
         return data
     if isinstance(data, Mapping):
-        for key in ("items", "results", "data", "advisories", "articles"):
+        for key in ("items", "results", "data", "advisories", "articles", "vulns"):
             values = data.get(key)
             if isinstance(values, list):
                 return values
     raise ValueError(f"{source_name}: {label} JSON must be an array or object with item list")
+
+
+def _collector_item_limit(entry: CatalogEntry, default: int = 250) -> int:
+    value = entry.options.get("max_records")
+    if isinstance(value, str) and value.strip().isdigit():
+        return max(1, min(int(value.strip()), 5000))
+    return default
+
+
+def _cve_record_items(data: Any) -> list[Mapping[str, Any]]:
+    values: list[Any]
+    if isinstance(data, list):
+        values = data
+    elif isinstance(data, Mapping) and isinstance(data.get("records"), list):
+        values = data["records"]
+    elif isinstance(data, Mapping) and isinstance(data.get("containers"), Mapping):
+        values = [data]
+    elif isinstance(data, Mapping) and isinstance(data.get("cveMetadata"), Mapping):
+        values = [data]
+    else:
+        values = []
+    return [item for item in values if isinstance(item, Mapping)]
+
+
+def _cve_record_products(item: Mapping[str, Any]) -> list[str]:
+    products: list[str] = []
+    containers = item.get("containers", {})
+    if not isinstance(containers, Mapping):
+        return products
+    for container in _cve_containers(containers):
+        affected = container.get("affected", [])
+        if not isinstance(affected, list):
+            continue
+        for value in affected:
+            if not isinstance(value, Mapping):
+                continue
+            vendor = _safe_label(value.get("vendor"), fallback="")
+            product = _safe_label(value.get("product"), fallback="")
+            label = " ".join(part for part in (vendor, product) if part)
+            if label and label not in products:
+                products.append(label)
+    return products[:6]
+
+
+def _cve_record_cwes(item: Mapping[str, Any]) -> list[str]:
+    cwes: list[str] = []
+    containers = item.get("containers", {})
+    if not isinstance(containers, Mapping):
+        return cwes
+    for container in _cve_containers(containers):
+        problem_types = container.get("problemTypes", [])
+        if not isinstance(problem_types, list):
+            continue
+        for problem_type in problem_types:
+            if not isinstance(problem_type, Mapping):
+                continue
+            descriptions = problem_type.get("descriptions", [])
+            if not isinstance(descriptions, list):
+                continue
+            for description in descriptions:
+                if not isinstance(description, Mapping):
+                    continue
+                cwe = _clean_cwe(description.get("cweId") or description.get("description"))
+                if cwe and cwe not in cwes:
+                    cwes.append(cwe)
+    return cwes[:6]
+
+
+def _cve_adp_labels(item: Mapping[str, Any]) -> list[str]:
+    labels: list[str] = []
+    containers = item.get("containers", {})
+    if not isinstance(containers, Mapping):
+        return labels
+    adp = containers.get("adp", [])
+    if not isinstance(adp, list):
+        return labels
+    for container in adp:
+        if not isinstance(container, Mapping):
+            continue
+        provider = container.get("providerMetadata", {})
+        if isinstance(provider, Mapping):
+            label = _safe_label(provider.get("shortName") or provider.get("orgId"), fallback="")
+            if label and label not in labels:
+                labels.append(label)
+        title = _safe_label(container.get("title"), fallback="")
+        if title and title not in labels:
+            labels.append(title)
+    return labels[:4]
+
+
+def _cve_containers(containers: Mapping[str, Any]) -> Iterable[Mapping[str, Any]]:
+    cna = containers.get("cna")
+    if isinstance(cna, Mapping):
+        yield cna
+    adp = containers.get("adp")
+    if isinstance(adp, list):
+        for item in adp:
+            if isinstance(item, Mapping):
+                yield item
+
+
+def _target_from_products(products: list[str]) -> str:
+    if not products:
+        return ""
+    return "organizations using " + ", ".join(products[:3])
+
+
+def _cve_record_url(cve_id: str, entry: CatalogEntry) -> str:
+    if entry.url:
+        return entry.url
+    return f"https://www.cve.org/CVERecord?id={cve_id}"
+
+
+def _osv_aliases(item: Mapping[str, Any]) -> list[str]:
+    aliases: list[str] = []
+    values = item.get("aliases", [])
+    if not isinstance(values, list):
+        return aliases
+    for alias in values:
+        cve = _clean_cve(alias)
+        if cve and cve not in aliases:
+            aliases.append(cve)
+    return aliases[:6]
+
+
+def _osv_ecosystems(item: Mapping[str, Any]) -> list[str]:
+    ecosystems: list[str] = []
+    values = item.get("affected", [])
+    if not isinstance(values, list):
+        return ecosystems
+    for affected in values:
+        if not isinstance(affected, Mapping):
+            continue
+        package = affected.get("package", {})
+        if not isinstance(package, Mapping):
+            continue
+        ecosystem = _safe_label(package.get("ecosystem"), fallback="")
+        name = _safe_label(package.get("name"), fallback="")
+        label = ecosystem or name
+        if ecosystem and name:
+            label = f"{ecosystem} {name}"
+        if label and label not in ecosystems:
+            ecosystems.append(label)
+    return ecosystems[:6]
+
+
+def _osv_severity(item: Mapping[str, Any]) -> str:
+    severity = item.get("severity", [])
+    if isinstance(severity, list):
+        for value in severity:
+            if not isinstance(value, Mapping):
+                continue
+            score_type = _safe_label(value.get("type"), fallback="")
+            score = _safe_label(value.get("score"), fallback="")
+            if score_type or score:
+                return " ".join(part for part in (score_type, score[:12]) if part)
+    database_specific = item.get("database_specific", {})
+    if isinstance(database_specific, Mapping):
+        return _safe_label(database_specific.get("severity"), fallback="")
+    return ""
+
+
+def _redhat_packages(item: Mapping[str, Any]) -> list[str]:
+    packages: list[str] = []
+    affected = item.get("affected_packages", [])
+    if isinstance(affected, list):
+        for value in affected:
+            label = _safe_label(value, fallback="")
+            if label and label not in packages:
+                packages.append(label)
+    package_state = item.get("package_state", [])
+    if isinstance(package_state, list):
+        for value in package_state:
+            if not isinstance(value, Mapping):
+                continue
+            label = _safe_label(value.get("package_name"), fallback="")
+            if label and label not in packages:
+                packages.append(label)
+    return packages[:6]
+
+
+def _attack_external_ref(item: Mapping[str, Any]) -> tuple[str, str]:
+    values = item.get("external_references", [])
+    if not isinstance(values, list):
+        return "", ""
+    for value in values:
+        if not isinstance(value, Mapping):
+            continue
+        source = _safe_label(value.get("source_name"), fallback="")
+        if source != "mitre-attack":
+            continue
+        external_id = _safe_label(value.get("external_id"), fallback="")
+        link = _safe_url(value.get("url"))
+        return external_id, link
+    return "", ""
+
+
+def _attack_tactics(item: Mapping[str, Any]) -> list[str]:
+    values = item.get("kill_chain_phases", [])
+    if not isinstance(values, list):
+        return []
+    tactics: list[str] = []
+    for value in values:
+        if not isinstance(value, Mapping):
+            continue
+        label = _safe_label(value.get("phase_name"), fallback="")
+        if label and label not in tactics:
+            tactics.append(label)
+    return tactics[:6]
+
+
+def _xml_elements(root: ET.Element, local_name: str) -> Iterable[ET.Element]:
+    for element in root.iter():
+        if _xml_local_name(element.tag) == local_name:
+            yield element
+
+
+def _xml_local_name(tag: str) -> str:
+    if "}" in tag:
+        return tag.rsplit("}", 1)[1]
+    return tag
+
+
+def _jsonld_text(value: Any) -> str:
+    if isinstance(value, str):
+        return value
+    if isinstance(value, Mapping):
+        inner = value.get("@value") or value.get("value") or value.get("@id")
+        return inner if isinstance(inner, str) else ""
+    if isinstance(value, list):
+        for item in value:
+            text = _jsonld_text(item)
+            if text:
+                return text
+    return ""
 
 
 def _jsonl_values(data: str) -> list[Any]:
@@ -1156,32 +1912,76 @@ def load_json_path(path: Path) -> Any:
         return json.load(handle)
 
 
+def load_zip_text_path(path: Path) -> str:
+    return _first_zip_text(path.read_bytes(), source_name=str(path))
+
+
 def fetch_official_json(url: str, *, timeout: float = 20.0) -> Any:
-    return json.loads(fetch_public_text(url, timeout=timeout))
+    return _loads_json_text(fetch_public_text(url, timeout=timeout))
 
 
 def fetch_public_text(url: str, *, timeout: float = 20.0) -> str:
+    with _open_public_request(url, timeout=timeout) as response:
+        charset = response.headers.get_content_charset() or "utf-8"
+        return response.read().decode(charset, errors="replace")
+
+
+def fetch_public_bytes(url: str, *, timeout: float = 20.0) -> bytes:
+    with _open_public_request(url, timeout=timeout) as response:
+        return response.read()
+
+
+class _AllowlistedRedirectHandler(HTTPRedirectHandler):
+    def redirect_request(self, req: Any, fp: Any, code: int, msg: str, headers: Any, newurl: str) -> Any:
+        redirected_url = urljoin(req.full_url, newurl)
+        _assert_allowed_live_url(redirected_url, context="live collection redirect")
+        return super().redirect_request(req, fp, code, msg, headers, redirected_url)
+
+
+def _assert_allowed_live_url(url: str, *, context: str = "live collection") -> None:
     parsed = urlparse(url)
     if parsed.scheme != "https":
-        raise ValueError("live collection only supports HTTPS URLs")
+        raise ValueError(f"{context} only supports HTTPS URLs")
     if parsed.username or parsed.password:
-        raise ValueError("live collection URL must not contain credentials")
+        raise ValueError(f"{context} URL must not contain credentials")
     if re.search(r"(?:api[_-]?key|access[_-]?token|token|password|secret)=", parsed.query, re.IGNORECASE):
-        raise ValueError("live collection URL must not contain credential query parameters")
+        raise ValueError(f"{context} URL must not contain credential query parameters")
     host = parsed.hostname or ""
     if host.lower() not in ALLOWED_LIVE_HOSTS:
         allowed = ", ".join(sorted(ALLOWED_LIVE_HOSTS))
-        raise ValueError(f"live collection host {host!r} is not allowed; allowed: {allowed}")
+        raise ValueError(f"{context} host {host!r} is not allowed; allowed: {allowed}")
+
+
+def _open_public_request(url: str, *, timeout: float = 20.0) -> Any:
+    _assert_allowed_live_url(url)
     request = Request(
         url,
         headers={
-            "Accept": "application/json, application/rss+xml, application/xml, text/xml, text/html;q=0.5",
+            "Accept": "application/json, application/rss+xml, application/xml, application/zip, text/xml, text/html;q=0.5",
             "User-Agent": "ProphetScraperSide/0.1 official-json-collector",
         },
     )
-    with urlopen(request, timeout=timeout) as response:
-        charset = response.headers.get_content_charset() or "utf-8"
-        return response.read().decode(charset, errors="replace")
+    opener = build_opener(_AllowlistedRedirectHandler)
+    response = opener.open(request, timeout=timeout)
+    _assert_allowed_live_url(response.geturl(), context="live collection final URL")
+    return response
+
+
+def _first_zip_text(data: bytes, *, source_name: str) -> str:
+    try:
+        with zipfile.ZipFile(io.BytesIO(data)) as archive:
+            names = [
+                name
+                for name in archive.namelist()
+                if name.lower().endswith((".xml", ".json", ".csv", ".txt"))
+                and not name.endswith("/")
+            ]
+            if not names:
+                raise ValueError(f"{source_name}: ZIP archive has no supported text member")
+            with archive.open(sorted(names)[0]) as handle:
+                return handle.read().decode("utf-8", errors="replace")
+    except zipfile.BadZipFile as exc:
+        raise ValueError(f"{source_name}: invalid ZIP archive") from exc
 
 
 def _resolved_live_url(entry: CatalogEntry, collector: str) -> str:
@@ -1195,6 +1995,13 @@ def _resolved_live_url(entry: CatalogEntry, collector: str) -> str:
             "noRejected": "",
         }
         return "https://services.nvd.nist.gov/rest/json/cves/2.0?" + urlencode(params)
+    if collector == "redhat_security_data":
+        if entry.options.get("seed_key"):
+            return entry.url
+        end = datetime.now(timezone.utc).date()
+        start = end - timedelta(days=30)
+        separator = "&" if "?" in entry.url else "?"
+        return f"{entry.url}{separator}after={start.isoformat()}"
     return entry.url
 
 
@@ -1208,6 +2015,8 @@ def _load_entry_payload(
     if entry.local_path is not None:
         if not entry.local_path.exists():
             raise FileNotFoundError(f"{entry.name}: local JSON not found: {entry.local_path}")
+        if entry.format == "xml_zip" or entry.local_path.suffix.lower() == ".zip":
+            return load_zip_text_path(entry.local_path)
         if (
             collector in TEXT_COLLECTORS
             or entry.format in {"rss", "xml", "csv", "html", "metadata_jsonl"}
@@ -1219,9 +2028,11 @@ def _load_entry_payload(
         url = _resolved_live_url(entry, collector)
         if not url:
             raise ValueError(f"{entry.name}: live collection requires a URL")
+        if entry.format == "xml_zip":
+            return _first_zip_text(fetch_public_bytes(url, timeout=timeout), source_name=entry.name)
         text = fetch_public_text(url, timeout=timeout)
         if collector in JSON_COLLECTORS or entry.format == "json":
-            return json.loads(text)
+            return _loads_json_text(text)
         return text
     raise ValueError(
         f"{entry.name}: no local_path configured and live network is disabled; "
@@ -1245,6 +2056,15 @@ def _remaining(limit: int | None, records: list[SanitizedRecord]) -> int | None:
     if limit is None:
         return None
     return max(limit - len(records), 0)
+
+
+def _loads_json_text(text: str) -> Any:
+    data = json.loads(text)
+    if isinstance(data, str):
+        clean = data.strip()
+        if clean.startswith("{") or clean.startswith("["):
+            return json.loads(clean)
+    return data
 
 
 def _feed_items(root: ET.Element) -> list[ET.Element]:
@@ -1369,6 +2189,15 @@ def _clean_cve(value: Any) -> str:
     if re.fullmatch(r"CVE-\d{4}-\d{4,}", cve):
         return cve
     return ""
+
+
+def _clean_cwe(value: Any) -> str:
+    if not isinstance(value, str):
+        return ""
+    match = re.search(r"CWE-\d+", value.strip(), re.IGNORECASE)
+    if not match:
+        return ""
+    return match.group(0).upper()
 
 
 def _date_string(value: Any) -> str:

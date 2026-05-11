@@ -1,0 +1,444 @@
+"""Local deterministic sandbox runner for Direction C artifacts.
+
+The default profile simulates pre/post validation from a tracked fixture. It
+does not accept arbitrary target URLs and does not run network validation.
+"""
+
+from __future__ import annotations
+
+import argparse
+import hashlib
+import json
+import os
+import re
+import sys
+from datetime import datetime, timezone
+from pathlib import Path
+from typing import Any
+
+
+REPO_ROOT = Path(__file__).resolve().parents[1]
+CYBER_SIDE = str(REPO_ROOT / "cyber-side")
+if CYBER_SIDE not in sys.path:
+    sys.path.insert(0, CYBER_SIDE)
+
+try:
+    from validator import validate_exploit_engine_artifact  # type: ignore
+except ImportError as exc:  # pragma: no cover
+    raise RuntimeError("sandbox_runner requires cyber-side on PYTHONPATH") from exc
+
+from sandbox_runner.schema import (
+    validate_sandbox_artifact_schema,
+    validate_sandbox_run_manifest_schema,
+)
+
+
+PROFILES = {
+    "edge-appliance-fixture": {
+        "fixture": REPO_ROOT / "cyber-side/fixtures/exploit-engine-output-edge-appliance.json",
+        "artifact_prefix": "ee-sandbox-edge-appliance",
+        "validation_template": "edge-appliance-fixture-profile",
+    },
+    "financial-workflow-fixture": {
+        "fixture": REPO_ROOT / "cyber-side/fixtures/exploit-engine-output-financial-workflow.json",
+        "artifact_prefix": "ee-sandbox-financial-workflow",
+        "validation_template": "financial-workflow-fixture-profile",
+    }
+}
+
+RUN_MANIFEST_SCHEMA_VERSION = "prophet.sandbox_run_manifest.v0.1"
+CUSTOMER_APPROVAL_SCHEMA_VERSION = "prophet_sandbox_customer_approval.v0.1"
+NON_FIXTURE_SANDBOX_APPROVAL = "non_fixture_sandbox_mode"
+CUSTOMER_APPROVAL_ATTESTATIONS = (
+    "no_live_targets",
+    "no_payloads",
+    "no_credentials",
+    "customer_boundary_reviewed",
+    "policy_reviewed",
+)
+SAFE_APPROVAL_ID_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_.-]{0,120}$")
+EMAIL_RE = re.compile(r"[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}")
+IP_RE = re.compile(
+    r"\b(?:(?:25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}"
+    r"(?:25[0-5]|2[0-4]\d|[01]?\d\d?)\b"
+)
+HOSTNAME_RE = re.compile(
+    r"\b(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+"
+    r"(?:com|net|org|mil|gov|edu|io|dev|local|lan|internal|corp)\b",
+    re.IGNORECASE,
+)
+URL_RE = re.compile(r"https?://|ssh://|sftp://", re.IGNORECASE)
+SECRET_RE = re.compile(
+    r"(?:-----BEGIN [A-Z ]*PRIVATE KEY-----|"
+    r"\b(?:password|passwd|secret|api[_-]?key|access[_-]?token|token)\s*[:=])",
+    re.IGNORECASE,
+)
+
+
+class SandboxRunnerError(ValueError):
+    """Raised when the sandbox runner is asked to leave the safe profile."""
+
+
+def run_profile(
+    *,
+    profile: str,
+    generated_at: str | None = None,
+    run_id: str | None = None,
+    mode: str = "fixture",
+    policy: str | Path | None = None,
+    customer_approval_record: str | Path | None = None,
+) -> dict[str, Any]:
+    if profile not in PROFILES:
+        raise SandboxRunnerError(f"unknown sandbox profile: {profile}")
+    policy_context = enforce_profile_policy(policy, profile=profile) if policy is not None else None
+    if mode != "fixture":
+        validate_customer_approval_record(
+            customer_approval_record,
+            profile=profile,
+            mode=mode,
+        )
+        if os.environ.get("PROPHET_ENABLE_SANDBOX_RUNNER") != "1":
+            raise SandboxRunnerError(
+                "container sandbox mode is disabled after customer approval; "
+                "set PROPHET_ENABLE_SANDBOX_RUNNER=1 only for approved profiles"
+            )
+        raise SandboxRunnerError("no container profiles are packaged in the public repo")
+
+    emitted_at = _generated_at(generated_at)
+    profile_config = PROFILES[profile]
+    artifact = _load_json(profile_config["fixture"])
+    validate_exploit_engine_artifact(artifact)
+
+    seed = run_id or f"{profile}:{emitted_at}"
+    suffix = hashlib.sha256(seed.encode("utf-8")).hexdigest()[:10]
+    artifact["artifact_id"] = f"{profile_config['artifact_prefix']}-{suffix}"
+    artifact["generated_at"] = emitted_at
+    artifact["validation"] = {
+        **artifact["validation"],
+        "sandbox_id": "localhost-fixture-harness",
+        "scope": "localhost only; deterministic fixture simulation; no network egress",
+        "pre_patch_excerpt": "deterministic sandbox simulation: pre_patch_status=vulnerable",
+        "post_patch_excerpt": "deterministic sandbox simulation: post_patch_status=blocked",
+        "validation_tool": "prophet deterministic sandbox runner",
+        "validation_template": _str(
+            profile_config.get("validation_template"),
+            f"{profile}-profile",
+        ),
+        "wall_time_seconds": 0.42,
+    }
+    artifact["operator_notes"] = {
+        **artifact["operator_notes"],
+        "human_gate_decision": "bypassed_for_fixture",
+        "operator_label": "sandbox_fixture",
+        "post_run_caveats": [
+            "Generated by deterministic sandbox runner fixture mode.",
+            "No live targets, arbitrary URLs, payloads, or network validation were used.",
+            "Container runner mode is disabled unless explicitly gated by environment.",
+        ],
+    }
+    artifact["audit"] = {
+        **artifact["audit"],
+        "run_id": run_id or f"SANDBOX-FIXTURE-{suffix}",
+        "signed_sha256": None,
+        "emitted_by": "sandbox_runner.fixture",
+    }
+    if policy_context is not None:
+        artifact["audit"]["policy_id"] = _str(policy_context.get("policy_id"), "unknown-policy")
+        artifact["audit"]["policy_sha256"] = _sha256_normalized(policy_context)
+        artifact["audit"]["retention"] = _object(policy_context.get("retention"))
+
+    validate_exploit_engine_artifact(artifact)
+    validate_sandbox_artifact_schema(artifact)
+    return artifact
+
+
+def build_run_manifest(
+    *,
+    artifact: dict[str, Any],
+    profile: str,
+    mode: str = "fixture",
+    artifact_path: str | Path | None = None,
+) -> dict[str, Any]:
+    """Build a sanitized sandbox run manifest without retaining raw logs."""
+
+    validate_exploit_engine_artifact(artifact)
+    validation = _object(artifact.get("validation"))
+    audit = _object(artifact.get("audit"))
+    artifact_id = _str(artifact.get("artifact_id"), "unknown-artifact")
+    generated_at = _str(artifact.get("generated_at"), _generated_at(None))
+    run_id = _str(audit.get("run_id"), f"SANDBOX-FIXTURE-{artifact_id}")
+    manifest_seed = f"{profile}:{mode}:{run_id}:{artifact_id}:{generated_at}"
+    manifest_id = f"srm-{hashlib.sha256(manifest_seed.encode('utf-8')).hexdigest()[:16]}"
+
+    sanitized_summary = {
+        "pre_patch_status": _str(validation.get("pre_patch_status"), "unknown"),
+        "post_patch_status": _str(validation.get("post_patch_status"), "unknown"),
+        "validation_result": (
+            "fixture validation blocked the predicted exploit class"
+            if validation.get("post_patch_status") == "blocked"
+            else "fixture validation did not report blocked status"
+        ),
+        "wall_time_seconds": validation.get("wall_time_seconds"),
+    }
+    manifest = {
+        "schema_version": RUN_MANIFEST_SCHEMA_VERSION,
+        "manifest_id": manifest_id,
+        "generated_at": generated_at,
+        "run_id": run_id,
+        "profile": profile,
+        "mode": mode,
+        "artifact": {
+            "artifact_id": artifact_id,
+            "schema_version": _str(artifact.get("schema_version"), "unknown"),
+            "content_sha256": _sha256_normalized(artifact),
+            "file_sha256": _sha256_file(artifact_path),
+            "path": _safe_repo_relative_path(artifact_path),
+        },
+        "validation": {
+            "sandbox_id": _str(validation.get("sandbox_id"), "unknown-sandbox"),
+            "scope": _str(validation.get("scope"), "unknown"),
+            "pre_patch_status": _str(validation.get("pre_patch_status"), "unknown"),
+            "post_patch_status": _str(validation.get("post_patch_status"), "unknown"),
+            "validation_tool": _str(validation.get("validation_tool"), "unknown"),
+            "validation_template": validation.get("validation_template"),
+            "wall_time_seconds": validation.get("wall_time_seconds"),
+        },
+        "log_evidence": {
+            "raw_logs_retained": False,
+            "raw_log_path": None,
+            "stored_raw_log_bytes": 0,
+            "stored_log_excerpt_count": 0,
+            "sanitized_logs_sha256": _sha256_normalized(sanitized_summary),
+            "sanitized_summary": sanitized_summary,
+        },
+        "policy": {
+            "policy_id": _str(audit.get("policy_id"), "not-supplied"),
+            "policy_sha256": audit.get("policy_sha256"),
+            "retention": _object(audit.get("retention")),
+        },
+        "safety": {
+            "localhost_only": True,
+            "fixture_backed": True,
+            "no_network_egress": True,
+            "no_live_targets": True,
+            "no_payloads": True,
+            "no_credentials": True,
+            "no_raw_logs": True,
+        },
+    }
+    validate_sandbox_run_manifest_schema(manifest)
+    return manifest
+
+
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(
+        prog="python3 -m sandbox_runner",
+        description="Emit validated Prophet Direction C artifacts from safe sandbox profiles.",
+    )
+    subparsers = parser.add_subparsers(dest="command", required=True)
+    run_parser = subparsers.add_parser("run", help="Run a predefined sandbox profile")
+    run_parser.add_argument("--profile", required=True, choices=sorted(PROFILES))
+    run_parser.add_argument("--mode", default="fixture", choices=["fixture", "container"])
+    run_parser.add_argument("--generated-at", help="ISO timestamp for deterministic output")
+    run_parser.add_argument("--run-id", help="Optional run id")
+    run_parser.add_argument("--policy", help="Optional prophet_pilot_policy.v0.1 gate")
+    run_parser.add_argument(
+        "--customer-approval-record",
+        help=(
+            "Sanitized prophet_sandbox_customer_approval.v0.1 JSON required "
+            "before any non-fixture sandbox mode is considered."
+        ),
+    )
+    run_parser.add_argument("--out", help="Output JSON path; stdout when omitted")
+    run_parser.add_argument(
+        "--manifest-out",
+        help="Optional sandbox run manifest JSON path with hashes and no raw logs.",
+    )
+    args = parser.parse_args(argv)
+
+    try:
+        artifact = run_profile(
+            profile=args.profile,
+            mode=args.mode,
+            generated_at=args.generated_at,
+            run_id=args.run_id,
+            policy=args.policy,
+            customer_approval_record=args.customer_approval_record,
+        )
+        output = json.dumps(artifact, indent=2, sort_keys=True) + "\n"
+        if args.out:
+            out_path = Path(args.out)
+            out_path.parent.mkdir(parents=True, exist_ok=True)
+            out_path.write_text(output, encoding="utf-8")
+        else:
+            print(output, end="")
+        if args.manifest_out:
+            manifest = build_run_manifest(
+                artifact=artifact,
+                profile=args.profile,
+                mode=args.mode,
+                artifact_path=args.out,
+            )
+            manifest_output = json.dumps(manifest, indent=2, sort_keys=True) + "\n"
+            manifest_path = Path(args.manifest_out)
+            manifest_path.parent.mkdir(parents=True, exist_ok=True)
+            manifest_path.write_text(manifest_output, encoding="utf-8")
+        return 0
+    except (OSError, json.JSONDecodeError, ValueError, RuntimeError) as exc:
+        print(f"sandbox_runner: {str(exc).strip()[:800]}", file=sys.stderr)
+        return 1
+
+
+def _load_json(path: Path) -> dict[str, Any]:
+    with path.open("r", encoding="utf-8") as handle:
+        value = json.load(handle)
+    if not isinstance(value, dict):
+        raise SandboxRunnerError(f"{path} must decode to object")
+    return value
+
+
+def enforce_profile_policy(policy_path: str | Path, *, profile: str) -> dict[str, Any]:
+    """Fail closed when a pilot policy does not permit this sandbox profile."""
+
+    try:
+        from evidence.bundle import load_policy  # type: ignore
+    except ImportError as exc:  # pragma: no cover - environment issue.
+        raise SandboxRunnerError(
+            "policy enforcement requires PYTHONPATH=.:cyber-side:world-side"
+        ) from exc
+
+    policy = load_policy(policy_path)
+    allowed_modes = _object(policy.get("allowed_modes"))
+    validation_modes = _string_list(allowed_modes.get("validation"))
+    evidence_modes = _string_list(allowed_modes.get("evidence_generation"))
+    if "localhost_sandbox" not in validation_modes:
+        raise SandboxRunnerError("policy does not allow localhost_sandbox validation")
+    if "localhost_sandbox" not in evidence_modes:
+        raise SandboxRunnerError("policy does not allow localhost_sandbox evidence generation")
+
+    allowed_profiles = _string_list(policy.get("allowed_sandbox_profiles"))
+    if not allowed_profiles:
+        raise SandboxRunnerError("policy.allowed_sandbox_profiles is required for sandbox_runner")
+    if profile not in allowed_profiles:
+        raise SandboxRunnerError(f"policy does not allow sandbox profile: {profile}")
+    return policy
+
+
+def validate_customer_approval_record(
+    approval_path: str | Path | None,
+    *,
+    profile: str,
+    mode: str,
+) -> dict[str, Any]:
+    """Validate the sanitized customer gate required for non-fixture sandbox modes."""
+
+    if approval_path is None:
+        raise SandboxRunnerError(
+            "customer approval record is required before non-fixture sandbox mode"
+        )
+    approval = _load_json(Path(approval_path))
+    _scan_customer_approval_safe(approval)
+    if approval.get("schema_version") != CUSTOMER_APPROVAL_SCHEMA_VERSION:
+        raise SandboxRunnerError(
+            f"customer approval schema_version must be {CUSTOMER_APPROVAL_SCHEMA_VERSION}"
+        )
+    approval_id = _str(approval.get("approval_id"), "")
+    if not SAFE_APPROVAL_ID_RE.match(approval_id):
+        raise SandboxRunnerError("customer approval approval_id is required")
+    if approval.get("profile") != profile:
+        raise SandboxRunnerError("customer approval profile does not match requested profile")
+    if approval.get("mode") != mode:
+        raise SandboxRunnerError("customer approval mode does not match requested mode")
+    if approval.get("decision") != "approved":
+        raise SandboxRunnerError("customer approval decision must be approved")
+    approved_for = _string_list(approval.get("approved_for"))
+    if NON_FIXTURE_SANDBOX_APPROVAL not in approved_for:
+        raise SandboxRunnerError(
+            f"customer approval approved_for must include {NON_FIXTURE_SANDBOX_APPROVAL}"
+        )
+    attestations = _object(approval.get("safety_attestation"))
+    missing = [
+        key
+        for key in CUSTOMER_APPROVAL_ATTESTATIONS
+        if attestations.get(key) is not True
+    ]
+    if missing:
+        raise SandboxRunnerError(
+            "customer approval safety_attestation must set true: " + ", ".join(missing)
+        )
+    return approval
+
+
+def _scan_customer_approval_safe(value: Any, context: str = "customer_approval") -> None:
+    if isinstance(value, dict):
+        for key, item in value.items():
+            _scan_customer_approval_safe(item, f"{context}.{key}")
+        return
+    if isinstance(value, list):
+        for index, item in enumerate(value):
+            _scan_customer_approval_safe(item, f"{context}[{index}]")
+        return
+    if not isinstance(value, str):
+        return
+    if EMAIL_RE.search(value):
+        raise SandboxRunnerError(f"{context} contains email-like text")
+    if URL_RE.search(value):
+        raise SandboxRunnerError(f"{context} contains URL-like text")
+    if IP_RE.search(value):
+        raise SandboxRunnerError(f"{context} contains live IP-like text")
+    if HOSTNAME_RE.search(value):
+        raise SandboxRunnerError(f"{context} contains hostname-like text")
+    if SECRET_RE.search(value):
+        raise SandboxRunnerError(f"{context} contains secret-like text")
+
+
+def _sha256_normalized(value: Any) -> str:
+    return hashlib.sha256(
+        json.dumps(
+            value,
+            sort_keys=True,
+            separators=(",", ":"),
+            ensure_ascii=False,
+        ).encode("utf-8")
+    ).hexdigest()
+
+
+def _sha256_file(path: str | Path | None) -> str | None:
+    if path is None:
+        return None
+    file_path = Path(path)
+    if not file_path.exists() or not file_path.is_file():
+        return None
+    return hashlib.sha256(file_path.read_bytes()).hexdigest()
+
+
+def _safe_repo_relative_path(path: str | Path | None) -> str | None:
+    if path is None:
+        return None
+    try:
+        return str(Path(path).resolve().relative_to(REPO_ROOT))
+    except ValueError:
+        return None
+
+
+def _object(value: Any) -> dict[str, Any]:
+    return value if isinstance(value, dict) else {}
+
+
+def _string_list(value: Any) -> list[str]:
+    if not isinstance(value, list):
+        return []
+    return [item.strip() for item in value if isinstance(item, str) and item.strip()]
+
+
+def _str(value: Any, default: str) -> str:
+    if isinstance(value, str) and value.strip():
+        return value.strip()
+    return default
+
+
+def _generated_at(value: str | None) -> str:
+    if value:
+        datetime.fromisoformat(value.replace("Z", "+00:00"))
+        return value
+    return datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")

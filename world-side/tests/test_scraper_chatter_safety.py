@@ -17,6 +17,7 @@ ROOT = Path(__file__).resolve().parents[2]
 WORLD_SIDE = ROOT / "world-side"
 SCRAPER_ROOT = WORLD_SIDE / "scraper"
 FIXTURES = WORLD_SIDE / "fixtures"
+DEFAULT_POLICY = ROOT / "policy/prophet-pilot-policy.json"
 
 for import_root in (SCRAPER_ROOT, WORLD_SIDE):
     root_text = str(import_root)
@@ -163,6 +164,15 @@ class ScraperChatterSafetyTests(unittest.TestCase):
             "cisa_cybersecurity_advisories",
             "cisa_ics_advisories",
             "github_advisory_database",
+            "cveproject_cvelistv5_delta_log",
+            "cisa_vulnrichment_repo_commits",
+            "cisa_vulnrichment_cve_record_seed",
+            "osv_query_api_seed",
+            "redhat_security_data_cve_api",
+            "mitre_attack_enterprise_stix",
+            "mitre_cwe_latest_xml",
+            "mitre_capec_latest_xml",
+            "mitre_d3fend_ontology_json",
             "nuclei_templates_cve_commits",
             "openwall_oss_security_index",
             "fortinet_psirt_rss",
@@ -198,6 +208,8 @@ class ScraperChatterSafetyTests(unittest.TestCase):
             "worldmonitor_bootstrap_api",
             "reliefweb_active_disasters_api",
             "gdelt_cyber_geopolitics_articles",
+            "cisa_vulnrichment_cve_record_seed",
+            "osv_query_api_seed",
             "mastodon_public_security_tags",
             "telegram_public_channel_metadata",
             "onion_public_landing_metadata",
@@ -208,6 +220,13 @@ class ScraperChatterSafetyTests(unittest.TestCase):
         self.assertIn("ofac_sanctions_list_service", ready_defaults)
         self.assertIn("cisa_cybersecurity_advisories", ready_defaults)
         self.assertIn("github_advisory_database", ready_defaults)
+        self.assertIn("cveproject_cvelistv5_delta_log", ready_defaults)
+        self.assertIn("cisa_vulnrichment_repo_commits", ready_defaults)
+        self.assertIn("redhat_security_data_cve_api", ready_defaults)
+        self.assertIn("mitre_attack_enterprise_stix", ready_defaults)
+        self.assertIn("mitre_cwe_latest_xml", ready_defaults)
+        self.assertIn("mitre_capec_latest_xml", ready_defaults)
+        self.assertIn("mitre_d3fend_ontology_json", ready_defaults)
         self.assertIn("reddit_security_public_new", ready_defaults)
         self.assertIn("first_epss_api", ready_defaults)
         self.assertIn("state_travel_advisories_rss", ready_defaults)
@@ -251,9 +270,44 @@ class ScraperChatterSafetyTests(unittest.TestCase):
             if source["lane"] == "high_risk_metadata_only":
                 self.assertFalse(source["enabled"], f"{source['id']} is high risk")
 
+    def test_live_collector_rejects_unapproved_redirect_hosts(self) -> None:
+        from urllib.request import Request
+
+        from scraper_side.collectors import _AllowlistedRedirectHandler
+
+        handler = _AllowlistedRedirectHandler()
+        request = Request("https://www.cisa.gov/safe-feed.json")
+
+        with self.assertRaisesRegex(ValueError, "redirect host"):
+            handler.redirect_request(
+                request,
+                fp=None,
+                code=302,
+                msg="Found",
+                headers={},
+                newurl="https://example.com/redirected-feed.json",
+            )
+
+        redirected = handler.redirect_request(
+            request,
+            fp=None,
+            code=302,
+            msg="Found",
+            headers={},
+            newurl="/allowed-feed.json",
+        )
+        self.assertIsNotNone(redirected)
+
     def test_new_collectors_emit_sanitized_records(self) -> None:
         from scraper_side.catalog import CatalogEntry
         from scraper_side.collectors import (
+            collect_attack_stix,
+            collect_capec_catalog,
+            collect_cisa_vulnrichment,
+            collect_cve_delta_log,
+            collect_cve_record_v5,
+            collect_cwe_catalog,
+            collect_d3fend_ontology,
             collect_doj_press_releases,
             collect_federal_register_documents,
             collect_first_epss,
@@ -265,7 +319,9 @@ class ScraperChatterSafetyTests(unittest.TestCase):
             collect_microsoft_msrc_updates,
             collect_ofac_sdn_csv,
             collect_official_rss,
+            collect_osv_vulnerabilities,
             collect_reddit_listing,
+            collect_redhat_security_data,
             collect_reliefweb_disasters,
             collect_sanitized_json,
         )
@@ -375,6 +431,204 @@ class ScraperChatterSafetyTests(unittest.TestCase):
                 source_type="threat_intel_feed",
                 collection_tier="technical_chatter",
                 url="https://api.github.com/advisories",
+            ),
+        )
+        cve_delta_records = collect_cve_delta_log(
+            [
+                {
+                    "fetchTime": "2026-05-02T12:00:00Z",
+                    "numberOfChanges": 1,
+                    "new": [
+                        {
+                            "cveId": "CVE-2026-22345",
+                            "cveOrgLink": "https://www.cve.org/CVERecord?id=CVE-2026-22345",
+                            "dateUpdated": "2026-05-02T12:00:00Z",
+                        }
+                    ],
+                    "updated": [],
+                }
+            ],
+            CatalogEntry(
+                name="cveproject_cvelistv5_delta_log",
+                collector="cve_delta_log",
+                source_type="threat_intel_feed",
+                collection_tier="technical_chatter",
+                url="https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/deltaLog.json",
+            ),
+        )
+        cve_record_fixture = {
+            "cveMetadata": {
+                "cveId": "CVE-2026-22346",
+                "dateUpdated": "2026-05-02T12:00:00Z",
+            },
+            "containers": {
+                "cna": {
+                    "affected": [{"vendor": "Example Vendor", "product": "Edge Appliance"}],
+                    "problemTypes": [
+                        {"descriptions": [{"type": "CWE", "cweId": "CWE-287"}]}
+                    ],
+                }
+            },
+        }
+        cve_record_records = collect_cve_record_v5(
+            cve_record_fixture,
+            CatalogEntry(
+                name="cve_record_v5_fixture",
+                collector="cve_record_v5",
+                source_type="threat_intel_feed",
+                collection_tier="technical_chatter",
+                url="https://www.cve.org/CVERecord?id=CVE-2026-22346",
+            ),
+        )
+        cisa_vulnrichment_records = collect_cisa_vulnrichment(
+            {
+                **cve_record_fixture,
+                "cveMetadata": {
+                    "cveId": "CVE-2026-22347",
+                    "dateUpdated": "2026-05-02T12:00:00Z",
+                },
+                "containers": {
+                    "adp": [
+                        {
+                            "title": "CISA ADP Vulnrichment",
+                            "providerMetadata": {"shortName": "CISA-ADP"},
+                            "problemTypes": [
+                                {"descriptions": [{"type": "CWE", "cweId": "CWE-306"}]}
+                            ],
+                        }
+                    ]
+                },
+            },
+            CatalogEntry(
+                name="cisa_vulnrichment_cve_record_seed",
+                collector="cisa_vulnrichment",
+                source_type="official_government",
+                collection_tier="official_signal",
+                url="https://github.com/cisagov/vulnrichment",
+            ),
+        )
+        osv_records = collect_osv_vulnerabilities(
+            {
+                "vulns": [
+                    {
+                        "id": "OSV-2026-0001",
+                        "published": "2026-05-02T12:00:00Z",
+                        "aliases": ["CVE-2026-22348"],
+                        "affected": [
+                            {"package": {"ecosystem": "PyPI", "name": "fixture-package"}}
+                        ],
+                        "severity": [{"type": "CVSS_V3", "score": "7.5"}],
+                        "url": "https://osv.dev/vulnerability/OSV-2026-0001",
+                    }
+                ]
+            },
+            CatalogEntry(
+                name="osv_query_api_seed",
+                collector="osv_vulnerabilities",
+                source_type="threat_intel_feed",
+                collection_tier="technical_chatter",
+                url="https://api.osv.dev/v1/query",
+            ),
+        )
+        redhat_records = collect_redhat_security_data(
+            [
+                {
+                    "CVE": "CVE-2026-22349",
+                    "severity": "important",
+                    "public_date": "2026-05-02T12:00:00Z",
+                    "CWE": "CWE-130",
+                    "affected_packages": ["kernel"],
+                    "resource_url": "https://access.redhat.com/hydra/rest/securitydata/cve/CVE-2026-22349.json",
+                }
+            ],
+            CatalogEntry(
+                name="redhat_security_data_cve_api",
+                collector="redhat_security_data",
+                source_type="vendor_advisory",
+                collection_tier="technical_chatter",
+                url="https://access.redhat.com/hydra/rest/securitydata/cve.json",
+            ),
+        )
+        attack_records = collect_attack_stix(
+            {
+                "type": "bundle",
+                "objects": [
+                    {
+                        "type": "attack-pattern",
+                        "id": "attack-pattern--fixture",
+                        "name": "Valid Accounts",
+                        "modified": "2026-05-02T12:00:00Z",
+                        "external_references": [
+                            {
+                                "source_name": "mitre-attack",
+                                "external_id": "T1078",
+                                "url": "https://attack.mitre.org/techniques/T1078/",
+                            }
+                        ],
+                        "kill_chain_phases": [
+                            {"kill_chain_name": "mitre-attack", "phase_name": "defense-evasion"}
+                        ],
+                    }
+                ],
+            },
+            CatalogEntry(
+                name="mitre_attack_enterprise_stix",
+                collector="attack_stix",
+                source_type="threat_intel_feed",
+                collection_tier="technical_chatter",
+                url="https://raw.githubusercontent.com/mitre-attack/attack-stix-data/master/enterprise-attack/enterprise-attack.json",
+            ),
+        )
+        cwe_records = collect_cwe_catalog(
+            """
+            <Weakness_Catalog Date="2026-05-02">
+              <Weaknesses>
+                <Weakness ID="287" Name="Improper Authentication" Status="Draft" />
+              </Weaknesses>
+            </Weakness_Catalog>
+            """,
+            CatalogEntry(
+                name="mitre_cwe_latest_xml",
+                collector="cwe_catalog",
+                source_type="threat_intel_feed",
+                collection_tier="technical_chatter",
+                url="https://cwe.mitre.org/data/xml/cwec_latest.xml.zip",
+                format="xml",
+            ),
+        )
+        capec_records = collect_capec_catalog(
+            """
+            <Attack_Pattern_Catalog Date="2026-05-02">
+              <Attack_Patterns>
+                <Attack_Pattern ID="1" Name="Accessing Functionality Not Properly Constrained by ACLs" Abstraction="Standard" />
+              </Attack_Patterns>
+            </Attack_Pattern_Catalog>
+            """,
+            CatalogEntry(
+                name="mitre_capec_latest_xml",
+                collector="capec_catalog",
+                source_type="threat_intel_feed",
+                collection_tier="technical_chatter",
+                url="https://capec.mitre.org/data/xml/views/1000.xml.zip",
+                format="xml",
+            ),
+        )
+        d3fend_records = collect_d3fend_ontology(
+            {
+                "@graph": [
+                    {
+                        "@id": "d3f:NetworkTrafficAnalysis",
+                        "d3f:d3fend-id": "D3-NTA",
+                        "rdfs:label": "Network Traffic Analysis",
+                    }
+                ]
+            },
+            CatalogEntry(
+                name="mitre_d3fend_ontology_json",
+                collector="d3fend_ontology",
+                source_type="manual_analyst_note",
+                collection_tier="analyst_context",
+                url="https://d3fend.mitre.org/ontologies/d3fend.json",
             ),
         )
         github_commit_records = collect_github_commits(
@@ -547,6 +801,15 @@ class ScraperChatterSafetyTests(unittest.TestCase):
             *federal_records,
             *ofac_records,
             *github_advisory_records,
+            *cve_delta_records,
+            *cve_record_records,
+            *cisa_vulnrichment_records,
+            *osv_records,
+            *redhat_records,
+            *attack_records,
+            *cwe_records,
+            *capec_records,
+            *d3fend_records,
             *github_commit_records,
             *msrc_records,
             *reddit_records,
@@ -631,6 +894,173 @@ class ScraperChatterSafetyTests(unittest.TestCase):
             self.assertTrue(collection_manifest.exists())
             self.assertTrue(sanitization_manifest.exists())
             self.assertEqual(len(_read_jsonl(output_path)), 3)
+
+    def test_osint_snapshot_manifest_hashes_sanitized_records(self) -> None:
+        from scraper_side.catalog import CatalogEntry
+        from scraper_side.snapshot import build_osint_snapshot, write_osint_snapshot
+
+        entry = CatalogEntry(
+            name="osint_snapshot_fixture_input",
+            collector="sanitized_json",
+            source_type="threat_intel_feed",
+            collection_tier="technical_chatter",
+            format="metadata_jsonl",
+            local_path=FIXTURES / "osint-snapshot-sample.jsonl",
+        )
+        records, manifest = build_osint_snapshot(
+            [entry],
+            live=False,
+            limit_per_source=10,
+            max_records=20,
+            generated_at="2026-05-04T20:00:00Z",
+        )
+        self.assertEqual(len(records), 4)
+        self.assertEqual(manifest["schema_version"], "prophet.osint_snapshot_manifest.v0.1")
+        self.assertEqual(manifest["record_count"], 4)
+        self.assertTrue(manifest["safety_attestation"]["sanitized_records_only"])
+        self.assertEqual(manifest["failed_sources"], [])
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            out_jsonl = Path(tmpdir) / "snapshot.jsonl"
+            out_manifest = Path(tmpdir) / "snapshot.manifest.json"
+            write_osint_snapshot(records, manifest, out_jsonl=out_jsonl, out_manifest=out_manifest)
+            self.assertTrue(out_jsonl.exists())
+            self.assertTrue(out_manifest.exists())
+            self.assertEqual(len(_read_jsonl(out_jsonl)), 4)
+
+    def test_asset_seedset_drives_seeded_osint_snapshot(self) -> None:
+        from scraper_side.catalog import filter_catalog, load_source_catalog
+        from scraper_side.snapshot import build_osint_snapshot, write_osint_snapshot
+
+        catalog_path = SCRAPER_ROOT / "config" / "source_catalog.json"
+        entries = filter_catalog(
+            load_source_catalog(catalog_path),
+            [
+                "cisa_vulnrichment_cve_record_seed",
+                "osv_query_api_seed",
+                "redhat_security_data_cve_api",
+            ],
+        )
+        seedset = json.loads(
+            (ROOT / "assets/fixtures/dib-edge-appliance-seedset.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        records, manifest = build_osint_snapshot(
+            entries,
+            live=False,
+            asset_seedsets=[seedset],
+            seed_fixture_dir=FIXTURES / "seeded-osint",
+            limit_per_source=1,
+            max_records=20,
+            generated_at="2026-05-04T20:30:00Z",
+        )
+
+        self.assertEqual(len(records), 12)
+        self.assertEqual(manifest["record_count"], 12)
+        self.assertEqual(manifest["source_count"], 12)
+        self.assertEqual(manifest["failed_sources"], [])
+        self.assertTrue(manifest["seed_context"]["integrated"])
+        self.assertEqual(manifest["seed_context"]["cve_seed_count"], 4)
+        self.assertTrue(
+            manifest["seed_context"]["safety_attestation"]["metadata_seeds_only"]
+        )
+        for record in records:
+            accepted = self.api.validate(record.to_dict())
+            self.assert_no_unsafe_surface(_as_mapping(accepted, fallback=record.to_dict()))
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            out_jsonl = Path(tmpdir) / "seeded.jsonl"
+            out_manifest = Path(tmpdir) / "seeded.manifest.json"
+            write_osint_snapshot(records, manifest, out_jsonl=out_jsonl, out_manifest=out_manifest)
+            self.assertEqual(len(_read_jsonl(out_jsonl)), 12)
+            self.assertTrue(out_manifest.exists())
+
+    def test_asset_seedset_snapshot_cli_writes_seeded_records(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            out_jsonl = Path(tmpdir) / "seeded.jsonl"
+            out_manifest = Path(tmpdir) / "seeded.manifest.json"
+            proc = subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "scraper_side.snapshot",
+                    "--catalog",
+                    str(SCRAPER_ROOT / "config" / "source_catalog.json"),
+                    "--source",
+                    "cisa_vulnrichment_cve_record_seed",
+                    "--source",
+                    "osv_query_api_seed",
+                    "--source",
+                    "redhat_security_data_cve_api",
+                    "--asset-seedset",
+                    str(ROOT / "assets/fixtures/dib-edge-appliance-seedset.json"),
+                    "--seed-fixture-dir",
+                    str(FIXTURES / "seeded-osint"),
+                    "--policy",
+                    str(DEFAULT_POLICY),
+                    "--generated-at",
+                    "2026-05-04T20:30:00Z",
+                    "--limit-per-source",
+                    "1",
+                    "--max-records",
+                    "20",
+                    "--out-jsonl",
+                    str(out_jsonl),
+                    "--out-manifest",
+                    str(out_manifest),
+                ],
+                cwd=ROOT,
+                env={"PYTHONPATH": f"{SCRAPER_ROOT}:{ROOT}"},
+                text=True,
+                capture_output=True,
+                check=False,
+            )
+            self.assertEqual(proc.returncode, 0, proc.stderr)
+            self.assertEqual(len(_read_jsonl(out_jsonl)), 12)
+            manifest = json.loads(out_manifest.read_text(encoding="utf-8"))
+            self.assertTrue(manifest["seed_context"]["integrated"])
+            self.assertEqual(manifest["seed_context"]["cve_seed_count"], 4)
+            self.assertEqual(
+                manifest["policy"]["policy_id"],
+                "prophet-pilot-fixture-localhost-v0.1",
+            )
+            self.assertRegex(manifest["policy"]["policy_sha256"], r"^[0-9a-f]{64}$")
+
+    def test_asset_seedset_snapshot_cli_rejects_policy_blocked_source(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            policy_path = Path(tmpdir) / "blocked-source-policy.json"
+            policy = json.loads(DEFAULT_POLICY.read_text(encoding="utf-8"))
+            policy["allowed_source_ids"] = ["cisa_vulnrichment_cve_record_seed"]
+            policy_path.write_text(json.dumps(policy, indent=2, sort_keys=True), encoding="utf-8")
+            proc = subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "scraper_side.snapshot",
+                    "--catalog",
+                    str(SCRAPER_ROOT / "config" / "source_catalog.json"),
+                    "--source",
+                    "redhat_security_data_cve_api",
+                    "--asset-seedset",
+                    str(ROOT / "assets/fixtures/dib-edge-appliance-seedset.json"),
+                    "--seed-fixture-dir",
+                    str(FIXTURES / "seeded-osint"),
+                    "--policy",
+                    str(policy_path),
+                    "--out-jsonl",
+                    str(Path(tmpdir) / "seeded.jsonl"),
+                    "--out-manifest",
+                    str(Path(tmpdir) / "seeded.manifest.json"),
+                ],
+                cwd=ROOT,
+                env={"PYTHONPATH": f"{SCRAPER_ROOT}:{ROOT}"},
+                text=True,
+                capture_output=True,
+                check=False,
+            )
+            self.assertNotEqual(proc.returncode, 0)
+            self.assertIn("policy does not allow source ids", proc.stderr)
 
     def assert_rejected(self, record: dict[str, Any]) -> None:
         try:

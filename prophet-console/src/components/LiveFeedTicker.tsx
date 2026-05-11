@@ -19,12 +19,12 @@ const ENTRIES: string[] = [
   `[NVD] CVE-2021-44228 · CVSS 10.0 · AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H`,
   `[Prophet] Forecaster · fetch_kev() · sanitized records · OK`,
   `[Fixture] Log4j sandbox dependency profile · VULNERABLE before patch`,
-  `[Control] scraper VM run gate · requires SSH key auth`,
+  `[Control] live collection gate · policy blocked by default`,
   `[Prophet] score_epss() · CVE-2021-44228 · 0.97454 · p99.9`,
   `[Sandbox] network isolation enforced · no raw scrape content`,
   `[Validation] pre-patch fixture result · VULNERABLE`,
   `[Validation] post-patch fixture result · NOT VULNERABLE`,
-  `[Cyber] Direction C artifact loaded · post_patch_status=blocked`,
+  `[Defense] Direction C artifact loaded · post_patch_status=blocked`,
   `[Prophet] Validate phase · fixture result rendered`,
   `[Guardrail] no payloads · no credentials · no live indicators`,
   `[KEV] 3,612 total entries · last updated 2026-05-02T00:00:00Z`,
@@ -39,7 +39,7 @@ const ENTRIES: string[] = [
   `[Prophet] emit_artifact() · run_id: PRO-20260502-001 · SHA256: a3f9…c142`,
   `[Public index] Log4Shell references counted · raw entries not loaded`,
   `[ATT&CK] T1190 · Exploit Public-Facing Application · confirmed`,
-  `[Prophet] DEFEND complete · Sigma rule deployed · audit record signed`,
+  `[Prophet] Handoff complete · Sigma review template exported · audit record signed`,
 ];
 
 // Duplicate entries to ensure seamless looping
@@ -84,7 +84,7 @@ export function LiveFeedTicker() {
   }, []);
 
   return (
-    <div className="live-ticker" aria-label="Live feed" aria-hidden="true">
+    <div className="live-ticker" aria-label="Demo feed" aria-hidden="true">
       <div className="live-ticker-inner" ref={innerRef}>
         {TICKER_TEXT.map((entry, i) => (
           <span key={i} className="live-ticker-entry">

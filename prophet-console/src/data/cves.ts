@@ -24,7 +24,7 @@ export interface CVERecord {
   attackTechnique: string;
   cwe: string;
   vulnClass: string;
-  // World-Side linkage
+  // Forecast linkage
   worldCandidateId: string | null;
   // KEV metadata (extracted from kve.json)
   kevDateAdded: string;
@@ -47,7 +47,7 @@ export const cves: CVERecord[] = [
     attackTechnique: 'T1190',
     cwe: 'CWE-917',
     vulnClass: 'Remote Code Execution',
-    // World-Side: this CVE is the active demo path for the edge-appliance candidate
+    // Forecast: this CVE is the active demo path for the edge-appliance candidate
     worldCandidateId: 'cs-fixture-edge-appliance-001',
     // KEV metadata — kve.json row for CVE-2021-44228
     kevDateAdded: '2021-12-10',

@@ -10,6 +10,7 @@ from __future__ import annotations
 from dataclasses import asdict, dataclass, field
 from datetime import date, datetime
 import json
+import re
 from typing import Any
 
 
@@ -67,6 +68,45 @@ BANNED_VECTOR_KEYS = {
     "username",
     "password",
 }
+
+IP_RE = re.compile(
+    r"\b(?:(?:25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}"
+    r"(?:25[0-5]|2[0-4]\d|[01]?\d\d?)\b"
+)
+HOSTNAME_RE = re.compile(
+    r"\b(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+"
+    r"(?:com|net|org|mil|gov|edu|io|dev|local|lan|internal|corp|private)\b",
+    re.IGNORECASE,
+)
+EMAIL_RE = re.compile(r"[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}")
+SECRET_RE = re.compile(
+    r"(?:-----BEGIN [A-Z ]*PRIVATE KEY-----|"
+    r"\b(?:password|passwd|secret|api[_-]?key|access[_-]?token|token)\s*[:=])",
+    re.IGNORECASE,
+)
+URL_RE = re.compile(r"\b(?:https?|ssh|ftp)://", re.IGNORECASE)
+PAYLOAD_TOKENS = (
+    "${jndi:",
+    "${${",
+    "ldap://",
+    "rmi://",
+    "dns://",
+    "runtime.getruntime",
+    "cmd.exe",
+    "marshalsec",
+    "ysoserial",
+    "mimikatz",
+)
+PROCEDURAL_PHRASES = (
+    "curl ",
+    "powershell ",
+    "bash ",
+    "ssh ",
+    "run the following",
+    "execute the following",
+    "send the request",
+    "paste this",
+)
 
 
 class ValidationError(ValueError):
@@ -134,6 +174,7 @@ class ExploitCandidate:
     def from_mapping(cls, value: dict[str, Any]) -> "ExploitCandidate":
         if not isinstance(value, dict):
             raise ValidationError("candidate must be a JSON object")
+        _validate_candidate_safe(value, "candidate")
         candidate_id = _required_str(value, "candidate_id")
         generated_at = _required_str(value, "generated_at")
         _validate_datetime_string(generated_at, "generated_at")
@@ -544,6 +585,62 @@ def _validate_non_actionable_vector(vector: dict[str, Any]) -> None:
     for phrase in ["run ", "execute ", "curl ", "powershell", "bash ", "ssh ", "password"]:
         if phrase in mechanism:
             raise ValidationError("non_actionable_mechanism contains procedural language")
+
+
+def _validate_candidate_safe(value: Any, path: str) -> None:
+    if isinstance(value, dict):
+        for key, inner in value.items():
+            lowered = str(key).lower()
+            if (
+                lowered in BANNED_VECTOR_KEYS
+                or lowered.startswith("named_live_target")
+                or "payload" in lowered
+                or "credential" in lowered
+            ):
+                raise ValidationError(f"{path} contains banned candidate key: {key}")
+            _validate_candidate_safe(inner, f"{path}.{key}")
+    elif isinstance(value, list):
+        for idx, item in enumerate(value):
+            _validate_candidate_safe(item, f"{path}[{idx}]")
+    elif isinstance(value, str):
+        _validate_candidate_text_safe(value, path)
+
+
+def _validate_candidate_text_safe(value: str, path: str) -> None:
+    lowered = value.lower()
+    for phrase in PROCEDURAL_PHRASES:
+        if phrase in lowered:
+            raise ValidationError(f"{path} contains procedural phrase: {phrase!r}")
+    for token in PAYLOAD_TOKENS:
+        if token in lowered:
+            raise ValidationError(f"{path} contains payload-like token: {token!r}")
+    if EMAIL_RE.search(value):
+        raise ValidationError(f"{path} contains email-like text")
+    if SECRET_RE.search(value):
+        raise ValidationError(f"{path} contains credential-like text")
+    if _path_allows_public_source_url(path):
+        return
+    if URL_RE.search(value):
+        raise ValidationError(f"{path} contains URL-like text outside source_refs.url")
+    live_ips = [ip for ip in IP_RE.findall(value) if not _allowed_non_live_ip(ip)]
+    if live_ips:
+        raise ValidationError(f"{path} contains live-IP-like text")
+    if HOSTNAME_RE.search(value):
+        raise ValidationError(f"{path} contains hostname-like text")
+
+
+def _path_allows_public_source_url(path: str) -> bool:
+    return ".source_refs[" in path and path.endswith(".url")
+
+
+def _allowed_non_live_ip(raw_ip: str) -> bool:
+    return (
+        raw_ip.startswith("127.")
+        or raw_ip == "0.0.0.0"
+        or raw_ip.startswith("192.0.2.")
+        or raw_ip.startswith("198.51.100.")
+        or raw_ip.startswith("203.0.113.")
+    )
 
 
 def _required_mapping(value: dict[str, Any], key: str) -> dict[str, Any]:
