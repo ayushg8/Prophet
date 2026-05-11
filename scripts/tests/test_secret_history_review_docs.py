@@ -35,6 +35,8 @@ class SecretHistoryReviewDocsTests(unittest.TestCase):
 
         self.assertEqual(completed.returncode, 1)
         self.assertGreaterEqual(len(findings), 1)
+        self.assertIn("docs/SECRET_HISTORY_REVIEW.md", completed.stderr)
+        self.assertIn("do not paste matched values", completed.stderr)
         for commit in findings:
             self.assertIn(f"`{commit}`", review)
         self.assertIn("LOG4SHELL_INSTRUCTIONS.md", review)

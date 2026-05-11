@@ -141,6 +141,7 @@ fi
 
 if [[ "$finding_count" -gt 0 ]]; then
   printf 'Prophet secrets archaeology found %s potential issue(s).\n' "$finding_count" >&2
+  printf 'Review docs/SECRET_HISTORY_REVIEW.md for the safe owner-decision path; do not paste matched values into GitHub, docs, release notes, or agent prompts.\n' >&2
   exit 1
 fi
 
