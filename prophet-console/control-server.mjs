@@ -1149,6 +1149,8 @@ async function runIntegrationDemoExport(policyContext, operatorLabel = 'local-co
       'console-demo-integration-export',
       '--out-dir',
       integrationRuntimeDir,
+      '--zip-out',
+      integrationReviewBundleZip,
     ],
     {
       cwd: repoRoot,

@@ -33,11 +33,6 @@ if [[ $# -gt 0 ]]; then
   exit 2
 fi
 
-if ! command -v rg >/dev/null 2>&1; then
-  echo "error: rg is required for secrets archaeology checks" >&2
-  exit 2
-fi
-
 SECRET_PATTERN='AKIA[0-9A-Z]{16}|ASIA[0-9A-Z]{16}|-----BEGIN (RSA |DSA |EC |OPENSSH |PGP )?PRIVATE KEY-----|xox[baprs]-[A-Za-z0-9-]{10,}|ghp_[A-Za-z0-9_]{30,}|github_pat_[A-Za-z0-9_]{20,}|sk-[A-Za-z0-9]{20,}|(?i:(api[_-]?key|secret|token|password)[[:space:]]*[:=][[:space:]]*[A-Za-z0-9_./+=:-]{24,})'
 
 current_files=()
@@ -72,6 +67,14 @@ record_finding() {
   printf '%s\n' "$1" >&2
 }
 
+find_secret_matches() {
+  if command -v rg >/dev/null 2>&1; then
+    rg -l -I --pcre2 "$SECRET_PATTERN" "$@"
+    return $?
+  fi
+  grep -I -l -P -e "$SECRET_PATTERN" -- "$@"
+}
+
 printf '[1/4] Checking current tracked/untracked non-ignored filenames\n'
 for file in "${current_files[@]}"; do
   if is_allowed_secret_filename "$file"; then
@@ -85,7 +88,7 @@ done
 printf '[2/4] Checking current tracked/untracked non-ignored content\n'
 if [[ "${#current_files[@]}" -gt 0 ]]; then
   set +e
-  current_matches=$(rg -l -I --pcre2 "$SECRET_PATTERN" "${current_files[@]}")
+  current_matches=$(find_secret_matches "${current_files[@]}")
   rc=$?
   set -e
   if [[ "$rc" -gt 1 ]]; then
