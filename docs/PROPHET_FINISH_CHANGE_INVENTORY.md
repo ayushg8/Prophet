@@ -37,6 +37,8 @@ workflow and keep the commercial wedge narrow.
 Files:
 
 - `AGENTS.md`
+- `HACKATHON.md`
+- `PROPHET_TECHNICAL_WRITEUP.md`
 - `README.md`
 - `docs/COMMERCIAL_READINESS.md`
 - `docs/BUYER_FAQ.md`
@@ -50,6 +52,7 @@ Files:
 - `docs/EXPOSURE_CLASSIFICATION_GUIDE.md`
 - `scripts/tests/test_product_validation_plan_docs.py`
 - `scripts/tests/test_exposure_classification_guide_docs.py`
+- `scripts/tests/test_historical_provenance_docs.py`
 
 Review focus:
 
@@ -506,7 +509,7 @@ sanitized examples.
 
 Latest verification run for this inventory:
 
-- `python3 -m unittest discover -s scripts/tests -v`: 389 tests passed after
+- `python3 -m unittest discover -s scripts/tests -v`: 390 tests passed after
   the NIST/CMMC security packet docs guard, send-boundary dashboard, copy-only resume boundary, CLI-reference,
   validation-resume, goal-resume, validation-team-update, validation-weekly-review,
   validation-next-action handoff generation, weekly-review `review_date`,
@@ -522,6 +525,7 @@ Latest verification run for this inventory:
   reply-triage helper and Make wrapper guardrails,
   release-checklist validation-gate and pre-commit hook guard,
   overnight-loop validation-gate guard, overnight historical-doc guard,
+  hackathon provenance historical-doc guard,
   default-output URL safety, raw-to-sanitized boundary
   docs, customer-safe fixture-generation docs, exposure-classification guide
   docs, source-governance policy review, and OSINT provenance manifest check
@@ -740,7 +744,7 @@ Latest verification run for this inventory:
 - `PYTHONPATH=.:cyber-side:world-side python3 scripts/check-release-safety.py --diff`:
   passed over 0 paths in the clean committed worktree.
 - `PYTHONPATH=.:cyber-side:world-side python3 scripts/check-release-safety.py --tracked --paths-only`:
-  passed over 357 tracked paths, including release-bound policy-hash coverage
+  passed over 358 tracked paths, including release-bound policy-hash coverage
   checks.
 - `python3 -m policy.lint --policy policy/prophet-pilot-policy.json`:
   passed and reported policy ID `prophet-pilot-fixture-localhost-v0.1` with

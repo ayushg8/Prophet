@@ -1,5 +1,12 @@
 # Project Prophet — High-Level Technical Writeup
 
+> Historical context: this pre-event technical writeup is retained for
+> provenance. It is not the current product direction. For current work, use
+> `AGENTS.md`, `docs/CODEX_CEO_FINISH_BRIEF.md`, and
+> `docs/PROPHET_COMPLETION_AUDIT.md`. Prophet is now scoped as a policy-bound
+> defensive exposure evidence workflow, not zero-day prediction, exploit
+> tooling, live target validation, or autonomous remediation.
+
 > Compiled 2026-05-02 from the partner's whiteboard sketch (`research/PROJECT_PROPHET_SKETCH.md`) and two parallel research passes (`research/PROPHET_competitive_landscape.md`, `research/PROPHET_policy_risk.md`). Feasibility report still inbound.
 
 ## Did I understand the sketch? Yes.

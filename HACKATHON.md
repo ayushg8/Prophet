@@ -1,5 +1,12 @@
 # Prophet — Hackathon Context
 
+> Historical context: this hackathon-era document is retained for provenance.
+> It is not the current product direction. For current work, use `AGENTS.md`,
+> `docs/CODEX_CEO_FINISH_BRIEF.md`, and `docs/PROPHET_COMPLETION_AUDIT.md`.
+> Prophet is now scoped as a policy-bound defensive exposure evidence workflow,
+> not zero-day prediction, exploit tooling, live target validation, or
+> autonomous remediation.
+
 **Event:** 3rd Annual National Security Hackathon (Army xTech, hosted by Cerebral Valley)
 **Dates:** Sat 2026-05-02 11:45 PT → Sun 2026-05-03 12:00 PT
 **Venue:** Shack15, 1 Ferry Building Suite 201, San Francisco, CA 94111
