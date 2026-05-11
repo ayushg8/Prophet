@@ -544,7 +544,7 @@ non-live unless a future customer policy explicitly authorizes a narrower mode.
 - [x] Console control evidence smoke.
 - [x] Console browser smoke.
 - [x] Fresh clone smoke on macOS.
-- [ ] Fresh clone smoke on Linux.
+- [x] Fresh clone smoke on Linux.
 - [ ] Python version matrix.
 - [ ] Node version matrix.
 - [x] CI smoke hash verification.

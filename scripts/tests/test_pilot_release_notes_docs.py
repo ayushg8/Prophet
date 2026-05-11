@@ -8,6 +8,7 @@ ROOT = Path(__file__).resolve().parents[2]
 RELEASE_NOTES = ROOT / "docs" / "PILOT_RELEASE_NOTES.md"
 CHANGELOG = ROOT / "CHANGELOG.md"
 CI_WORKFLOW = ROOT / ".github" / "workflows" / "ci.yml"
+MASTER_TODO = ROOT / "docs" / "PROPHET_MASTER_TODO.md"
 
 
 class PilotReleaseNotesDocsTests(unittest.TestCase):
@@ -71,6 +72,7 @@ class PilotReleaseNotesDocsTests(unittest.TestCase):
     def test_linux_fresh_clone_smoke_is_ci_backed(self) -> None:
         notes = RELEASE_NOTES.read_text(encoding="utf-8")
         workflow = CI_WORKFLOW.read_text(encoding="utf-8")
+        master_todo = MASTER_TODO.read_text(encoding="utf-8")
 
         self.assertIn("runs on `ubuntu-latest`", notes)
         self.assertIn("Linux fresh-clone pilot smoke preflight", notes)
@@ -79,6 +81,7 @@ class PilotReleaseNotesDocsTests(unittest.TestCase):
         self.assertIn("run: ./scripts/check-local-env.sh", workflow)
         self.assertIn("name: Linux fresh-clone pilot smoke", workflow)
         self.assertIn("run: ./scripts/run-pilot-demo-smoke.sh", workflow)
+        self.assertIn("[x] Fresh clone smoke on Linux.", master_todo)
 
     def test_changelog_names_current_gate_and_review_guardrails(self) -> None:
         text = CHANGELOG.read_text(encoding="utf-8")
