@@ -397,14 +397,12 @@ Review focus:
   fields while allowing public source citations, and should verify
   policy-listed OSINT snapshot provenance manifests.
 - Pilot release tag remains blocked until the historical secret-history finding
-  has an owner decision. A true GitHub fresh clone of the PR branch passed on
-  macOS with 26 verified pilot hashes. The GitHub Actions `python` job runs on
-  `ubuntu-latest` and now names the Linux fresh-clone pilot smoke steps.
-  Exact-head fresh-clone evidence belongs in the PR verification notes because
-  documentation commits can move the branch head; rerun true macOS fresh-clone
-  smoke after any further commit before merge or release decisions. PR checks
-  are green on the pushed head, but must be rechecked before merge or release
-  decisions.
+  has an owner decision. A true GitHub fresh clone of the PR branch at
+  `6fe55f3` passed on macOS with 26 verified pilot hashes. The GitHub Actions
+  `python` job runs on `ubuntu-latest` and now names the Linux fresh-clone pilot
+  smoke steps. Rerun true macOS fresh-clone smoke after any further commit
+  before merge or release decisions. PR checks are green on the pushed head, but
+  must be rechecked before merge or release decisions.
 - `make worktree-smoke` should remain a local pre-commit release-hygiene check:
   it may clone HEAD to `/tmp`, overlay non-ignored dirty files, and run the safe
   root smoke, but must not copy `validation/private/`, stage, commit, push, tag,
@@ -646,9 +644,10 @@ Latest verification run for this inventory:
 - `make pilot-ready-check DATE=2026-05-11`: passed, including local environment
   check, default buyer pilot smoke, dated validation dashboard, production
   readiness summary, and release-safety diff scan.
-- `make pilot-ready-check-full DATE=2026-05-11`: passed, including the same
-  readiness preflight, console lint/build, control evidence smoke, 5 Playwright
-  tests, and console dependency audit.
+- `make pilot-ready-check-full DATE=2026-05-11`: passed at PR head `6fe55f3`
+  at verification time, including the same readiness preflight, console
+  lint/build, control evidence smoke, 5 Playwright tests, and console
+  dependency audit.
 - `make worktree-smoke`: local wrapper added for repeatable dirty-worktree
   overlay smoke. It clones HEAD to `/tmp`, overlays current non-ignored dirty
   files, excludes ignored private validation files, then runs
@@ -794,7 +793,8 @@ runtime output contents into the PR.
 
 ## Verification
 
-- `make pilot-ready-check-full DATE=2026-05-11` passed.
+- `make pilot-ready-check-full DATE=2026-05-11` passed at PR head `6fe55f3`
+  at verification time.
 - `make python-tests` passed.
 - `make release-hygiene` passed.
 - `make console-live-check` passed against the running local demo.

@@ -3,8 +3,7 @@
 Date: 2026-05-11
 Status: release-candidate notes, not a git tag
 Branch: `prophet-pilot-consolidation-2026-05-05`
-Baseline commit checked: see PR verification notes for the latest exact-head
-fresh-clone run.
+Baseline commit checked: `6fe55f3`
 
 These notes identify the safe fixture/hash set for the current buyer pilot.
 This release candidate does not authorize live target validation.
@@ -117,8 +116,9 @@ After the default smoke passes, the main reviewer artifacts are:
 - Local worktree smoke passed on 2026-05-10 after adding the handoff review
   checklist artifact, manifest customer-placeholder validation, and Forecast
   section rationale/source-ID rendering in the evidence Markdown.
-- `make pilot-ready-check-full DATE=2026-05-11` passed on 2026-05-11, including
-  console lint/build, control evidence smoke, 5 Playwright console tests, and
+- `make pilot-ready-check-full DATE=2026-05-11` passed on 2026-05-11 at
+  PR head `6fe55f3` at verification time, including console lint/build,
+  control evidence smoke, 5 Playwright console tests, and
   `npm audit --audit-level=moderate` with 0 vulnerabilities.
 - `cd prophet-console && npm run capture:screenshots` passed and generated 6
   redacted desktop/mobile evaluator screenshots under ignored
@@ -163,11 +163,11 @@ After the default smoke passes, the main reviewer artifacts are:
   `./scripts/check-local-env.sh`, and passing the default smoke with 26
   verified hashes.
 - A true GitHub fresh clone of branch
-  `prophet-pilot-consolidation-2026-05-05` passed on macOS on 2026-05-11 with
+  `prophet-pilot-consolidation-2026-05-05` at PR head `6fe55f3` at
+  verification time passed on macOS on 2026-05-11 with
   `./scripts/check-local-env.sh` and `./scripts/run-pilot-demo-smoke.sh`,
-  verifying 26 pilot hashes. Exact-head fresh-clone evidence belongs in the PR
-  verification notes because documentation commits can move the branch head;
-  rerun this check after any further commit before merge or release decisions.
+  verifying 26 pilot hashes. Rerun this check after any further commit before
+  merge or release decisions.
 - The GitHub Actions `python` job runs on `ubuntu-latest` and now names the
   `Linux fresh-clone pilot smoke preflight` plus
   `Linux fresh-clone pilot smoke` steps, covering the Linux fresh-clone smoke
