@@ -14,10 +14,10 @@ It does not tag, deploy, or mark the product complete.
 - Critical open readiness items: `24`.
 - Outreach status: 8 pending send/update items, 0 attention errors.
 - Latest implementation checkpoint is
-  `1003f32d9f7381a4df7cde3796c2a02ab431d170`
-  (`1003f32 Add safe SBOM demo wrapper`); the GitHub
+  `6eb85ebe72a241040cb47bf20dddbebb2ae9c13a`
+  (`6eb85eb Add supply-chain review artifact checker`); the GitHub
   `main` CI run for that checkpoint completed successfully at
-  <https://github.com/Ayush1298567/Prophet/actions/runs/25685871927>.
+  <https://github.com/Ayush1298567/Prophet/actions/runs/25687002226>.
   Future product/workflow commits after that checkpoint must rerun GitHub
   `main` CI and the relevant local handoff gates before being treated as
   current.
@@ -845,14 +845,14 @@ Latest verification run for this inventory:
 - `python3 scripts/production-readiness-scorecard.py`: readiness `37.8%`,
   24 critical open items.
 - Latest implementation checkpoint:
-  `1003f32d9f7381a4df7cde3796c2a02ab431d170`
-  (`1003f32 Add safe SBOM demo wrapper`). GitHub `main`
+  `6eb85ebe72a241040cb47bf20dddbebb2ae9c13a`
+  (`6eb85eb Add supply-chain review artifact checker`). GitHub `main`
   CI completed successfully at
-  <https://github.com/Ayush1298567/Prophet/actions/runs/25685871927>. This
-  checkpoint makes `make release-tag-preflight DATE=YYYY-MM-DD` report both
-  current release blockers after hygiene: the historical secret-history owner
-  decision and the closed real-validation build gate. It does not open
-  production platform scope while validation remains `insufficient_data`.
+  <https://github.com/Ayush1298567/Prophet/actions/runs/25687002226>. This
+  checkpoint adds the ignored supply-chain review artifact checker, keeps
+  `make release-tag-preflight DATE=YYYY-MM-DD` reporting both current release
+  blockers after hygiene, and does not open production platform scope while
+  validation remains `insufficient_data`.
 
 ## PR Handoff Draft
 
@@ -903,15 +903,15 @@ runtime output contents into the PR.
   checks, and the root pilot demo smoke; checkpoint `934f756` passed GitHub
   `main` CI, the dated validation dashboard, full-batch pre-send checking, and
   single-target pre-send checking; checkpoint `4d9565c` passed GitHub `main`
-  CI and `make validation-resume DATE=2026-05-11`; and latest implementation
-  checkpoint `1003f32` passed GitHub `main` CI,
+  CI and `make validation-resume DATE=2026-05-11`; checkpoint `1003f32` passed
+  GitHub `main` CI, local script tests, release hygiene, pilot smoke, live
+  console check, validation pre-send checks, and release-tag preflight failing
+  closed while reporting both current blockers; and latest implementation
+  checkpoint `6eb85eb` passed GitHub `main` CI,
   `python3 -m unittest discover -s scripts/tests -v`, `make release-hygiene`,
-  `./scripts/run-pilot-demo-smoke.sh`, `make console-live-check`,
-  `make validation-pre-send-check-all DATE=2026-05-11`,
-  `make validation-send-copy-check DATE=2026-05-11`,
-  `make validation-contact-form-copy-check DATE=2026-05-11`, and
-  `make release-tag-preflight DATE=2026-05-11` failed closed while reporting
-  both current blockers.
+  `make pilot-ready-check-full DATE=2026-05-11`,
+  `make supply-chain-sbom DATE=2026-05-11`, and
+  `make supply-chain-sbom-check DATE=2026-05-11`.
 - `python3 -m unittest discover -s scripts/tests -v` passed with 410 tests.
 - `make release-hygiene` passed.
 - `make console-live-check` passed against the running local demo.
@@ -945,9 +945,9 @@ runtime output contents into the PR.
   documentation-only commits; rerun it before release tagging if a later release
   tag moves beyond this commit.
   Linux fresh-clone smoke is covered by the Ubuntu CI pilot smoke steps.
-- Latest implementation checkpoint is `1003f32`, and the GitHub `main` CI run
+- Latest implementation checkpoint is `6eb85eb`, and the GitHub `main` CI run
   for that checkpoint completed successfully:
-  <https://github.com/Ayush1298567/Prophet/actions/runs/25685871927>.
+  <https://github.com/Ayush1298567/Prophet/actions/runs/25687002226>.
   Future product/workflow commits after that checkpoint must rerun GitHub
   `main` CI and the relevant local handoff gates before being treated as
   current.
