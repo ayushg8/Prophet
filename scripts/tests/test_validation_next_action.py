@@ -41,12 +41,16 @@ class ValidationNextActionTests(unittest.TestCase):
         self.assertIn("refuses all `CONFIRM_*` write", rendered)
         self.assertIn("make validation-dashboard DATE=2026-05-11", rendered)
         self.assertIn("make validation-send-copy-check DATE=2026-05-11", rendered)
+        self.assertIn("make validation-contact-form-copy-check DATE=2026-05-11", rendered)
         self.assertIn("copy_files_outbound_safe: true", rendered)
         self.assertIn("readme_matches_manifest: true", rendered)
         self.assertIn("checklist_matches_manifest: true", rendered)
         self.assertIn("copy_index_matches_manifest: true", rendered)
+        self.assertIn("index_matches_manifest: true", rendered)
         self.assertIn("subject_order_matches_manifest: true", rendered)
         self.assertIn("do_not_send_matches_manifest: true", rendered)
+        self.assertIn("contact_form_copy_state: ready", rendered)
+        self.assertIn("contact_form_copy_matches_current_pack: true", rendered)
         self.assertIn("operator_metadata_outbound_safe: false", rendered)
         self.assertIn("DO_NOT_SEND guard", rendered)
         self.assertIn("private operator", rendered)
@@ -57,6 +61,8 @@ class ValidationNextActionTests(unittest.TestCase):
         )
         self.assertIn("validation/private/today-send-copy.txt", rendered)
         self.assertIn("validation/private/send-copy-2026-05-11", rendered)
+        self.assertIn("validation/private/contact-form-copy-2026-05-11", rendered)
+        self.assertIn("public contact forms with tighter limits", rendered)
         self.assertIn("does not store recipient names", rendered)
         self.assertIn("external outreach channel", rendered)
         self.assertIn("real contact selected outside the repo", rendered)
@@ -273,6 +279,10 @@ def _example_dashboard() -> dict[str, object]:
             "send_copy_batch_matches_current_pack": True,
             "send_copy_batch_dir": "validation/private/send-copy-2026-05-11",
             "send_copy_batch_copy_file_count": 8,
+            "contact_form_copy_state": "ready",
+            "contact_form_copy_matches_current_pack": True,
+            "contact_form_copy_dir": "validation/private/contact-form-copy-2026-05-11",
+            "contact_form_copy_file_count": 8,
             "next_pending_target_label": "target-dib-platform-001",
             "next_pending_group": "targeted_ask",
             "next_pending_dry_run_apply_command": (

@@ -67,6 +67,7 @@ def render_next_action(
         "```bash",
         f"make validation-dashboard DATE={run_date}",
         f"make validation-send-copy-check DATE={run_date}",
+        f"make validation-contact-form-copy-check DATE={run_date}",
         f"make validation-prune-private DATE={run_date}",
     ]
     dry_run = outreach.get("next_pending_dry_run_apply_command")
@@ -82,6 +83,8 @@ def render_next_action(
             f"- `send_copy_matches_next_pending: {_lower_bool(outreach.get('send_copy_matches_next_pending'))}`",
             f"- `send_copy_batch_state: {outreach.get('send_copy_batch_state', 'unavailable')}`",
             f"- `send_copy_batch_matches_current_pack: {_lower_bool(outreach.get('send_copy_batch_matches_current_pack'))}`",
+            f"- `contact_form_copy_state: {outreach.get('contact_form_copy_state', 'unavailable')}`",
+            f"- `contact_form_copy_matches_current_pack: {_lower_bool(outreach.get('contact_form_copy_matches_current_pack'))}`",
             f"- `needs_attention: {(outreach.get('counts') or {}).get('needs_attention', 'unavailable')}`",
             "",
             "Also proceed only if `make validation-send-copy-check` reports:",
@@ -93,9 +96,18 @@ def render_next_action(
             "- `subject_order_matches_manifest: true`",
             "- `do_not_send_matches_manifest: true`",
             "",
+            "If using public contact forms, also proceed only if",
+            "`make validation-contact-form-copy-check` reports:",
+            "",
+            "- `copy_files_outbound_safe: true`",
+            "- `readme_matches_manifest: true`",
+            "- `checklist_matches_manifest: true`",
+            "- `index_matches_manifest: true`",
+            "- `do_not_send_matches_manifest: true`",
+            "",
             "`operator_metadata_outbound_safe: false` is expected because the",
-            "manifest, README, checklist, copy index, subject-order helper, and",
-            "DO_NOT_SEND guard are private operator metadata. Send only the",
+            "manifests, README/checklist files, copy indexes, subject-order helper,",
+            "and DO_NOT_SEND guards are private operator metadata. Send only the",
             "numbered `.txt` file contents.",
             "",
             "The dry-run apply command must still show the target moving to",
@@ -162,6 +174,34 @@ def render_next_action(
                 "",
             ]
         )
+    contact_form_dir = outreach.get("contact_form_copy_dir")
+    if outreach.get("contact_form_copy_state") == "ready" and contact_form_dir:
+        lines.extend(
+            [
+                "For public contact forms with tighter limits, copy only the contents",
+                "of the numbered `.txt` files in:",
+                "",
+                "```text",
+                str(contact_form_dir),
+                "```",
+                "",
+                "Do not send the contact-form manifest, checklist, index, README,",
+                "DO_NOT_SEND guard, target labels, tracker commands, or operator metadata.",
+                "",
+            ]
+        )
+    else:
+        lines.extend(
+            [
+                "The contact-form copy batch is not ready. Refresh it before using",
+                "public contact-form copy:",
+                "",
+                "```bash",
+                f"make validation-contact-form-copy DATE={run_date}",
+                "```",
+                "",
+            ]
+        )
     confirmed = outreach.get("next_pending_confirmed_apply_command")
     lines.extend(
         [
@@ -216,6 +256,8 @@ def render_next_action(
             f"- Needs attention: {(outreach.get('counts') or {}).get('needs_attention', 'unavailable')}",
             f"- Batch copy files: {outreach.get('send_copy_batch_copy_file_count', 'unavailable')}",
             f"- Batch state: {outreach.get('send_copy_batch_state', 'unavailable')}",
+            f"- Contact-form copy files: {outreach.get('contact_form_copy_file_count', 'unavailable')}",
+            f"- Contact-form state: {outreach.get('contact_form_copy_state', 'unavailable')}",
         ]
     )
     if git_head:

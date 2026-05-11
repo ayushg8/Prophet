@@ -281,7 +281,8 @@ send-boundary summary and `--format team` for the aggregate update.
 `scripts/validation-next-action.py` and writes a regenerated private
 `validation/private/NEXT_ACTION.md` handoff from the current dashboard so a
 restored session does not depend on stale PR/head, worktree, CI, or
-send-boundary notes.
+send-boundary notes. The handoff includes send-copy and contact-form copy
+readiness checks before any restored session sends outreach.
 `make validation-weekly-review` writes a read-only private weekly review under
 `validation/private/`; it reports the validation gate, message-pack age, stale
 private artifacts, and pruning candidates, but does not delete files, send
