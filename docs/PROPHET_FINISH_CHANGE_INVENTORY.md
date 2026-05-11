@@ -13,11 +13,11 @@ It does not tag, deploy, or mark the product complete.
 - Production readiness: `33.3%`.
 - Critical open readiness items: `26`.
 - Outreach status: 8 pending send/update items, 0 attention errors.
-- Latest implementation checkpoint before this audit-only resume refresh is
-  `f91da90463b753743175d89d82e6f709f8ffc859`
-  (`f91da90 Add supply-chain SBOM review generator`); the GitHub `main` CI run
-  for that checkpoint completed successfully at
-  <https://github.com/Ayush1298567/Prophet/actions/runs/25666846465>.
+- Current implementation checkpoint is
+  `6bd27c6a9d149eaf62c35c159468240a0daac770`
+  (`6bd27c6 Add pre-send guard to validation send artifacts`); the GitHub
+  `main` CI run for that checkpoint completed successfully at
+  <https://github.com/Ayush1298567/Prophet/actions/runs/25670236106>.
   Treat the moving current head as live state from `git log --oneline -1` and
   GitHub `main` CI rather than hardcoding it into this inventory.
 
@@ -797,13 +797,13 @@ Latest verification run for this inventory:
   and unproven buyer demand.
 - `python3 scripts/production-readiness-scorecard.py`: readiness `33.3%`,
   26 critical open items.
-- Latest implementation checkpoint before this audit-only resume refresh:
-  `f91da90463b753743175d89d82e6f709f8ffc859`
-  (`f91da90 Add supply-chain SBOM review generator`). GitHub `main` CI
-  completed successfully at
-  <https://github.com/Ayush1298567/Prophet/actions/runs/25666846465>. This
-  checkpoint includes the supply-chain SBOM review generator and does not open
-  production platform scope while validation remains `insufficient_data`.
+- Current implementation checkpoint:
+  `6bd27c6a9d149eaf62c35c159468240a0daac770`
+  (`6bd27c6 Add pre-send guard to validation send artifacts`). GitHub `main`
+  CI completed successfully at
+  <https://github.com/Ayush1298567/Prophet/actions/runs/25670236106>. This
+  checkpoint adds the pre-send validation guard and does not open production
+  platform scope while validation remains `insufficient_data`.
 
 ## PR Handoff Draft
 
@@ -885,9 +885,9 @@ runtime output contents into the PR.
   documentation-only commits; rerun it before release tagging if a later release
   tag moves beyond this commit.
   Linux fresh-clone smoke is covered by the Ubuntu CI pilot smoke steps.
-- Latest implementation checkpoint before this audit-only refresh is `f91da90`,
-  and the GitHub `main` CI run for that checkpoint completed successfully:
-  <https://github.com/Ayush1298567/Prophet/actions/runs/25666846465>.
+- Current implementation checkpoint is `6bd27c6`, and the GitHub `main` CI run
+  for that checkpoint completed successfully:
+  <https://github.com/Ayush1298567/Prophet/actions/runs/25670236106>.
   Use `git log --oneline -1` plus GitHub `main` CI for the moving current head.
 ```
 
