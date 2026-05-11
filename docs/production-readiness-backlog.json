@@ -551,7 +551,7 @@
       "name": "Security Review And Compliance Packet",
       "target_version": "v1.0",
       "owner": "security",
-      "status": "planned",
+      "status": "in_progress",
       "risk_tags": ["security", "compliance", "buyer"],
       "acceptance_gates": [
         "Customer security review packet is complete enough for a paid pilot security team.",
@@ -592,12 +592,13 @@
         {
           "id": "M8-04",
           "title": "Complete incident response playbook",
-          "status": "planned",
+          "status": "done",
           "priority": "P1",
           "owner": "security",
           "target_version": "v1.0",
           "risk_tags": ["security", "ops", "compliance"],
-          "acceptance_gates": ["Playbook covers data spill, credential exposure, policy bypass, integration misfire, sandbox escape, and customer notification."]
+          "acceptance_gates": ["Playbook covers data spill, credential exposure, policy bypass, integration misfire, sandbox escape, and customer notification."],
+          "evidence_paths": ["docs/INCIDENT_RESPONSE_PLAYBOOK.md"]
         },
         {
           "id": "M8-05",

@@ -242,6 +242,9 @@ operator board for the next buyer-pilot cycles.
   fixture validates against that contract.
 - [x] Data classification and artifact inventory exists for buyer/security
   review: `docs/DATA_CLASSIFICATION_AND_ARTIFACT_INVENTORY.md`.
+- [x] Incident response playbook exists for data spills, credential exposure,
+  policy bypass, integration misfire, sandbox escape, and customer notification:
+  `docs/INCIDENT_RESPONSE_PLAYBOOK.md`.
 - [x] Local operator identity format guidance exists for the buyer pilot:
   `docs/OPERATOR_IDENTITY_GUIDE.md`.
 - [x] Signed operator approval design exists for future buyer/security review:

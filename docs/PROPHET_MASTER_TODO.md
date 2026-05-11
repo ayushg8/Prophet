@@ -432,7 +432,7 @@ non-live unless a future customer policy explicitly authorizes a narrower mode.
 - [ ] Add customer data retention and deletion workflow.
 - [ ] Add backup and restore plan.
 - [ ] Add observability design.
-- [ ] Add incident response playbook.
+- [x] Add incident response playbook.
 - [ ] Add formal disaster recovery target.
 - [ ] Add environment promotion flow: dev, staging, pilot, production.
 - [ ] Add release train policy.

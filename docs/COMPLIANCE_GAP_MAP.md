@@ -56,7 +56,7 @@ The repo is not yet production-compliance-ready because it lacks:
 | Audit and accountability | Local hash chain exists | Durable production audit store and policy change audit | Audit schema, export, retention, chain verification |
 | Configuration management | Scripts and CI exist | Environment promotion, config validation, release train | Deployment runbooks, config schema, changelog |
 | Identification and authentication | Demo operator labels | IdP-backed user identity and service identity | OIDC/SAML docs and tests |
-| Incident response | Security policy exists | Formal IR playbook and notification templates | IR plan, tabletop notes, contact matrix |
+| Incident response | Security policy and IR playbook exist | Tabletop exercise, contact matrix, and customer-specific notification routing | `docs/INCIDENT_RESPONSE_PLAYBOOK.md`, tabletop notes, contact matrix |
 | Risk assessment | Defense readiness docs exist | Formal risk register and recurring review | Risk register, POA&M, review cadence |
 | System and communications protection | Localhost/default fixture safety | TLS, secure headers, encrypted storage, network policy | Deployment architecture and security tests |
 | System and information integrity | Validators and CI exist | Vulnerability management and patch cadence | Dependency review, SAST, container scan, remediation SLA |
@@ -76,7 +76,7 @@ Do before claiming readiness for environments that may handle CUI:
 - Add audit and accountability evidence: audit event schema, retention, review.
 - Add configuration management evidence: release train, change approvals,
   deployment baselines.
-- Add incident response plan and tabletop exercise.
+- Run a tabletop exercise against the incident response playbook.
 - Add risk assessment and POA&M process.
 - Add media/storage handling rules for evidence artifacts.
 - Add system integrity process: scanning, dependency review, patch cadence.
@@ -144,7 +144,7 @@ The v1.0 customer packet should include:
 2. Turn the data classification inventory into enforceable production controls.
 3. Add RBAC/tenant model design before production code.
 4. Add durable audit and evidence storage design.
-5. Add incident response playbook.
+5. Run an incident response tabletop exercise and fill the contact matrix.
 6. Add secrets manager design.
 7. Add backup/restore design.
 8. Add control matrix once the production architecture is implemented enough to
