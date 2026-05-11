@@ -441,7 +441,7 @@ def _tracker_update_command(
     elif kind == "follow_up":
         status = "outreach_sent"
         next_action = "Send second follow-up or disqualify if no reply."
-        required_statuses = ["follow_up_due"]
+        required_statuses = ["follow_up_due", "outreach_sent"]
     else:
         status = "outreach_sent"
         next_action = "Send follow-up if no reply."

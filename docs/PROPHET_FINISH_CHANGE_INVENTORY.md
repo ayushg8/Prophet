@@ -460,7 +460,7 @@ sanitized examples.
 
 Latest verification run for this inventory:
 
-- `python3 -m unittest discover -s scripts/tests -v`: 360 tests passed after
+- `python3 -m unittest discover -s scripts/tests -v`: 363 tests passed after
   the send-boundary dashboard, copy-only resume boundary, CLI-reference,
   validation-resume, goal-resume, validation-team-update, validation-weekly-review,
   validation-next-action handoff generation, weekly-review `review_date`,

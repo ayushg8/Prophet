@@ -260,6 +260,10 @@ class ValidationWeeklyReviewTests(unittest.TestCase):
                 "target-dib-platform-001",
             )
             self.assertEqual(
+                review["pruning_candidates"]["overdue_follow_ups"][1]["target_label"],
+                "target-dib-platform-004",
+            )
+            self.assertEqual(
                 review["pruning_candidates"]["booked_calls"][0]["target_label"],
                 "target-dib-platform-002",
             )
@@ -425,6 +429,9 @@ def _make_stale_targets(targets: dict) -> dict:
     targets["targets"][2]["status"] = "outreach_sent"
     targets["targets"][2]["last_touch"] = "2026-05-09"
     targets["targets"][2]["follow_up_due"] = ""
+    targets["targets"][3]["status"] = "outreach_sent"
+    targets["targets"][3]["last_touch"] = "2026-05-07"
+    targets["targets"][3]["follow_up_due"] = "2026-05-09"
     return targets
 
 

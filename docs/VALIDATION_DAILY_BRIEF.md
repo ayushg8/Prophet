@@ -56,6 +56,9 @@ If the block says no follow-ups are due, use the `Follow-Up Gap Backfill`
 section as extra first-touch asks for that day. Do not invent fake follow-ups;
 send the backfill asks, then set `outreach_sent` and a real `follow_up_due`
 date after each ask.
+On or after that due date, the outreach block treats `outreach_sent` targets
+with `follow_up_due <= YYYY-MM-DD` as due follow-ups, so operators do not need a
+manual pre-promotion step before generating the next follow-up draft.
 
 Generate safe send-ready drafts from that block if you are not using the
 Makefile wrapper:

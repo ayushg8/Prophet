@@ -42,11 +42,15 @@ def build_outreach_block(
         raise OutreachBlockError("; ".join(errors))
     targets = list(value.get("targets") or [])
     targeted_asks = _select_targeted_asks(targets, targeted_ask_count)
-    follow_ups = _select_follow_ups(targets, follow_up_count)
+    follow_ups = _select_follow_ups(targets, follow_up_count, generated_for)
+    excluded_for_referrals = {
+        target["target_label"]
+        for target in [*targeted_asks, *follow_ups]
+    }
     referral_asks = _select_referral_asks(
         targets,
         referral_ask_count,
-        excluded_labels={target["target_label"] for target in targeted_asks},
+        excluded_labels=excluded_for_referrals,
     )
     follow_up_gap_count = max(0, follow_up_count - len(follow_ups))
     excluded_for_backfill = {
@@ -182,9 +186,29 @@ def _validated_run_date(run_date: str | None) -> str:
         raise OutreachBlockError("date must be YYYY-MM-DD") from exc
 
 
-def _select_follow_ups(targets: list[dict[str, Any]], count: int) -> list[dict[str, Any]]:
-    candidates = [target for target in targets if target["status"] == FOLLOW_UP_STATUS]
+def _select_follow_ups(
+    targets: list[dict[str, Any]],
+    count: int,
+    run_date: str,
+) -> list[dict[str, Any]]:
+    parsed_run_date = date.fromisoformat(run_date)
+    candidates = [
+        target
+        for target in targets
+        if _is_due_follow_up_target(target, parsed_run_date)
+    ]
     return sorted(candidates, key=_target_sort_key)[:count]
+
+
+def _is_due_follow_up_target(target: dict[str, Any], run_date: date) -> bool:
+    if target["status"] == FOLLOW_UP_STATUS:
+        return True
+    if target["status"] != "outreach_sent":
+        return False
+    follow_up_due = str(target.get("follow_up_due", "")).strip()
+    if not follow_up_due:
+        return False
+    return date.fromisoformat(follow_up_due) <= run_date
 
 
 def _select_referral_asks(

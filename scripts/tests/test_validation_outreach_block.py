@@ -69,6 +69,45 @@ class ValidationOutreachBlockTests(unittest.TestCase):
             ["target-dib-platform-001", "target-dib-platform-002"],
         )
 
+    def test_outreach_sent_targets_are_selected_when_follow_up_date_arrives(self) -> None:
+        targets = outreach_block.json.loads(EXAMPLE.read_text(encoding="utf-8"))
+        targets = copy.deepcopy(targets)
+        targets["targets"][0]["status"] = "outreach_sent"
+        targets["targets"][0]["last_touch"] = "2026-05-10"
+        targets["targets"][0]["follow_up_due"] = "2026-05-13"
+
+        block = outreach_block.build_outreach_block(targets, run_date="2026-05-13")
+
+        self.assertEqual(
+            [target["target_label"] for target in block["follow_ups"]],
+            ["target-dib-platform-001"],
+        )
+        self.assertEqual(block["gaps"]["follow_up_gap_count"], 1)
+        self.assertEqual(len(block["follow_up_backfill_asks"]), 1)
+        selected_labels = [
+            target["target_label"]
+            for group in (
+                block["targeted_asks"],
+                block["follow_ups"],
+                block["referral_asks"],
+                block["follow_up_backfill_asks"],
+            )
+            for target in group
+        ]
+        self.assertEqual(len(selected_labels), len(set(selected_labels)))
+
+    def test_outreach_sent_targets_are_not_selected_before_follow_up_date(self) -> None:
+        targets = outreach_block.json.loads(EXAMPLE.read_text(encoding="utf-8"))
+        targets = copy.deepcopy(targets)
+        targets["targets"][0]["status"] = "outreach_sent"
+        targets["targets"][0]["last_touch"] = "2026-05-10"
+        targets["targets"][0]["follow_up_due"] = "2026-05-13"
+
+        block = outreach_block.build_outreach_block(targets, run_date="2026-05-12")
+
+        self.assertEqual(block["follow_ups"], [])
+        self.assertEqual(block["gaps"]["follow_up_gap_count"], 2)
+
     def test_rejects_sensitive_target_text(self) -> None:
         targets = outreach_block.json.loads(EXAMPLE.read_text(encoding="utf-8"))
         targets = copy.deepcopy(targets)

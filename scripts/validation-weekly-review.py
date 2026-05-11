@@ -472,13 +472,25 @@ def _pruning_candidates(targets: list[dict[str, Any]], run_date: date) -> dict[s
                         "recommended_dry_run": f"make validation-draft-copy TARGET={label} DATE={run_date.isoformat()}",
                     }
                 )
-        elif status == "outreach_sent" and not str(target.get("follow_up_due", "")).strip():
-            sent_without_due.append(
-                {
-                    "target_label": label,
-                    "recommended_dry_run": f"make validation-status DATE={run_date.isoformat()}",
-                }
-            )
+        elif status == "outreach_sent":
+            follow_up_due = str(target.get("follow_up_due", "")).strip()
+            if not follow_up_due:
+                sent_without_due.append(
+                    {
+                        "target_label": label,
+                        "recommended_dry_run": f"make validation-status DATE={run_date.isoformat()}",
+                    }
+                )
+            else:
+                due = _parse_date(follow_up_due, f"{label}.follow_up_due")
+                if due <= run_date:
+                    overdue_follow_ups.append(
+                        {
+                            "target_label": label,
+                            "follow_up_due": due.isoformat(),
+                            "recommended_dry_run": f"make validation-draft-copy TARGET={label} DATE={run_date.isoformat()}",
+                        }
+                    )
         elif status == "call_booked":
             booked_calls.append(
                 {

@@ -95,6 +95,27 @@ class ValidationMessagePackTests(unittest.TestCase):
             "--require-current-status follow_up_due",
             follow_up_draft["tracker_update_command"],
         )
+        self.assertIn(
+            "--require-current-status outreach_sent",
+            follow_up_draft["tracker_update_command"],
+        )
+
+    def test_due_outreach_sent_target_gets_follow_up_draft(self) -> None:
+        targets = outreach_block.json.loads(EXAMPLE.read_text(encoding="utf-8"))
+        targets["targets"][0]["status"] = "outreach_sent"
+        targets["targets"][0]["last_touch"] = "2026-05-10"
+        targets["targets"][0]["follow_up_due"] = "2026-05-13"
+        block = outreach_block.build_outreach_block(targets, run_date="2026-05-13")
+
+        pack = message_pack.build_message_pack(block)
+
+        follow_up_draft = next(draft for draft in pack["drafts"] if draft["group"] == "follow_up")
+        self.assertEqual(follow_up_draft["target_label"], "target-dib-platform-001")
+        self.assertIn("Following up on the narrow workflow question", follow_up_draft["body"])
+        self.assertIn(
+            "--require-current-status outreach_sent",
+            follow_up_draft["tracker_update_command"],
+        )
 
     def test_markdown_is_safe_and_send_ready(self) -> None:
         targets = outreach_block.json.loads(EXAMPLE.read_text(encoding="utf-8"))
