@@ -305,12 +305,12 @@ def _subject_options(kind: str, *, source: str) -> list[str]:
         ]
     if source == "warm_intro_needed":
         return [
-            "Intro to someone who owns prioritization evidence?",
-            "Who should I learn from on hardening priorities?",
+            "Who owns the last painful hardening-priority call?",
+            "Intro to someone who had to justify what to harden first?",
         ]
     return [
-        "Quick question on vulnerability prioritization evidence",
-        "How do you prove what to harden first?",
+        "Did a recent vuln event require a why-this-first packet?",
+        "Quick workflow question on hardening priority evidence",
     ]
 
 
@@ -351,28 +351,25 @@ def _message_body(
     if source == "warm_intro_needed":
         return (
             "Hi,\n\n"
-            f"I'm trying to find one operationally honest conversation with someone in a {persona} "
-            f"role across {segment}.\n\n"
-            "The workflow question is whether KEV, CMMC, customer, mission, or audit "
-            "pressure still leaves a manual gap between scanner/exposure-management output "
-            "and the evidence packet leadership or SOC teams actually trust.\n\n"
-            "Do you know someone who has personally had to answer: what should we harden "
-            "first, and why? I'm not looking for a sales intro first; I want 20 minutes "
-            "of workflow discovery.\n\n"
+            f"I'm looking for someone in a {persona} role across {segment} who has recently "
+            "had to justify what exposure class or product family should be hardened first.\n\n"
+            "The narrow question: when KEV, CMMC, customer, mission, or audit pressure "
+            "hits, does the team still have to manually turn scanner/exposure-management "
+            "output into a leadership/SOC-ready evidence packet?\n\n"
+            "Do you know someone who has lived that workflow? I only want 20 minutes of "
+            "discovery on the last painful prioritization event, not a demo slot.\n\n"
             "No live data ask, no exploit tooling, no sales deck."
         )
     return (
         "Hi,\n\n"
-        "I'm testing a narrow defensive workflow: evidence-backed vulnerability "
-        "prioritization for teams that need to prove what exposure class gets "
-        "hardened first and why.\n\n"
-        f"I'm trying to learn from people in {persona} roles across {segment}. The specific "
-        "question is whether KEV, CMMC, customer, mission, or audit pressure still "
-        "leaves a manual gap between scanner/exposure-management output and the "
-        "evidence packet leadership or SOC teams actually trust.\n\n"
-        "Is that a real pain in your world, or does your current stack already "
-        "solve it? If you have dealt with this recently, could I ask 20 minutes of "
-        "workflow questions?\n\n"
+        f"I'm trying to learn from people in {persona} roles across {segment} who have "
+        "recently had to justify what exposure class or product family gets hardened first.\n\n"
+        "When KEV, CMMC, customer, mission, or audit pressure hits, does your current "
+        "workflow already produce the evidence packet leadership or SOC teams trust, "
+        "or is there still manual assembly between scanner/exposure-management output "
+        "and the final handoff?\n\n"
+        "If this happened recently, could I ask 20 minutes about that workflow? If "
+        "your current stack already solves it, that answer is useful too.\n\n"
         "No live data ask, no exploit tooling, no sales deck."
     )
 

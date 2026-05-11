@@ -157,7 +157,7 @@ class ValidationSendCopyBatchTests(unittest.TestCase):
             subject_order = Path(manifest["subject_order_path"]).read_text(encoding="utf-8")
             self.assertIn("Prophet Copy-Only Subject Order", subject_order)
             self.assertIn("`01.txt`", subject_order)
-            self.assertIn("Intro to someone", subject_order)
+            self.assertIn("Who owns the last painful hardening-priority call?", subject_order)
             self.assertNotIn("target-dib-platform-001", subject_order)
             self.assertNotIn("make validation-apply-draft", subject_order)
             self.assertNotIn("@", subject_order)

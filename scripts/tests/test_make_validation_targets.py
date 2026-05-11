@@ -751,7 +751,11 @@ class MakeValidationTargetsTests(unittest.TestCase):
             )
 
             self.assertEqual(send_copy.returncode, 0, send_copy.stderr)
-            self.assertTrue(send_copy.stdout.startswith("Subject: Intro to someone"))
+            self.assertTrue(
+                send_copy.stdout.startswith(
+                    "Subject: Who owns the last painful hardening-priority call?"
+                )
+            )
             self.assertIn("Hi,", send_copy.stdout)
             self.assertNotIn("<first name>", send_copy.stdout)
             self.assertNotRegex(send_copy.stdout, r"<[^>\n]+>")
@@ -763,7 +767,11 @@ class MakeValidationTargetsTests(unittest.TestCase):
             send_copy_path = private_dir / "today-send-copy.txt"
             self.assertTrue(send_copy_path.exists())
             send_copy_text = send_copy_path.read_text(encoding="utf-8")
-            self.assertTrue(send_copy_text.startswith("Subject: Intro to someone"))
+            self.assertTrue(
+                send_copy_text.startswith(
+                    "Subject: Who owns the last painful hardening-priority call?"
+                )
+            )
             self.assertNotIn("Subject options:", send_copy_text)
             self.assertNotIn("CONFIRM_SENT", send_copy_text)
 
@@ -790,7 +798,11 @@ class MakeValidationTargetsTests(unittest.TestCase):
             self.assertFalse((batch_dir / "01-targeted_ask-target-dib-platform-001.txt").exists())
             self.assertTrue((batch_dir / "manifest.json").exists())
             first_copy_text = first_copy.read_text(encoding="utf-8")
-            self.assertTrue(first_copy_text.startswith("Subject: Intro to someone"))
+            self.assertTrue(
+                first_copy_text.startswith(
+                    "Subject: Who owns the last painful hardening-priority call?"
+                )
+            )
             self.assertNotIn("target-dib-platform-001", first_copy_text)
             self.assertNotIn("make validation-apply-draft", first_copy_text)
 
@@ -1053,7 +1065,7 @@ class MakeValidationTargetsTests(unittest.TestCase):
         send_block = completed.stdout.split("BEGIN COPY-ONLY SEND TEXT:", 1)[1].split(
             "END COPY-ONLY SEND TEXT", 1
         )[0]
-        self.assertIn("Subject: Intro to someone", send_block)
+        self.assertIn("Subject: Who owns the last painful hardening-priority call?", send_block)
         self.assertIn("Hi,", send_block)
         self.assertNotIn("<first name>", send_block)
         self.assertNotRegex(send_block, r"<[^>\n]+>")
@@ -1364,7 +1376,8 @@ class MakeValidationTargetsTests(unittest.TestCase):
 
             self.assertEqual(completed.returncode, 0, completed.stderr)
             self.assertTrue(completed.stdout.startswith("Subject: "))
-            self.assertIn("Is that a real pain", completed.stdout)
+            self.assertIn("does your current workflow already produce", completed.stdout)
+            self.assertIn("If this happened recently", completed.stdout)
             self.assertNotIn("target-dib-platform-004", completed.stdout)
             self.assertNotIn("make validation-apply-draft", completed.stdout)
 

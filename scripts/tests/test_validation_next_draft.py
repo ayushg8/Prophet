@@ -120,7 +120,9 @@ class ValidationNextDraftTests(unittest.TestCase):
 
         rendered = next_draft.render_send_text(selected)
 
-        self.assertTrue(rendered.startswith("Subject: Intro to someone"))
+        self.assertTrue(
+            rendered.startswith("Subject: Who owns the last painful hardening-priority call?")
+        )
         self.assertNotIn("Subject options:", rendered)
         self.assertNotIn("Message:", rendered)
         self.assertIn("Hi,", rendered)
@@ -273,7 +275,11 @@ class ValidationNextDraftTests(unittest.TestCase):
             )
 
         self.assertEqual(completed.returncode, 0, completed.stderr)
-        self.assertTrue(completed.stdout.startswith("Subject: Intro to someone"))
+        self.assertTrue(
+            completed.stdout.startswith(
+                "Subject: Who owns the last painful hardening-priority call?"
+            )
+        )
         self.assertNotIn("Subject options:", completed.stdout)
         self.assertNotIn("Message:", completed.stdout)
         self.assertIn("Hi,", completed.stdout)

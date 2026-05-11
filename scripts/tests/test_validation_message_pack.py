@@ -80,11 +80,14 @@ class ValidationMessagePackTests(unittest.TestCase):
         )
         self.assertEqual(first_draft["source"], "warm_intro_needed")
         self.assertIn("Do you know someone", first_draft["body"])
+        self.assertIn("last painful prioritization event", first_draft["body"])
+        self.assertIn("not a demo slot", first_draft["body"])
         cold_draft = next(
             draft for draft in pack["drafts"] if draft["target_label"] == "target-dib-platform-004"
         )
         self.assertEqual(cold_draft["source"], "cold_outreach")
-        self.assertIn("Is that a real pain", cold_draft["body"])
+        self.assertIn("does your current workflow already produce", cold_draft["body"])
+        self.assertIn("If this happened recently", cold_draft["body"])
         referral_draft = pack["drafts"][-1]
         self.assertIn("--status intro_requested", referral_draft["tracker_update_command"])
         self.assertIn("--require-current-status identified", referral_draft["tracker_update_command"])
@@ -283,7 +286,8 @@ class ValidationMessagePackTests(unittest.TestCase):
             )
 
         self.assertTrue(completed.stdout.startswith("Subject: "))
-        self.assertIn("Is that a real pain", completed.stdout)
+        self.assertIn("does your current workflow already produce", completed.stdout)
+        self.assertIn("If this happened recently", completed.stdout)
         self.assertIn("Hi,", completed.stdout)
         self.assertNotIn("<first name>", completed.stdout)
         self.assertNotRegex(completed.stdout, r"<[^>\n]+>")
