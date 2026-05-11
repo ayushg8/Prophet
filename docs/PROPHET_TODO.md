@@ -220,7 +220,8 @@ operator board for the next buyer-pilot cycles.
   release tagging if a later release tag moves beyond this commit.
 - [x] Documentation-only commit `ad5eb5c` passed GitHub `main` CI on
   2026-05-11, including the Linux fresh-clone pilot smoke.
-- [x] Documentation-only commit `04f2951` passed GitHub `main` CI and local
+- [x] Later documentation-only commits should not be appended to this board
+  one-by-one. Verify the current pushed head with GitHub `main` CI and local
   handoff gates: `make release-hygiene`,
   `make pilot-ready-check-full DATE=2026-05-11`, `make console-live-check`, and
   `make validation-send-copy-check DATE=2026-05-11`.

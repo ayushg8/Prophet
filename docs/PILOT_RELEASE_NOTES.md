@@ -189,12 +189,12 @@ After the default smoke passes, the main reviewer artifacts are:
 - Documentation-only commit `ad5eb5c` passed GitHub `main` CI on 2026-05-11,
   including the Linux fresh-clone pilot smoke. It does not replace the macOS
   true-clone baseline above.
-- Documentation-only commit `04f2951` passed GitHub `main` CI on 2026-05-11:
-  <https://github.com/Ayush1298567/Prophet/actions/runs/25664500255>. The
-  clean pushed head also passed `make release-hygiene`,
+- Later documentation-only commits should not be appended here one-by-one.
+  Verify the current pushed head with GitHub `main` CI and local handoff gates
+  such as `make release-hygiene`,
   `make pilot-ready-check-full DATE=2026-05-11`, `make console-live-check`, and
-  `make validation-send-copy-check DATE=2026-05-11` locally. These checks
-  verify the handoff state without changing the product/runtime baseline.
+  `make validation-send-copy-check DATE=2026-05-11`. Those checks verify the
+  handoff state without changing the product/runtime baseline.
 - The GitHub Actions `python` job runs on `ubuntu-latest` and now names the
   `Linux fresh-clone pilot smoke preflight` plus
   `Linux fresh-clone pilot smoke` steps, covering the Linux fresh-clone smoke

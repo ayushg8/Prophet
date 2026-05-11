@@ -408,11 +408,11 @@ Review focus:
   This is a checked-baseline true fresh-clone proof, not a moving claim about
   later documentation-only commits. Documentation-only commit `ad5eb5c` passed
   GitHub `main` CI on 2026-05-11, including the Linux fresh-clone pilot smoke.
-  Documentation-only commit `04f2951` also passed GitHub `main` CI on
-  2026-05-11 and passed the local handoff gates `make release-hygiene`,
+  Later documentation-only commits should not be appended here one-by-one; use
+  GitHub `main` CI plus local handoff gates such as `make release-hygiene`,
   `make pilot-ready-check-full DATE=2026-05-11`, `make console-live-check`, and
-  `make validation-send-copy-check DATE=2026-05-11`; it does not replace the
-  checked product/runtime baseline.
+  `make validation-send-copy-check DATE=2026-05-11` for the current pushed
+  head. These checks do not replace the checked product/runtime baseline.
   The GitHub Actions `python` job runs on `ubuntu-latest` and now names the
   Linux fresh-clone pilot smoke steps. Rerun true macOS fresh-clone smoke before
   release tagging if a later release tag moves beyond this commit.

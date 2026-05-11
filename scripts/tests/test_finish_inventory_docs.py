@@ -119,10 +119,8 @@ class FinishInventoryDocsTests(unittest.TestCase):
         self.assertIn("actions/runs/25663480672", audit)
         self.assertIn("npm run acceptance` passed locally at `1929dc0`", audit)
         self.assertIn("Documentation-only commits", audit)
-        self.assertIn("04f2951bf992779f132100ff998be8b887e3bc01", audit)
-        self.assertIn("actions/runs/25664500255", audit)
         self.assertIn("make validation-send-copy-check DATE=2026-05-11", audit)
-        self.assertIn("docs-only handoff state", audit)
+        self.assertIn("Do not append every later documentation-only commit", audit)
 
     def test_github_main_fresh_clone_baseline_smoke_is_recorded(self) -> None:
         audit = COMPLETION_AUDIT.read_text(encoding="utf-8")
