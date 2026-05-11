@@ -17,7 +17,7 @@
       "status": "in_progress",
       "risk_tags": ["buyer", "release", "safety"],
       "acceptance_gates": [
-        "PR #5 is merged or intentionally superseded.",
+        "PR #5 is ready for internal buyer-pilot review, then merged after the release/security gates clear or intentionally superseded by an explicit owner decision.",
         "A release tag identifies the exact fixture and smoke hash set.",
         "A second operator can run the evaluator smoke from a fresh clone."
       ],
