@@ -397,11 +397,12 @@ Review focus:
 - Pilot release tag remains blocked until the historical secret-history finding
   has an owner decision. A true GitHub fresh clone of the PR branch passed on
   macOS with 26 verified pilot hashes. The GitHub Actions `python` job runs on
-  `ubuntu-latest` and now names the Linux fresh-clone pilot smoke steps. Because
-  documentation commits change the PR head, rely on the PR verification notes
-  for the latest exact-head run and rerun true macOS fresh-clone smoke before
-  merge or release decisions. PR checks are green on the pushed head, but must be
-  rechecked before merge or release decisions.
+  `ubuntu-latest` and now names the Linux fresh-clone pilot smoke steps.
+  Exact-head fresh-clone evidence belongs in the PR verification notes because
+  documentation commits can move the branch head; rerun true macOS fresh-clone
+  smoke after any further commit before merge or release decisions. PR checks
+  are green on the pushed head, but must be rechecked before merge or release
+  decisions.
 - `make worktree-smoke` should remain a local pre-commit release-hygiene check:
   it may clone HEAD to `/tmp`, overlay non-ignored dirty files, and run the safe
   root smoke, but must not copy `validation/private/`, stage, commit, push, tag,
@@ -817,9 +818,10 @@ runtime output contents into the PR.
 - Full git-history secret archaeology remains unresolved; rotate/clean/except
   the historical `LOG4SHELL_INSTRUCTIONS.md` finding before public release.
 - Release tag remains blocked until the historical secret-history finding has
-  an owner decision. True GitHub fresh-clone smoke passed on macOS; because
-  documentation commits change the PR head, rely on the PR verification notes
-  for the latest exact-head run and rerun it before merge or release decisions.
+  an owner decision. True GitHub fresh-clone smoke passed on macOS; exact-head
+  evidence belongs in the PR verification notes because documentation commits
+  can move the branch head, and the check should be rerun after any further
+  commit before merge or release decisions.
   Linux fresh-clone smoke is covered by the Ubuntu CI pilot smoke steps.
 - PR `#5` has the finish-pass commits pushed and checks are green on the
   current pushed head, and is ready for internal buyer-pilot review; verify

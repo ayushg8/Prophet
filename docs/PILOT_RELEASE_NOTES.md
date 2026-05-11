@@ -165,9 +165,9 @@ After the default smoke passes, the main reviewer artifacts are:
 - A true GitHub fresh clone of branch
   `prophet-pilot-consolidation-2026-05-05` passed on macOS on 2026-05-11 with
   `./scripts/check-local-env.sh` and `./scripts/run-pilot-demo-smoke.sh`,
-  verifying 26 pilot hashes. Because documentation commits change the PR head,
-  rely on the PR verification notes for the latest exact-head run and rerun this
-  check before merge or release decisions.
+  verifying 26 pilot hashes. Exact-head fresh-clone evidence belongs in the PR
+  verification notes because documentation commits can move the branch head;
+  rerun this check after any further commit before merge or release decisions.
 - The GitHub Actions `python` job runs on `ubuntu-latest` and now names the
   `Linux fresh-clone pilot smoke preflight` plus
   `Linux fresh-clone pilot smoke` steps, covering the Linux fresh-clone smoke
