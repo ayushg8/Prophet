@@ -117,6 +117,10 @@ Do not add production platform scope while this checklist is red.
   existing send-copy batch, the contact-form copy batch when present, and all
   pending generated tracker updates in one dry-run report without sending
   messages or writing tracker state.
+- [ ] If resuming or handing off a full send block, run
+  `make validation-send-batch-ready-save DATE=YYYY-MM-DD` to write the current
+  full pre-send report to ignored `validation/private/SEND_BATCH_READY.md`.
+  Treat it as private operator metadata, not outbound copy or buyer evidence.
 - [ ] Immediately before sending, run
   `make validation-pre-send-check TARGET=target-dib-platform-001 DATE=YYYY-MM-DD`.
   It runs the dashboard, existing batch check, contact-form copy check when

@@ -514,6 +514,7 @@ outreach block:
 make validation-send-copy-batch DATE=2026-05-11
 make validation-send-copy-check DATE=2026-05-11
 make validation-pre-send-check-all DATE=2026-05-11
+make validation-send-batch-ready-save DATE=2026-05-11
 
 python3 scripts/validation-send-copy-batch.py \
   --message-pack validation/private/today-message-pack.json \
@@ -586,6 +587,10 @@ write guard is set.
 send-copy batch, the contact-form copy batch when present, and all pending
 generated tracker updates in one dry-run report before sending a whole block.
 It does not send outreach or write tracker state.
+`make validation-send-batch-ready-save DATE=YYYY-MM-DD` atomically writes that
+full dry-run report to the ignored private
+`validation/private/SEND_BATCH_READY.md` handoff. It refuses `CONFIRM_*` guards,
+does not send outreach, and does not mutate tracker state.
 
 Render a specific target draft when needed:
 

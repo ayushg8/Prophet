@@ -5,6 +5,7 @@ import os
 import shutil
 import socket
 import subprocess
+import sys
 import tempfile
 import unittest
 from pathlib import Path
@@ -89,6 +90,8 @@ class MakeValidationTargetsTests(unittest.TestCase):
         self.assertIn("Run the dry-run pre-send gate", completed.stdout)
         self.assertIn("make validation-pre-send-check-all", completed.stdout)
         self.assertIn("Run dry-run pre-send gate for every pending batch draft", completed.stdout)
+        self.assertIn("make validation-send-batch-ready-save", completed.stdout)
+        self.assertIn("SEND_BATCH_READY.md from the full pre-send gate", completed.stdout)
         self.assertIn("make validation-send-copy-batch", completed.stdout)
         self.assertIn("copy-only text files for all verified pending drafts", completed.stdout)
         self.assertIn("make validation-contact-form-copy", completed.stdout)
@@ -222,6 +225,130 @@ class MakeValidationTargetsTests(unittest.TestCase):
 
         self.assertNotEqual(completed.returncode, 0)
         self.assertIn("validation-pre-send-check is dry-run only", completed.stdout)
+
+    @unittest.skipIf(shutil.which("make") is None, "make is not available")
+    def test_validation_send_batch_ready_save_writes_private_handoff(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            private_dir = Path(tmp)
+            targets = private_dir / "validation-targets.json"
+            block = private_dir / "today-outreach-block.json"
+            pack = private_dir / "today-message-pack.json"
+            send_dir = private_dir / "send-copy-2026-05-11"
+            contact_dir = private_dir / "contact-form-copy-2026-05-11"
+            out = private_dir / "SEND_BATCH_READY.md"
+            targets.write_text(EXAMPLE_TARGETS.read_text(encoding="utf-8"), encoding="utf-8")
+
+            subprocess.run(
+                [
+                    sys.executable,
+                    "scripts/validation-outreach-block.py",
+                    "--targets",
+                    str(targets),
+                    "--date",
+                    "2026-05-11",
+                    "--format",
+                    "json",
+                    "--out",
+                    str(block),
+                ],
+                cwd=ROOT,
+                text=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                check=True,
+            )
+            subprocess.run(
+                [
+                    sys.executable,
+                    "scripts/validation-message-pack.py",
+                    "--block",
+                    str(block),
+                    "--format",
+                    "json",
+                    "--out",
+                    str(pack),
+                ],
+                cwd=ROOT,
+                text=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                check=True,
+            )
+            subprocess.run(
+                [
+                    "make",
+                    "validation-send-copy-batch",
+                    "DATE=2026-05-11",
+                    f"VALIDATION_TARGETS={targets}",
+                    f"VALIDATION_MESSAGE_PACK_JSON={pack}",
+                    f"VALIDATION_SEND_COPY_DIR={send_dir}",
+                ],
+                cwd=ROOT,
+                text=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                check=True,
+            )
+            subprocess.run(
+                [
+                    "make",
+                    "validation-contact-form-copy",
+                    "DATE=2026-05-11",
+                    f"VALIDATION_TARGETS={targets}",
+                    f"VALIDATION_MESSAGE_PACK_JSON={pack}",
+                    f"VALIDATION_CONTACT_FORM_COPY_DIR={contact_dir}",
+                ],
+                cwd=ROOT,
+                text=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                check=True,
+            )
+
+            completed = subprocess.run(
+                [
+                    "make",
+                    "validation-send-batch-ready-save",
+                    "DATE=2026-05-11",
+                    f"VALIDATION_TARGETS={targets}",
+                    f"VALIDATION_MESSAGE_PACK_JSON={pack}",
+                    f"VALIDATION_SEND_COPY_DIR={send_dir}",
+                    f"VALIDATION_CONTACT_FORM_COPY_DIR={contact_dir}",
+                    f"VALIDATION_SEND_BATCH_READY_MD={out}",
+                ],
+                cwd=ROOT,
+                text=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                check=False,
+            )
+
+            self.assertEqual(completed.returncode, 0, completed.stderr)
+            self.assertIn("Wrote ignored private send-batch-ready handoff", completed.stdout)
+            rendered = out.read_text(encoding="utf-8")
+            self.assertIn("Prophet Full Pre-Send Check - 2026-05-11", rendered)
+            self.assertIn("Pending send/update: 8", rendered)
+            self.assertIn("Would write during this check: false", rendered)
+            self.assertIn("Send only the contents of the numbered .txt files.", rendered)
+
+    @unittest.skipIf(shutil.which("make") is None, "make is not available")
+    def test_validation_send_batch_ready_save_rejects_confirm_guards(self) -> None:
+        completed = subprocess.run(
+            [
+                "make",
+                "validation-send-batch-ready-save",
+                "DATE=2026-05-11",
+                "CONFIRM_SENT=1",
+            ],
+            cwd=ROOT,
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            check=False,
+        )
+
+        self.assertNotEqual(completed.returncode, 0)
+        self.assertIn("validation-send-batch-ready-save is dry-run only", completed.stdout)
 
     def test_console_demo_help_documents_safe_local_scope(self) -> None:
         completed = subprocess.run(

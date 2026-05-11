@@ -18,6 +18,7 @@ VALIDATION_TEAM_UPDATE_MD ?= $(VALIDATION_DIR)/today-team-update.md
 VALIDATION_WEEKLY_REVIEW_JSON ?= $(VALIDATION_DIR)/today-weekly-review.json
 VALIDATION_WEEKLY_REVIEW_MD ?= $(VALIDATION_DIR)/today-weekly-review.md
 VALIDATION_NEXT_ACTION_MD ?= $(VALIDATION_DIR)/NEXT_ACTION.md
+VALIDATION_SEND_BATCH_READY_MD ?= $(VALIDATION_DIR)/SEND_BATCH_READY.md
 VALIDATION_WORKING_PRODUCT_HANDOFF_MD ?= $(VALIDATION_DIR)/WORKING_PRODUCT_HANDOFF.md
 VALIDATION_INTERVIEW_JSON ?= $(if $(INTERVIEW),$(INTERVIEW),$(VALIDATION_DIR)/customer-validation-interview-next.json)
 PROPHET_CONTROL_PORT ?= 8787
@@ -98,6 +99,7 @@ help:
 		'  make validation-team-update  Print sanitized aggregate-only validation update; optional DATE=YYYY-MM-DD.' \
 		'  make validation-team-update-save Write sanitized aggregate-only update under validation/private/; optional DATE=YYYY-MM-DD.' \
 		'  make validation-next-action-save Write regenerated private NEXT_ACTION.md handoff; optional DATE=YYYY-MM-DD.' \
+		'  make validation-send-batch-ready-save Write ignored private SEND_BATCH_READY.md from the full pre-send gate; optional DATE=YYYY-MM-DD.' \
 		'  make validation-working-product-handoff-save Write ignored private working-product handoff with current ports/git/build gate; optional DATE=YYYY-MM-DD.' \
 		'  make validation-weekly-review Write read-only private weekly review report; optional DATE=YYYY-MM-DD.' \
 		'  make validation-prune-private Dry-run pruning of generated ignored private artifacts; optional DATE=YYYY-MM-DD, CONFIRM_PRUNE=1 after review.' \
@@ -374,6 +376,25 @@ validation-pre-send-check-all:
 		--contact-form-copy-dir $(VALIDATION_CONTACT_FORM_COPY_DIR) \
 		$(REQUIRE_DATE_ARG) \
 		--format markdown
+
+.PHONY: validation-send-batch-ready-save
+validation-send-batch-ready-save:
+	@test -z "$(CONFIRM_SENT_VALUE)$(CONFIRM_TARGET_VALUE)$(CONFIRM_LOG_VALUE)$(CONFIRM_PRUNE_VALUE)" || { echo 'validation-send-batch-ready-save is dry-run only; do not pass CONFIRM_SENT, CONFIRM_TARGET, CONFIRM_LOG, or CONFIRM_PRUNE.'; exit 2; }
+	@mkdir -p "$(dir $(VALIDATION_SEND_BATCH_READY_MD))"
+	@set -e; \
+	tmp=$$(mktemp "$(VALIDATION_SEND_BATCH_READY_MD).tmp.XXXXXX"); \
+	trap 'rm -f "$$tmp"' EXIT; \
+	python3 scripts/validation-pre-send-check-all.py \
+		--message-pack $(VALIDATION_MESSAGE_PACK_JSON) \
+		--targets $(VALIDATION_TARGETS) \
+		--send-copy-dir $(VALIDATION_SEND_COPY_DIR) \
+		--contact-form-copy-dir $(VALIDATION_CONTACT_FORM_COPY_DIR) \
+		$(REQUIRE_DATE_ARG) \
+		--format markdown \
+		> "$$tmp"; \
+	mv "$$tmp" "$(VALIDATION_SEND_BATCH_READY_MD)"; \
+	trap - EXIT; \
+	printf 'Wrote ignored private send-batch-ready handoff to %s\n' '$(VALIDATION_SEND_BATCH_READY_MD)'
 
 .PHONY: validation-apply-draft
 validation-apply-draft:

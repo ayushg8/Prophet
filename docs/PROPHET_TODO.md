@@ -134,6 +134,11 @@ operator board for the next buyer-pilot cycles.
 - [x] Saved aggregate validation team updates use an atomic temp-file write:
   `make validation-team-update-save DATE=YYYY-MM-DD` preserves the previous
   `validation/private/today-team-update.md` if rendering fails.
+- [x] Full send-batch readiness handoff can be regenerated from the current
+  dry-run pre-send gate:
+  `make validation-send-batch-ready-save DATE=YYYY-MM-DD` writes ignored
+  `validation/private/SEND_BATCH_READY.md` without sending outreach or writing
+  tracker state.
 - [x] Working-product handoff can be regenerated from current local state:
   `make validation-working-product-handoff-save DATE=YYYY-MM-DD` writes the
   ignored private `validation/private/WORKING_PRODUCT_HANDOFF.md` with current
