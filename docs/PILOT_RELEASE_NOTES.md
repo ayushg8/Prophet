@@ -3,7 +3,7 @@
 Date: 2026-05-11
 Status: internal buyer-pilot baseline merged to `main`, not a git tag
 Branch: `main`
-Baseline commit checked: `04fb56b`
+Baseline product/runtime commit checked: `1929dc0`
 
 These notes identify the safe fixture/hash set for the current buyer pilot.
 This release candidate does not authorize live target validation.
@@ -119,6 +119,14 @@ After the default smoke passes, the main reviewer artifacts are:
 - PR `#5` merged to `main` on 2026-05-11 at
   `04fb56b4c4c5d3e48a1de0f286f3f12c43ad9dd4`; the GitHub `main` CI run for
   that merge commit completed successfully.
+- The latest checked product/runtime head is
+  `1929dc0211f9d4567774df8b22a674afd01df48b`
+  (`1929dc0 Opt CI actions into Node 24 runtime`). The GitHub `main` CI run
+  for that head completed successfully:
+  <https://github.com/Ayush1298567/Prophet/actions/runs/25663480672>.
+- `cd prophet-console && npm run acceptance` passed locally at `1929dc0`,
+  including the root pilot smoke, console lint, TypeScript/Vite build, control
+  evidence smoke, and 5 Playwright console tests.
 - `make pilot-ready-check-full DATE=2026-05-11` passed on 2026-05-11 at
   PR head `0026d85` before merge, including console lint/build, control
   evidence smoke, 5 Playwright console tests, and
@@ -130,7 +138,7 @@ After the default smoke passes, the main reviewer artifacts are:
 - `make console-screenshot-check` passed against the generated screenshot
   manifest, verifying ignored runtime paths, PNG hashes, PNG dimensions, and
   the fixture-backed sharing boundary.
-- `python3 -m unittest discover -s scripts/tests -v` passed with 365 tests,
+- `python3 -m unittest discover -s scripts/tests -v` passed with 366 tests,
   including validation-gate, send-boundary, console-demo, documented
   exposure classification guide, pre-commit hook, and release-note guardrail
   coverage.
@@ -178,7 +186,11 @@ After the default smoke passes, the main reviewer artifacts are:
   gate for pushed heads.
 - GitHub workflows opt JavaScript actions into Node 24 with
   `FORCE_JAVASCRIPT_ACTIONS_TO_NODE24=true`, so the CI path is already testing
-  the upcoming hosted-runner action runtime.
+  the upcoming hosted-runner action runtime. GitHub still emits a deprecation
+  annotation for Node 20-targeted actions, but the latest CI annotation confirms
+  those actions are being forced to run on Node 24. Documentation-only commits
+  after this point must rerun their doc/test/safety gates, but they do not
+  change the checked runtime baseline unless product code or workflows change.
 - `make worktree-smoke` is now the repeatable local wrapper for that pre-commit
   worktree-overlay check. It clones HEAD to `/tmp`, overlays non-ignored dirty
   files, excludes ignored private validation files, and runs the safe root

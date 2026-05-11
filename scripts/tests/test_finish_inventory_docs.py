@@ -111,6 +111,15 @@ class FinishInventoryDocsTests(unittest.TestCase):
                 self.assertIn("check-doc-links.py", text)
                 self.assertIn("86 Markdown", text)
 
+    def test_completion_audit_names_current_checked_runtime_head(self) -> None:
+        audit = COMPLETION_AUDIT.read_text(encoding="utf-8")
+
+        self.assertIn("latest checked product/runtime head", audit)
+        self.assertIn("1929dc0211f9d4567774df8b22a674afd01df48b", audit)
+        self.assertIn("actions/runs/25663480672", audit)
+        self.assertIn("npm run acceptance` passed locally at `1929dc0`", audit)
+        self.assertIn("Documentation-only commits", audit)
+
     def test_inventory_lists_copy_only_private_send_artifact(self) -> None:
         inventory = FINISH_INVENTORY.read_text(encoding="utf-8")
 
