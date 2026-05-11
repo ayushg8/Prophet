@@ -92,6 +92,7 @@ class ValidationSendCopyBatchTests(unittest.TestCase):
                 readme,
             )
             self.assertIn("SHA-256", readme)
+            self.assertIn("make validation-send-copy-check DATE=2026-05-10", readme)
             self.assertIn("make validation-status DATE=2026-05-10", readme)
             self.assertIn("personalize only in the outreach channel", readme)
             self.assertIn("Do not store recipient names", readme)
@@ -101,6 +102,7 @@ class ValidationSendCopyBatchTests(unittest.TestCase):
             self.assertNotIn("https://", readme)
             checklist = Path(manifest["checklist_path"]).read_text(encoding="utf-8")
             self.assertIn("Prophet Send-Copy Batch Checklist", checklist)
+            self.assertIn("make validation-send-copy-check DATE=2026-05-10", checklist)
             self.assertIn("Do not send this checklist", checklist)
             self.assertIn("`01.txt`", checklist)
             self.assertIn("`target-dib-platform-001`", checklist)
