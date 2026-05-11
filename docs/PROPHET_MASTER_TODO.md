@@ -368,8 +368,8 @@ non-live unless a future customer policy explicitly authorizes a narrower mode.
   public release review stays blocked until the owner decision is recorded.
   See `docs/SECRET_HISTORY_REVIEW.md`.
 - [ ] Add dependency pinning and update cadence.
-- [ ] Add software supply-chain risk register.
-- [ ] Add SBOM for Prophet itself.
+- [x] Add software supply-chain risk register.
+- [x] Add SBOM for Prophet itself.
 - [ ] Add SLSA-style provenance target for release artifacts.
 - [ ] Add static analysis for Python.
 - [ ] Add static analysis for TypeScript.

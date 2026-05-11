@@ -245,6 +245,9 @@ operator board for the next buyer-pilot cycles.
 - [x] Incident response playbook exists for data spills, credential exposure,
   policy bypass, integration misfire, sandbox escape, and customer notification:
   `docs/INCIDENT_RESPONSE_PLAYBOOK.md`.
+- [x] Software supply-chain packet exists with dependency inventory, SBOM
+  source of truth, provenance targets, vulnerability process, and update cadence:
+  `docs/SOFTWARE_SUPPLY_CHAIN_PACKET.md`.
 - [x] Local operator identity format guidance exists for the buyer pilot:
   `docs/OPERATOR_IDENTITY_GUIDE.md`.
 - [x] Signed operator approval design exists for future buyer/security review:

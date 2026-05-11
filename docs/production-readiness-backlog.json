@@ -571,12 +571,13 @@
         {
           "id": "M8-02",
           "title": "Add software supply-chain packet",
-          "status": "planned",
+          "status": "done",
           "priority": "P1",
           "owner": "security",
           "target_version": "v1.0",
           "risk_tags": ["security", "compliance", "release"],
-          "acceptance_gates": ["Packet includes dependency inventory, SBOM for Prophet, provenance target, vulnerability process, and update cadence."]
+          "acceptance_gates": ["Packet includes dependency inventory, SBOM for Prophet, provenance target, vulnerability process, and update cadence."],
+          "evidence_paths": ["docs/SOFTWARE_SUPPLY_CHAIN_PACKET.md"]
         },
         {
           "id": "M8-03",
