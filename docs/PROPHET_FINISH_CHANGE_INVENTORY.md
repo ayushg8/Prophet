@@ -14,8 +14,8 @@ It does not tag, deploy, or mark the product complete.
 - Critical open readiness items: `30`.
 - Outreach status: 8 pending send/update items, 0 attention errors.
 - GitHub PR `#5` exists for branch `prophet-pilot-consolidation-2026-05-05`
-  and the finish-pass commits have been pushed. PR checks must be green on the
-  pushed head before review or merge.
+  and the finish-pass commits have been pushed. PR checks are green on the
+  pushed head; recheck before review, undraft, or merge.
 
 Do not create production platform commits from this inventory until real
 validation reaches `build_next_slice`.
@@ -383,8 +383,9 @@ Review focus:
 - The pilot smoke should scan policy-listed default outputs for live-target URL
   fields while allowing public source citations, and should verify
   policy-listed OSINT snapshot provenance manifests.
-- Pilot release tag, green PR checks on the pushed head, and Linux fresh-clone
-  smoke remain open.
+- Pilot release tag and Linux fresh-clone smoke remain open. PR checks are
+  green on the pushed head, but must be rechecked before review, undraft, or
+  merge.
 - `make worktree-smoke` should remain a local pre-commit release-hygiene check:
   it may clone HEAD to `/tmp`, overlay non-ignored dirty files, and run the safe
   root smoke, but must not copy `validation/private/`, stage, commit, push, tag,
@@ -788,10 +789,10 @@ runtime output contents into the PR.
 - Production readiness remains 24.4% with 30 critical open items.
 - Full git-history secret archaeology remains unresolved; rotate/clean/except
   the historical `LOG4SHELL_INSTRUCTIONS.md` finding before public release.
-- Release tag, Linux fresh-clone smoke, and green PR checks over the pushed
-  commit set remain open.
-- PR `#5` has the finish-pass commits pushed; verify `gh pr checks 5` is green
-  before review or merge.
+- Release tag and Linux fresh-clone smoke remain open.
+- PR `#5` has the finish-pass commits pushed and checks are green on the
+  current pushed head; verify `gh pr checks 5` again before review, undraft, or
+  merge.
 ```
 
 Before any commit or PR, rerun the relevant console acceptance, pilot smoke,

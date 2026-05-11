@@ -78,7 +78,7 @@ non-live unless a future customer policy explicitly authorizes a narrower mode.
 
 ## P0: Commit And Release Hygiene
 
-- [ ] Split the current dirty worktree into intentional commits:
+- [x] Split the current dirty worktree into intentional commits:
   safety cleanup, pilot CLI, policy, evidence, sandbox, console, docs, and CI.
 - [x] Confirm deleted lab/demo exploit files are intentional in the final diff:
   current tracked diff has no deleted files.

@@ -307,9 +307,8 @@ operator board for the next buyer-pilot cycles.
 
 ### P0: Release Hygiene
 
-- [ ] Review the dirty worktree and split it into intentional commits once the
-  user asks for commits. Use `docs/PROPHET_FINISH_CHANGE_INVENTORY.md` as the
-  starting map.
+- [x] Review the dirty worktree and split it into intentional commits for PR
+  `#5`; keep `docs/PROPHET_FINISH_CHANGE_INVENTORY.md` as the review map.
 - [x] Add `make release-hygiene` for the full read-only local hygiene sweep.
 - [x] Confirm deleted lab/demo exploit files are intentional in the final diff:
   current tracked diff has no deleted files.
