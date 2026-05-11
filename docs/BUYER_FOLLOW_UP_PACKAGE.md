@@ -167,7 +167,7 @@ Items to define if customer metadata is approved:
 | Access | Limit access to named pilot operators and reviewers. |
 | Subprocessors | Do not introduce subprocessors or hosted services without separate written approval. |
 | Retention | Define deletion or return timing before accepting customer metadata. |
-| Security | Require release-safety scans, ignored runtime paths, policy linting, and hash manifests for shared artifacts. |
+| Security | Run release-safety on committed docs/code, run the pilot smoke/runtime validators for generated evidence and handoff outputs, keep runtime artifacts ignored and unstaged, and review hash manifests before sharing. |
 | Return/delete | At closeout, delete or rotate local runtime outputs and private notes unless the customer approves retaining summaries and hashes. |
 
 Useful official references for the reviewer:
