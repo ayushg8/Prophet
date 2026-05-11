@@ -53,10 +53,30 @@ class BuyerFollowUpPackageCheckTests(unittest.TestCase):
             any("hash does not match smoke manifest" in issue["message"] for issue in summary["issues"])
         )
 
+    def test_rejects_follow_up_doc_missing_boundary_phrase(self) -> None:
+        module = _load_module()
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            _write_fixture(root, module)
+            package = root / "docs/BUYER_FOLLOW_UP_PACKAGE.md"
+            package.write_text("# Buyer Follow-Up Package\n", encoding="utf-8")
+
+            summary = module.check_package(root=root, check_git=False)
+
+        self.assertFalse(summary["ok"])
+        self.assertTrue(
+            any(
+                issue["path"] == "docs/BUYER_FOLLOW_UP_PACKAGE.md"
+                and "missing required buyer-boundary phrase" in issue["message"]
+                for issue in summary["issues"]
+            )
+        )
+
 
 def _write_fixture(root: Path, module) -> None:
     for doc in module.DEFAULT_DOCS:
-        _write(root / doc, "# safe doc\n")
+        required = "\n".join(module.REQUIRED_DOC_PHRASES.get(doc, ()))
+        _write(root / doc, f"# safe doc\n\n{required}\n")
     _write_json(
         root / "evidence/outputs/runtime/latest-edge-appliance.json",
         {

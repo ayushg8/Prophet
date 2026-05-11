@@ -71,12 +71,13 @@ pilot commit or PR review when you need the full Python verification set.
 
 `make buyer-follow-up-check` refreshes the deterministic fixture smoke and then
 verifies the qualified-buyer follow-up package. It checks the tracked buyer docs,
-confirms generated evidence and handoff artifacts are ignored/untracked runtime
-outputs, compares their SHA-256 hashes to `scripts/pilot-demo-smoke.sha256`,
-and verifies the evidence safety attestation plus review-template-only handoff
-manifest. Use `python3 scripts/check-buyer-follow-up-package.py --format text`
-directly only when you intentionally want to inspect the current runtime files
-without refreshing them first.
+confirms required buyer-boundary phrases remain present, confirms generated
+evidence and handoff artifacts are ignored/untracked runtime outputs, compares
+their SHA-256 hashes to `scripts/pilot-demo-smoke.sha256`, and verifies the
+evidence safety attestation plus review-template-only handoff manifest. Use
+`python3 scripts/check-buyer-follow-up-package.py --format text` directly only
+when you intentionally want to inspect the current runtime files without
+refreshing them first.
 
 `make release-hygiene` is the read-only pre-commit hygiene wrapper. It runs
 tracked and untracked whitespace checks, release-safety scans for tracked diffs

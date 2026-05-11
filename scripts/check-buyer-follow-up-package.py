@@ -22,6 +22,28 @@ DEFAULT_DOCS = (
     "docs/EVALUATOR_WORKSHEET.md",
     "docs/BUYER_FAQ.md",
 )
+REQUIRED_DOC_PHRASES = {
+    "docs/BUYER_FOLLOW_UP_PACKAGE.md": (
+        "Use this after a qualified buyer has described a real prioritization workflow",
+        "Do not send if the buyer only asked for offensive validation, live target",
+        "Production pushes require a separate approved scope.",
+        "the pilot should not be represented as CMMC, FedRAMP, SOC 2, or production SaaS ready.",
+    ),
+    "docs/PILOT_SCOPE.md": (
+        "a hosted production architecture.",
+        "no production pushes.",
+        "`build_next_slice` opens production implementation scope.",
+    ),
+    "docs/DESIGN_PARTNER_PILOT_OFFER.md": (
+        "a broad production platform. Offer one evidence workflow.",
+        "Private validation reaches `build_next_slice`.",
+        "Unvalidated platform roadmap, multi-tenant production scope, unrelated features.",
+    ),
+    "docs/EVALUATOR_WORKSHEET.md": (
+        "no live targets, no payloads, no raw telemetry, no production pushes",
+        "Does the validation dashboard still keep production build scope closed unless it reaches `build_next_slice`?",
+    ),
+}
 DEFAULT_RUNTIME_ARTIFACTS = (
     "evidence/outputs/runtime/latest-edge-appliance.json",
     "evidence/outputs/runtime/latest-edge-appliance.md",
@@ -151,11 +173,27 @@ def _check_doc(root: Path, path: str, check_git: bool, issues: list[dict[str, st
     full_path = root / path
     exists = full_path.is_file()
     tracked = _git_path_is_tracked(root, path) if check_git and exists else False
+    missing_required_phrases: list[str] = []
     if not exists:
         _issue(issues, path, "required follow-up document is missing")
     elif check_git and not tracked:
         _issue(issues, path, "follow-up document must be tracked")
-    return {"path": path, "exists": exists, "tracked": tracked}
+    if exists:
+        text = full_path.read_text(encoding="utf-8")
+        missing_required_phrases = [
+            phrase
+            for phrase in REQUIRED_DOC_PHRASES.get(path, ())
+            if phrase not in text
+        ]
+        for phrase in missing_required_phrases:
+            _issue(issues, path, f"missing required buyer-boundary phrase: {phrase}")
+    return {
+        "path": path,
+        "exists": exists,
+        "tracked": tracked,
+        "required_phrase_count": len(REQUIRED_DOC_PHRASES.get(path, ())),
+        "missing_required_phrases": missing_required_phrases,
+    }
 
 
 def _check_runtime_artifact(
