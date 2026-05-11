@@ -365,7 +365,8 @@ non-live unless a future customer policy explicitly authorizes a narrower mode.
 - [~] Run a full secrets archaeology pass before any public release. Scanner now
   exists; latest full scan flags historical `LOG4SHELL_INSTRUCTIONS.md`
   password-like content that needs cleanup, rotation, or explicit exception;
-  see `docs/SECRET_HISTORY_REVIEW.md`.
+  public release review stays blocked until the owner decision is recorded.
+  See `docs/SECRET_HISTORY_REVIEW.md`.
 - [ ] Add dependency pinning and update cadence.
 - [ ] Add software supply-chain risk register.
 - [ ] Add SBOM for Prophet itself.

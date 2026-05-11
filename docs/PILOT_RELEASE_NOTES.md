@@ -125,7 +125,7 @@ After the default smoke passes, the main reviewer artifacts are:
 - `make console-screenshot-check` passed against the generated screenshot
   manifest, verifying ignored runtime paths, PNG hashes, PNG dimensions, and
   the fixture-backed sharing boundary.
-- `python3 -m unittest discover -s scripts/tests -v` passed with 344 tests,
+- `python3 -m unittest discover -s scripts/tests -v` passed with 345 tests,
   including validation-gate, send-boundary, console-demo, documented
   pre-commit hook, and release-note guardrail coverage.
 - `make python-tests` passed on 2026-05-11 across the scripts, cyber-side,

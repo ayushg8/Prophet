@@ -9,6 +9,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 REVIEW = ROOT / "docs" / "SECRET_HISTORY_REVIEW.md"
 SCRIPT = ROOT / "scripts" / "check-secrets-archaeology.sh"
+OPERATIONAL_TODO = ROOT / "docs" / "PROPHET_TODO.md"
+MASTER_TODO = ROOT / "docs" / "PROPHET_MASTER_TODO.md"
 
 
 class SecretHistoryReviewDocsTests(unittest.TestCase):
@@ -61,6 +63,15 @@ class SecretHistoryReviewDocsTests(unittest.TestCase):
         self.assertIn("git show --no-ext-diff <commit>:LOG4SHELL_INSTRUCTIONS.md", review)
         self.assertNotIn("Password:", review)
         self.assertNotIn("s3cr", review.lower())
+
+    def test_todos_block_public_release_review_on_owner_decision(self) -> None:
+        for path in (OPERATIONAL_TODO, MASTER_TODO):
+            text = path.read_text(encoding="utf-8")
+            with self.subTest(path=path.name):
+                self.assertIn("LOG4SHELL_INSTRUCTIONS.md", text)
+                self.assertIn("public release review", text)
+                self.assertIn("blocked until the owner decision", text)
+                self.assertIn("docs/SECRET_HISTORY_REVIEW.md", text)
 
 
 if __name__ == "__main__":

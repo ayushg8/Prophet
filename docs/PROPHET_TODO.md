@@ -208,9 +208,11 @@ operator board for the next buyer-pilot cycles.
   `make release-hygiene` / `scripts/check-release-hygiene.sh`.
 - [x] Full secrets archaeology scanner exists:
   `make secrets-archaeology` / `scripts/check-secrets-archaeology.sh`.
-- [ ] Full secrets archaeology currently flags historical
+- [ ] Full secrets archaeology and public release review currently flag
+  historical
   `LOG4SHELL_INSTRUCTIONS.md` password-like content in git history; decide
-  cleanup/rotation/exception before any public release. Safe review path:
+  cleanup/rotation/exception before any public release. Public release review
+  stays blocked until the owner decision is recorded. Safe review path:
   `docs/SECRET_HISTORY_REVIEW.md`.
 - [x] True GitHub fresh-clone smoke passed on macOS for commit `1fc69be` with
   26 verified pilot hashes; rerun before review, undraft, or merge if another

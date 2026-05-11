@@ -448,7 +448,7 @@ sanitized examples.
 
 Latest verification run for this inventory:
 
-- `python3 -m unittest discover -s scripts/tests -v`: 344 tests passed after
+- `python3 -m unittest discover -s scripts/tests -v`: 345 tests passed after
   the send-boundary dashboard, copy-only resume boundary, CLI-reference,
   validation-resume, goal-resume, validation-team-update, validation-weekly-review,
   weekly-review `review_date`, weekly-review target-backed build-gate coverage,
