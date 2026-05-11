@@ -3,6 +3,13 @@
 Date: 2026-05-04
 Scope: customer, founder/product, engineering, UX, DX, safety, and readiness.
 
+Historical context: this alpha-review artifact predates the current
+validation-gated product direction. Use `docs/CODEX_CEO_FINISH_BRIEF.md`,
+`docs/PROPHET_COMPLETION_AUDIT.md`, `docs/PROPHET_TODO.md`, and the validation
+dashboard as the current source of truth. Do not treat unchecked or stale items
+here as permission to build production scope while customer validation remains
+`insufficient_data`.
+
 ## Executive Verdict
 
 Prophet is a serious internal alpha, not a production product yet. The strongest
