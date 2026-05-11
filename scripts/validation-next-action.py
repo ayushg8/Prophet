@@ -30,6 +30,7 @@ def render_next_action(
     run_date: str,
     git_head: str | None = None,
     git_worktree_state: str | None = None,
+    github_ci_summary: str | None = None,
 ) -> str:
     customer = dashboard["customer_validation"]
     build_gate = dashboard["build_gate"]
@@ -206,6 +207,8 @@ def render_next_action(
             f"- Local git worktree: `{git_worktree_state}`. If dirty, rerun the "
             "dashboard and send-copy checks after resolving local changes."
         )
+    if github_ci_summary:
+        lines.append(f"- GitHub CI for local head: {github_ci_summary}")
     if git_head or git_worktree_state:
         lines.append("- Do not use PR readiness as buyer-demand evidence.")
     return "\n".join(lines) + "\n"
@@ -233,11 +236,13 @@ def main(argv: list[str] | None = None) -> int:
             message_pack_path=args.message_pack,
             require_date=args.date,
         )
+        git_head = _git_head()
         rendered = render_next_action(
             dashboard,
             run_date=args.date,
-            git_head=_git_head(),
+            git_head=git_head,
             git_worktree_state=_git_worktree_state(),
+            github_ci_summary=_github_ci_summary(_git_commit_sha()),
         )
     except Exception as exc:
         print(f"validation next action failed: {exc}", file=sys.stderr)
@@ -271,6 +276,21 @@ def _git_head() -> str | None:
     return completed.stdout.strip() or None
 
 
+def _git_commit_sha() -> str | None:
+    try:
+        completed = subprocess.run(
+            ["git", "rev-parse", "HEAD"],
+            cwd=Path(__file__).resolve().parents[1],
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.DEVNULL,
+            check=True,
+        )
+    except (OSError, subprocess.CalledProcessError):
+        return None
+    return completed.stdout.strip() or None
+
+
 def _git_worktree_state() -> str | None:
     try:
         completed = subprocess.run(
@@ -284,6 +304,56 @@ def _git_worktree_state() -> str | None:
     except (OSError, subprocess.CalledProcessError):
         return None
     return "dirty" if completed.stdout.strip() else "clean"
+
+
+def _github_ci_summary(commit_sha: str | None) -> str | None:
+    if not commit_sha:
+        return None
+    fallback = (
+        "`unavailable`; run `gh run list --repo Ayush1298567/Prophet "
+        f"--commit {commit_sha} --limit 1` before release decisions."
+    )
+    try:
+        completed = subprocess.run(
+            [
+                "gh",
+                "run",
+                "list",
+                "--repo",
+                "Ayush1298567/Prophet",
+                "--commit",
+                commit_sha,
+                "--limit",
+                "1",
+                "--json",
+                "status,conclusion,url,name,headSha",
+            ],
+            cwd=Path(__file__).resolve().parents[1],
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.DEVNULL,
+            check=True,
+            timeout=5,
+        )
+        runs = json.loads(completed.stdout)
+    except (OSError, subprocess.CalledProcessError, subprocess.TimeoutExpired, json.JSONDecodeError):
+        return fallback
+    if not isinstance(runs, list) or not runs:
+        return (
+            "`not_found`; run `gh run list --repo Ayush1298567/Prophet "
+            f"--commit {commit_sha} --limit 1` before release decisions."
+        )
+    run = runs[0]
+    if not isinstance(run, dict):
+        return fallback
+    conclusion = str(run.get("conclusion") or "pending")
+    status = str(run.get("status") or "unknown")
+    name = str(run.get("name") or "workflow")
+    url = str(run.get("url") or "")
+    summary = f"`{conclusion}` (`{status}`, `{name}`)"
+    if url:
+        summary = f"{summary}: {url}"
+    return summary
 
 
 def _load_dashboard_module() -> Any:
