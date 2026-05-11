@@ -35,6 +35,8 @@ class CliSafetyMatrixDocsTests(unittest.TestCase):
         text = MATRIX.read_text(encoding="utf-8")
 
         self.assertIn("Last updated: 2026-05-11", text)
+        self.assertIn("python3 -m assets.sbom_import", text)
+        self.assertIn("raw SBOM hash provenance only", text)
         self.assertIn("Covered Validation Sprint CLIs", text)
         for cli in VALIDATION_CLIS:
             with self.subTest(cli=cli):

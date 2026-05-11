@@ -25,6 +25,7 @@ Use the narrowest path that matches the command:
 
 ```bash
 PYTHONPATH=. python3 -m assets.inventory --help
+PYTHONPATH=. python3 -m assets.sbom_import --help
 PYTHONPATH=world-side:world-side/scraper:. python3 -m forecaster.cli --help
 PYTHONPATH=.:cyber-side:world-side python3 -m evidence.bundle --help
 ```
@@ -157,6 +158,30 @@ PYTHONPATH=. python3 -m assets.import_csv \
   --seedset-out assets/outputs/runtime/customer-safe-seedset.json \
   --seedset-run-id customer-safe-seedset
 ```
+
+Import a sanitized CycloneDX or SPDX SBOM fixture into the same safe inventory
+shape:
+
+```bash
+PYTHONPATH=. python3 -m assets.sbom_import \
+  --sbom assets/fixtures/dib-edge-appliance-sbom.cyclonedx.json \
+  --inventory-id customer-safe-sbom-import \
+  --product-family "secure edge appliance family" \
+  --exposure-class edge_appliance \
+  --owner-group "product security" \
+  --environment "customer approved metadata" \
+  --business-criticality high \
+  --generated-at 2026-05-11T08:00:00Z \
+  --fixture \
+  --out assets/outputs/runtime/customer-safe-sbom-inventory.json \
+  --report-out assets/outputs/runtime/customer-safe-sbom-report.json \
+  --seedset-out assets/outputs/runtime/customer-safe-sbom-seedset.json \
+  --seedset-run-id customer-safe-sbom-seedset
+```
+
+The SBOM importer emits raw SBOM SHA-256 provenance only. It rejects URLs,
+hostnames, IPs, credentials, payload-like keys, live target names, and unsafe
+notes before writing runtime outputs.
 
 Validate an inventory and emit a safe OSINT seedset:
 
@@ -858,6 +883,7 @@ python3 scripts/check-console-screenshots.py --help
 python3 scripts/check-doc-links.py --help
 ./scripts/run-pilot-demo-smoke.sh --help
 PYTHONPATH=. python3 -m assets.import_csv --help
+PYTHONPATH=. python3 -m assets.sbom_import --help
 PYTHONPATH=. python3 -m assets.inventory --help
 PYTHONPATH=world-side/scraper:. python3 -m scraper_side.cli --help
 PYTHONPATH=world-side/scraper:. python3 -m scraper_side.snapshot --help

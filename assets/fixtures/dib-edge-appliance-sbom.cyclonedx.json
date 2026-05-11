@@ -1,0 +1,61 @@
+{
+  "bomFormat": "CycloneDX",
+  "components": [
+    {
+      "bom-ref": "component-log4j-core",
+      "name": "log4j-core",
+      "purl": "pkg:maven/apache-log4j/log4j-core@2.17.1",
+      "type": "library",
+      "version": "2.17.1"
+    },
+    {
+      "bom-ref": "component-spring-web",
+      "name": "spring-web",
+      "purl": "pkg:maven/spring-framework/spring-web@5.3.30",
+      "type": "library",
+      "version": "5.3.30"
+    },
+    {
+      "bom-ref": "component-netty-codec",
+      "name": "netty-codec",
+      "purl": "pkg:maven/netty/netty-codec@4.1.100",
+      "type": "library",
+      "version": "4.1.100"
+    },
+    {
+      "bom-ref": "component-log4j-core-repeat",
+      "name": "log4j-core",
+      "purl": "pkg:maven/apache-log4j/log4j-core@2.17.1",
+      "type": "library",
+      "version": "2.17.1"
+    }
+  ],
+  "metadata": {
+    "component": {
+      "name": "fixture-edge-appliance-family",
+      "type": "application",
+      "version": "2026.05"
+    }
+  },
+  "serialNumber": "urn:uuid:prophet-fixture-dib-edge-appliance",
+  "specVersion": "1.5",
+  "version": 1,
+  "vulnerabilities": [
+    {
+      "affects": [
+        {
+          "ref": "component-log4j-core"
+        }
+      ],
+      "id": "CVE-2021-44228"
+    },
+    {
+      "affects": [
+        {
+          "ref": "component-spring-web"
+        }
+      ],
+      "id": "CVE-2022-22965"
+    }
+  ]
+}

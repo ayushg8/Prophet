@@ -22,6 +22,11 @@ class AssetImportGuideDocsTests(unittest.TestCase):
             "Runtime inventory, report, and",
             "Live IPs, private hostnames, URLs, or target endpoints",
             "Raw scanner exports, raw telemetry, raw logs, raw scraper text",
+            "## SBOM JSON Imports",
+            "assets.sbom_import",
+            "dib-edge-appliance-sbom.cyclonedx.json",
+            "financial-workflow-sbom.spdx.json",
+            "It does not embed",
         ]
         for phrase in required_phrases:
             with self.subTest(phrase=phrase):

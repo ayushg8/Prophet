@@ -1,0 +1,55 @@
+{
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "creationInfo": {
+    "created": "2026-05-05T08:00:00Z",
+    "creators": [
+      "Tool: prophet-fixture-generator"
+    ]
+  },
+  "dataLicense": "CC0-1.0",
+  "documentNamespace": "urn:prophet:fixture:financial-workflow-sbom",
+  "name": "financial-workflow-fixture-sbom",
+  "packages": [
+    {
+      "SPDXID": "SPDXRef-workflow-auth-lib",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:npm/workflow-auth-lib@4.2.8",
+          "referenceType": "purl"
+        }
+      ],
+      "name": "workflow-auth-lib",
+      "versionInfo": "4.2.8"
+    },
+    {
+      "SPDXID": "SPDXRef-message-queue-client",
+      "comment": "Public overlap CVE-2023-46604",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/message-queue/message-queue-client@5.18.3",
+          "referenceType": "purl"
+        }
+      ],
+      "name": "message-queue-client",
+      "versionInfo": "5.18.3"
+    },
+    {
+      "SPDXID": "SPDXRef-audit-exporter",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:pypi/audit-exporter@1.9.4",
+          "referenceType": "purl"
+        }
+      ],
+      "name": "audit-exporter",
+      "versionInfo": "1.9.4"
+    }
+  ],
+  "spdxVersion": "SPDX-2.3"
+}

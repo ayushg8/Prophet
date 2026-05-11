@@ -91,6 +91,56 @@ class CliNoLiveTargetTests(unittest.TestCase):
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("IP-like", result.stderr)
 
+    def test_assets_sbom_import_rejects_url_like_notes(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            sbom_path = root / "unsafe-sbom.json"
+            _write_json(
+                sbom_path,
+                {
+                    "bomFormat": "CycloneDX",
+                    "specVersion": "1.5",
+                    "components": [
+                        {
+                            "name": "safe-component",
+                            "version": "1.2.3",
+                            "type": "library",
+                            "purl": "pkg:npm/safe-component@1.2.3",
+                        }
+                    ],
+                    "metadata": {"note": "review https://customer.example.com before import"},
+                },
+            )
+
+            result = _run_cli(
+                [
+                    "-m",
+                    "assets.sbom_import",
+                    "--sbom",
+                    str(sbom_path),
+                    "--inventory-id",
+                    "cli-safety-sbom",
+                    "--product-family",
+                    "secure edge appliance family",
+                    "--exposure-class",
+                    "edge_appliance",
+                    "--owner-group",
+                    "product security",
+                    "--environment",
+                    "customer approved metadata",
+                    "--business-criticality",
+                    "high",
+                    "--out",
+                    str(root / "assets/outputs/runtime/inventory.json"),
+                    "--report-out",
+                    str(root / "assets/outputs/runtime/report.json"),
+                ]
+            )
+
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("URL-like", result.stderr)
+        self.assertNotIn("customer.example.com", result.stderr)
+
     def test_forecaster_cli_rejects_direction_a_live_target_keys(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)

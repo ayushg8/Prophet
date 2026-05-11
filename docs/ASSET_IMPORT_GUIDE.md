@@ -45,14 +45,47 @@ PYTHONPATH=. python3 -m assets.import_csv \
 The report includes accepted and rejected row counts, source CSV SHA-256, and
 cleanup errors without echoing unsafe row values.
 
+## SBOM JSON Imports
+
+Prophet can also import sanitized CycloneDX and SPDX JSON fixtures into the
+same `asset_inventory.v0.1` and optional `asset_osint_seedset.v0.1` shapes.
+This path is for customer-approved package metadata only. It rejects SBOMs with
+URLs, hostnames, IPs, credentials, payload-like keys, live target names, or raw
+unsafe notes.
+
+```bash
+PYTHONPATH=. python3 -m assets.sbom_import \
+  --sbom assets/fixtures/dib-edge-appliance-sbom.cyclonedx.json \
+  --inventory-id customer-safe-sbom-import \
+  --product-family "secure edge appliance family" \
+  --exposure-class edge_appliance \
+  --owner-group "product security" \
+  --environment "customer approved metadata" \
+  --business-criticality high \
+  --scope "Customer-approved sanitized SBOM metadata; no live targets named." \
+  --generated-at 2026-05-11T08:00:00Z \
+  --fixture \
+  --out assets/outputs/runtime/customer-safe-sbom-inventory.json \
+  --report-out assets/outputs/runtime/customer-safe-sbom-report.json \
+  --seedset-out assets/outputs/runtime/customer-safe-sbom-seedset.json \
+  --seedset-run-id customer-safe-sbom-seedset
+```
+
+The SBOM report includes source SBOM SHA-256, source format, safe package-name
+counts, known public CVE overlaps, and safety attestations. It does not embed
+the raw SBOM or raw component values. Runtime inventory, report, and seedset
+outputs stay ignored under `assets/outputs/runtime/`.
+
 ## Fixture Packs
 
 - `assets/fixtures/dib-edge-appliance-inventory.csv`
 - `assets/fixtures/dib-edge-appliance-inventory.json`
 - `assets/fixtures/dib-edge-appliance-seedset.json`
+- `assets/fixtures/dib-edge-appliance-sbom.cyclonedx.json`
 - `assets/fixtures/financial-workflow-inventory.csv`
 - `assets/fixtures/financial-workflow-inventory.json`
 - `assets/fixtures/financial-workflow-seedset.json`
+- `assets/fixtures/financial-workflow-sbom.spdx.json`
 
 Both fixture packs are fictional and product-family level only.
 

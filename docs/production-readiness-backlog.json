@@ -292,22 +292,24 @@
         {
           "id": "M4-01",
           "title": "Add CycloneDX SBOM fixture and parser",
-          "status": "planned",
+          "status": "done",
           "priority": "P1",
           "owner": "data",
           "target_version": "v0.7",
           "risk_tags": ["data", "buyer"],
-          "acceptance_gates": ["Safe CycloneDX fixtures produce seedsets without storing unsafe identifiers."]
+          "acceptance_gates": ["Safe CycloneDX fixtures produce seedsets without storing unsafe identifiers."],
+          "evidence_paths": ["assets/sbom_import.py", "assets/fixtures/dib-edge-appliance-sbom.cyclonedx.json", "assets/tests/test_sbom_import.py"]
         },
         {
           "id": "M4-02",
           "title": "Add SPDX SBOM fixture and parser",
-          "status": "planned",
+          "status": "done",
           "priority": "P1",
           "owner": "data",
           "target_version": "v0.7",
           "risk_tags": ["data", "buyer"],
-          "acceptance_gates": ["Safe SPDX fixtures produce seedsets without storing unsafe identifiers."]
+          "acceptance_gates": ["Safe SPDX fixtures produce seedsets without storing unsafe identifiers."],
+          "evidence_paths": ["assets/sbom_import.py", "assets/fixtures/financial-workflow-sbom.spdx.json", "assets/tests/test_sbom_import.py"]
         },
         {
           "id": "M4-03",

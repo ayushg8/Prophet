@@ -10,8 +10,8 @@ It does not tag, deploy, or mark the product complete.
 
 - Customer validation verdict: `insufficient_data`.
 - Production build gate: closed.
-- Production readiness: `33.3%`.
-- Critical open readiness items: `26`.
+- Production readiness: `37.8%`.
+- Critical open readiness items: `24`.
 - Outreach status: 8 pending send/update items, 0 attention errors.
 - Latest implementation checkpoint is
   `951a3c16204139cad1c67e6deaa13d7802d689a2`
@@ -257,6 +257,10 @@ Files:
 - `docs/PROPHET_GSTACK_ALPHA_REVIEW.md`
 - `docs/SAFETY_ARCHITECTURE.md`
 - `docs/THREAT_MODEL.md`
+- `assets/sbom_import.py`
+- `assets/fixtures/dib-edge-appliance-sbom.cyclonedx.json`
+- `assets/fixtures/financial-workflow-sbom.spdx.json`
+- `assets/tests/test_sbom_import.py`
 - `scripts/generate-supply-chain-sbom.py`
 - `sandbox_runner/runner.py`
 - `sandbox_runner/tests/test_runner.py`
@@ -288,6 +292,9 @@ Review focus:
 - Asset import guidance should describe how to create fictional customer-safe
   fixtures without names, hosts, URLs, exact deployment details, scanner rows,
   telemetry, logs, screenshots, credentials, or payload material.
+- Sanitized SBOM imports should stay fixture/customer-approved metadata only,
+  normalize package ecosystems safely, deduplicate components, and emit raw
+  SBOM hashes without preserving raw customer SBOM content.
 - Pilot policy review should document source terms review, customer-approved
   source allowlist notes, and future source-catalog change review without
   implying live collection approval.
@@ -520,7 +527,7 @@ sanitized examples.
 
 Latest verification run for this inventory:
 
-- `python3 -m unittest discover -s scripts/tests -v`: 404 tests passed after
+- `python3 -m unittest discover -s scripts/tests -v`: 405 tests passed after
   the NIST/CMMC security packet docs guard, send-boundary dashboard, copy-only resume boundary, CLI-reference,
   validation-resume, goal-resume, validation-team-update, validation-weekly-review,
   validation-next-action handoff generation, weekly-review `review_date`,
@@ -766,7 +773,7 @@ Latest verification run for this inventory:
 - `PYTHONPATH=.:cyber-side:world-side python3 scripts/check-release-safety.py --diff`:
   passed over 0 paths in the clean committed worktree.
 - `PYTHONPATH=.:cyber-side:world-side python3 scripts/check-release-safety.py --tracked --paths-only`:
-  passed over 365 tracked paths, including release-bound policy-hash coverage
+  passed over 369 tracked paths, including release-bound policy-hash coverage
   checks.
 - `python3 -m policy.lint --policy policy/prophet-pilot-policy.json`:
   passed and reported policy ID `prophet-pilot-fixture-localhost-v0.1` with
@@ -835,8 +842,8 @@ Latest verification run for this inventory:
   remains partial because fresh-clone smoke is covered, but release packaging
   and tagging remain blocked by the historical secret-history owner decision
   and unproven buyer demand.
-- `python3 scripts/production-readiness-scorecard.py`: readiness `33.3%`,
-  26 critical open items.
+- `python3 scripts/production-readiness-scorecard.py`: readiness `37.8%`,
+  24 critical open items.
 - Latest implementation checkpoint:
   `951a3c16204139cad1c67e6deaa13d7802d689a2`
   (`951a3c1 Report all release preflight blockers`). GitHub `main`
@@ -901,7 +908,7 @@ runtime output contents into the PR.
   `python3 -m unittest discover -s scripts/tests -v`, `make release-hygiene`,
   and `make release-tag-preflight DATE=2026-05-11` failed closed while
   reporting both current blockers.
-- `python3 -m unittest discover -s scripts/tests -v` passed with 404 tests.
+- `python3 -m unittest discover -s scripts/tests -v` passed with 405 tests.
 - `make release-hygiene` passed.
 - `make console-live-check` passed against the running local demo.
 - `make console-screenshot-check` passed against the generated screenshot
@@ -924,7 +931,7 @@ runtime output contents into the PR.
 ## Known Blockers
 
 - Real buyer demand remains unproven.
-- Production readiness remains 33.3% with 26 critical open items.
+- Production readiness is 37.8% with 24 critical open items.
 - Full git-history secret archaeology remains unresolved; rotate/clean/except
   the historical `LOG4SHELL_INSTRUCTIONS.md` finding before public release.
 - Release tag remains blocked until the historical secret-history finding has

@@ -413,7 +413,8 @@ operator board for the next buyer-pilot cycles.
   acceptance target without claiming implementation:
   `docs/SANDBOX_CONTAINER_TARGET.md`.
 - [x] Add a second sandbox profile for a different defensive class.
-- [ ] Add CycloneDX and SPDX SBOM fixtures and parsers.
+- [x] Add CycloneDX and SPDX SBOM fixtures and parsers for sanitized
+  customer-approved metadata only: `assets/sbom_import.py`.
 - [x] Add production architecture, threat model, production execution plan, and
   compliance gap map.
 - [x] Add pilot-mode threat model to the safety architecture.

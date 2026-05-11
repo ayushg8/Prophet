@@ -1,6 +1,6 @@
 # Prophet Master TODO
 
-Last updated: 2026-05-05
+Last updated: 2026-05-11
 
 This is the full-system backlog for Prophet. It separates what is already real
 in the buyer pilot from what still needs to be designed, built, verified, and
@@ -268,12 +268,12 @@ non-live unless a future customer policy explicitly authorizes a narrower mode.
 - [x] Import summaries include accepted and rejected rows.
 - [x] Per-row errors are reported for customer cleanup.
 - [x] A second sector fixture exists.
-- [ ] Add CycloneDX fixture and parser.
-- [ ] Add SPDX fixture and parser.
-- [ ] Add purl normalization.
+- [x] Add CycloneDX fixture and parser.
+- [x] Add SPDX fixture and parser.
+- [x] Add purl normalization.
 - [ ] Add CPE normalization.
-- [ ] Add package ecosystem mapping.
-- [ ] Add SBOM component deduplication.
+- [x] Add package ecosystem mapping.
+- [x] Add SBOM component deduplication.
 - [ ] Add customer asset grouping by business function.
 - [x] Add exposure classification guide.
 - [ ] Add "unknown owner" safe fallback behavior.

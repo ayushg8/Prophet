@@ -18,6 +18,7 @@ PYTHONPATH=.:cyber-side:world-side:world-side/scraper python3 -m unittest script
 | CLI | Guard exercised |
 |---|---|
 | `python3 -m assets.import_csv` | Rejects hostname-like customer asset rows before sanitized inventory output. |
+| `python3 -m assets.sbom_import` | Rejects URL/hostname-like SBOM notes before sanitized inventory output and emits raw SBOM hash provenance only. |
 | `python3 -m assets.inventory` | Rejects live-IP-like text in inventory JSON before seedset generation. |
 | `python3 -m forecaster.cli` | Rejects Direction A candidate files with live-target keys before forecast generation. |
 | `python3 -m scraper_side.cli` | Rejects live collection for unapproved hosts before any network request. |
