@@ -14,10 +14,10 @@ It does not tag, deploy, or mark the product complete.
 - Critical open readiness items: `24`.
 - Outreach status: 8 pending send/update items, 0 attention errors.
 - Latest implementation checkpoint is
-  `2f3c85c89b6dc1d4ab8efb6701fafb6eb4016916`
-  (`2f3c85c Add sanitized SBOM fixture import`); the GitHub
+  `1003f32d9f7381a4df7cde3796c2a02ab431d170`
+  (`1003f32 Add safe SBOM demo wrapper`); the GitHub
   `main` CI run for that checkpoint completed successfully at
-  <https://github.com/Ayush1298567/Prophet/actions/runs/25685489633>.
+  <https://github.com/Ayush1298567/Prophet/actions/runs/25685871927>.
   Future product/workflow commits after that checkpoint must rerun GitHub
   `main` CI and the relevant local handoff gates before being treated as
   current.
@@ -845,10 +845,10 @@ Latest verification run for this inventory:
 - `python3 scripts/production-readiness-scorecard.py`: readiness `37.8%`,
   24 critical open items.
 - Latest implementation checkpoint:
-  `2f3c85c89b6dc1d4ab8efb6701fafb6eb4016916`
-  (`2f3c85c Add sanitized SBOM fixture import`). GitHub `main`
+  `1003f32d9f7381a4df7cde3796c2a02ab431d170`
+  (`1003f32 Add safe SBOM demo wrapper`). GitHub `main`
   CI completed successfully at
-  <https://github.com/Ayush1298567/Prophet/actions/runs/25685489633>. This
+  <https://github.com/Ayush1298567/Prophet/actions/runs/25685871927>. This
   checkpoint makes `make release-tag-preflight DATE=YYYY-MM-DD` report both
   current release blockers after hygiene: the historical secret-history owner
   decision and the closed real-validation build gate. It does not open
@@ -904,17 +904,21 @@ runtime output contents into the PR.
   `main` CI, the dated validation dashboard, full-batch pre-send checking, and
   single-target pre-send checking; checkpoint `4d9565c` passed GitHub `main`
   CI and `make validation-resume DATE=2026-05-11`; and latest implementation
-  checkpoint `2f3c85c` passed GitHub `main` CI,
+  checkpoint `1003f32` passed GitHub `main` CI,
   `python3 -m unittest discover -s scripts/tests -v`, `make release-hygiene`,
-  and `make release-tag-preflight DATE=2026-05-11` failed closed while
-  reporting both current blockers.
+  `./scripts/run-pilot-demo-smoke.sh`, `make console-live-check`,
+  `make validation-pre-send-check-all DATE=2026-05-11`,
+  `make validation-send-copy-check DATE=2026-05-11`,
+  `make validation-contact-form-copy-check DATE=2026-05-11`, and
+  `make release-tag-preflight DATE=2026-05-11` failed closed while reporting
+  both current blockers.
 - `python3 -m unittest discover -s scripts/tests -v` passed with 406 tests.
 - `make release-hygiene` passed.
 - `make console-live-check` passed against the running local demo.
 - `make console-screenshot-check` passed against the generated screenshot
   manifest.
-- Live console checks returned `http://127.0.0.1:5291/` reachable and
-  `http://127.0.0.1:8891/api/readiness` with `ok: true` and no blocking
+- Live console checks returned `http://127.0.0.1:5173/` reachable and
+  `http://127.0.0.1:8787/api/readiness` with `ok: true` and no blocking
   failures, then verified evidence generation, integration export, and audit-log
   validation.
 - `make worktree-smoke` passed after overlaying 0 non-ignored dirty files from
@@ -941,9 +945,9 @@ runtime output contents into the PR.
   documentation-only commits; rerun it before release tagging if a later release
   tag moves beyond this commit.
   Linux fresh-clone smoke is covered by the Ubuntu CI pilot smoke steps.
-- Latest implementation checkpoint is `2f3c85c`, and the GitHub `main` CI run
+- Latest implementation checkpoint is `1003f32`, and the GitHub `main` CI run
   for that checkpoint completed successfully:
-  <https://github.com/Ayush1298567/Prophet/actions/runs/25685489633>.
+  <https://github.com/Ayush1298567/Prophet/actions/runs/25685871927>.
   Future product/workflow commits after that checkpoint must rerun GitHub
   `main` CI and the relevant local handoff gates before being treated as
   current.
