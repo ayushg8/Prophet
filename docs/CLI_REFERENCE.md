@@ -443,6 +443,7 @@ outreach block:
 ```bash
 make validation-send-copy-batch DATE=2026-05-11
 make validation-send-copy-check DATE=2026-05-11
+make validation-pre-send-check-all DATE=2026-05-11
 
 python3 scripts/validation-send-copy-batch.py \
   --message-pack validation/private/today-message-pack.json \
@@ -484,6 +485,10 @@ private metadata.
 It runs the dated dashboard, existing send-copy batch check,
 fresh private weekly review, prune dry-run, and tracker-update dry run for the
 target. It fails closed if any `CONFIRM_*` write guard is set.
+`make validation-pre-send-check-all DATE=YYYY-MM-DD` verifies the existing
+send-copy batch and all pending generated tracker updates in one dry-run
+report before sending a whole block. It does not send outreach or write tracker
+state.
 
 Render a specific target draft when needed:
 
@@ -835,6 +840,7 @@ python3 scripts/validation-outreach-block.py --help
 python3 scripts/validation-message-pack.py --help
 python3 scripts/validation-next-draft.py --help
 python3 scripts/validation-send-copy-batch.py --help
+python3 scripts/validation-pre-send-check-all.py --help
 python3 scripts/validation-apply-draft-update.py --help
 python3 scripts/validation-outreach-status.py --help
 python3 scripts/validation-reply-triage.py --help

@@ -79,6 +79,8 @@ class MakeValidationTargetsTests(unittest.TestCase):
         self.assertIn("Verify existing batch copy files are outbound-only", completed.stdout)
         self.assertIn("make validation-pre-send-check", completed.stdout)
         self.assertIn("Run the dry-run pre-send gate", completed.stdout)
+        self.assertIn("make validation-pre-send-check-all", completed.stdout)
+        self.assertIn("Run dry-run pre-send gate for every pending batch draft", completed.stdout)
         self.assertIn("make validation-send-copy-batch", completed.stdout)
         self.assertIn("copy-only text files for all verified pending drafts", completed.stdout)
         self.assertIn("make validation-reply-triage", completed.stdout)

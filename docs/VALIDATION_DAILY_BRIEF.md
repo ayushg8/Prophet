@@ -167,6 +167,10 @@ Use `make validation-pre-send-check TARGET=... DATE=YYYY-MM-DD` immediately
 before sending. It runs the dashboard, batch check, fresh weekly review, prune
 dry-run, and tracker-update dry run, and it refuses all `CONFIRM_*` write
 guards.
+Use `make validation-pre-send-check-all DATE=YYYY-MM-DD` before sending a full
+block. It verifies the existing send-copy batch and every pending generated
+tracker update in one dry-run report without sending messages or writing
+tracker state.
 Use `make validation-draft-copy TARGET=... DATE=YYYY-MM-DD` only when you want
 copy-only text for a selected target without writing
 `validation/private/today-send-copy.txt`; it does not change the dashboard's

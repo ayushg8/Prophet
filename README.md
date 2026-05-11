@@ -180,6 +180,7 @@ make validation-next-draft DATE=YYYY-MM-DD
 make validation-send-copy DATE=YYYY-MM-DD
 make validation-apply-draft TARGET=target-dib-platform-001 DATE=YYYY-MM-DD
 make validation-pre-send-check TARGET=target-dib-platform-001 DATE=YYYY-MM-DD
+make validation-pre-send-check-all DATE=YYYY-MM-DD
 make validation-log-interview DATE=YYYY-MM-DD
 make validation-draft TARGET=target-dib-platform-004 DATE=YYYY-MM-DD
 make validation-draft-copy TARGET=target-dib-platform-004 DATE=YYYY-MM-DD
@@ -236,6 +237,10 @@ checklist, copy index, subject-order helper, DO_NOT_SEND guard, or batch README.
 pre-send wrapper: it runs the dashboard, existing send-copy batch check, fresh
 weekly review, prune dry-run, and tracker-update dry run, and it refuses all
 `CONFIRM_*` write guards.
+`make validation-pre-send-check-all DATE=YYYY-MM-DD` verifies the existing
+send-copy batch and every pending generated tracker update in one dry-run
+report. It is useful before sending a full outreach block; it still does not
+send messages or write tracker state.
 `make validation-draft-copy TARGET=... DATE=YYYY-MM-DD` prints the same
 copy-only shape for one selected target without writing `today-send-copy.txt`.
 `make validation-resume` runs the dashboard, prints copy-only send text only

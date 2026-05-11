@@ -62,6 +62,7 @@ help:
 		'  make validation-send-copy-batch Write copy-only text files for all verified pending drafts; optional DATE=YYYY-MM-DD.' \
 		'  make validation-send-copy-check Verify existing batch copy files are outbound-only; optional DATE=YYYY-MM-DD.' \
 		'  make validation-pre-send-check Run the dry-run pre-send gate; requires TARGET=target-label, optional DATE=YYYY-MM-DD.' \
+		'  make validation-pre-send-check-all Run dry-run pre-send gate for every pending batch draft; optional DATE=YYYY-MM-DD.' \
 		'  make validation-draft         Render one draft; requires TARGET=target-label, rejects packs not dated today unless DATE=YYYY-MM-DD.' \
 		'  make validation-draft-copy    Print copy-only text for one target; requires TARGET=target-label, optional DATE=YYYY-MM-DD.' \
 		'  make validation-apply-draft   Dry-run/apply tracker update; requires TARGET=target-label, optional DATE=YYYY-MM-DD, CONFIRM_SENT=1 after actual send.' \
@@ -286,6 +287,16 @@ validation-pre-send-check:
 	@$(MAKE) --no-print-directory validation-prune-private DATE=$(VALIDATION_RUN_DATE)
 	@printf '%s\n' '[5/5] Dry-running tracker update for confirmed send'
 	@$(MAKE) --no-print-directory validation-apply-draft TARGET=$(TARGET) DATE=$(VALIDATION_RUN_DATE)
+
+.PHONY: validation-pre-send-check-all
+validation-pre-send-check-all:
+	@test -z "$(CONFIRM_SENT_VALUE)$(CONFIRM_TARGET_VALUE)$(CONFIRM_LOG_VALUE)$(CONFIRM_PRUNE_VALUE)" || { echo 'validation-pre-send-check-all is dry-run only; do not pass CONFIRM_SENT, CONFIRM_TARGET, CONFIRM_LOG, or CONFIRM_PRUNE.'; exit 2; }
+	@python3 scripts/validation-pre-send-check-all.py \
+		--message-pack $(VALIDATION_MESSAGE_PACK_JSON) \
+		--targets $(VALIDATION_TARGETS) \
+		--send-copy-dir $(VALIDATION_SEND_COPY_DIR) \
+		$(REQUIRE_DATE_ARG) \
+		--format markdown
 
 .PHONY: validation-apply-draft
 validation-apply-draft:

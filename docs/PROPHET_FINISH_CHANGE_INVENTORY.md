@@ -81,6 +81,7 @@ Files:
 - `scripts/validation-next-action.py`
 - `scripts/validation-next-draft.py`
 - `scripts/validation-send-copy-batch.py`
+- `scripts/validation-pre-send-check-all.py`
 - `scripts/validation-apply-draft-update.py`
 - `scripts/validation-outreach-status.py`
 - `scripts/validation-reply-triage.py`
@@ -104,6 +105,7 @@ Files:
 - `scripts/tests/test_validation_message_pack.py`
 - `scripts/tests/test_validation_next_draft.py`
 - `scripts/tests/test_validation_send_copy_batch.py`
+- `scripts/tests/test_validation_pre_send_check_all.py`
 - `scripts/tests/test_validation_apply_draft_update.py`
 - `scripts/tests/test_validation_outreach_status.py`
 - `scripts/tests/test_validation_reply_triage.py`
@@ -175,6 +177,10 @@ Review focus:
   status, reject packs not generated for the requested outreach day, and expose
   the next pending target plus dry-run/confirmed-send commands at the top level
   of `today-outreach-status.json`.
+- `make validation-pre-send-check-all DATE=YYYY-MM-DD` should verify the full
+  pending send batch before outreach, including message-pack date, dry-run
+  command verification, numbered copy files, send-copy manifest/checklist, and
+  copy-file count, without writing private tracker state.
 - `make validation-resume DATE=YYYY-MM-DD` should run the dashboard and print
   the existing next-draft file only when it still matches the current next
   pending target, without mutating private tracker state.
@@ -500,7 +506,7 @@ sanitized examples.
 
 Latest verification run for this inventory:
 
-- `python3 -m unittest discover -s scripts/tests -v`: 385 tests passed after
+- `python3 -m unittest discover -s scripts/tests -v`: 389 tests passed after
   the NIST/CMMC security packet docs guard, send-boundary dashboard, copy-only resume boundary, CLI-reference,
   validation-resume, goal-resume, validation-team-update, validation-weekly-review,
   validation-next-action handoff generation, weekly-review `review_date`,
@@ -547,6 +553,7 @@ Latest verification run for this inventory:
   console-demo help/dependency/runtime port-conflict/non-localhost-host docs
   coverage,
   dry-run-only pre-send check guard coverage,
+  full-batch pre-send check guard coverage,
   release-checklist console-demo and python-tests wrapper coverage, pilot-release-note runnable-product
   coverage, worktree-smoke wrapper coverage, all-Python Make wrapper coverage,
   same-target wrong-date next-draft rejection, example-seed build-gate
@@ -729,7 +736,7 @@ Latest verification run for this inventory:
 - `PYTHONPATH=.:cyber-side:world-side python3 scripts/check-release-safety.py --diff`:
   passed over 0 paths in the clean committed worktree.
 - `PYTHONPATH=.:cyber-side:world-side python3 scripts/check-release-safety.py --tracked --paths-only`:
-  passed over 355 tracked paths, including release-bound policy-hash coverage
+  passed over 357 tracked paths, including release-bound policy-hash coverage
   checks.
 - `python3 -m policy.lint --policy policy/prophet-pilot-policy.json`:
   passed and reported policy ID `prophet-pilot-fixture-localhost-v0.1` with

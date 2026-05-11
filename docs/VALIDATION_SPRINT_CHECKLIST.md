@@ -106,6 +106,10 @@ Do not add production platform scope while this checklist is red.
   `make validation-send-copy-check DATE=YYYY-MM-DD`. It verifies neutral
   numbered filenames, one `Subject:` line per file, copy-file SHA-256 matches,
   and no target labels or tracker metadata in the outbound `.txt` files.
+- [ ] Before sending a whole block, run
+  `make validation-pre-send-check-all DATE=YYYY-MM-DD`. It verifies the
+  existing send-copy batch and all pending generated tracker updates in one
+  dry-run report without sending messages or writing tracker state.
 - [ ] Immediately before sending, run
   `make validation-pre-send-check TARGET=target-dib-platform-001 DATE=YYYY-MM-DD`.
   It runs the dashboard, existing batch check, fresh weekly review, prune
