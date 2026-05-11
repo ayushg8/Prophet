@@ -180,6 +180,7 @@ def render_markdown(review: dict[str, Any]) -> str:
                 f"- Batch checklist exists: {str(outreach['send_copy_batch_checklist_exists']).lower()}",
                 f"- Batch copy index exists: {str(outreach['send_copy_batch_copy_index_exists']).lower()}",
                 f"- Batch subject order exists: {str(outreach['send_copy_batch_subject_order_exists']).lower()}",
+                f"- Batch DO_NOT_SEND guard exists: {str(outreach['send_copy_batch_do_not_send_exists']).lower()}",
                 f"- Batch matches current pack: {str(outreach['send_copy_batch_matches_current_pack']).lower()}",
             ]
         )
@@ -322,6 +323,7 @@ def _outreach_execution_summary(
             "send_copy_batch_checklist_exists": False,
             "send_copy_batch_copy_index_exists": False,
             "send_copy_batch_subject_order_exists": False,
+            "send_copy_batch_do_not_send_exists": False,
             "send_copy_batch_matches_current_pack": False,
         }
     dashboard_module = _load_script_module("validation_sprint_dashboard")
@@ -350,6 +352,7 @@ def _outreach_execution_summary(
             "send_copy_batch_checklist_exists": False,
             "send_copy_batch_copy_index_exists": False,
             "send_copy_batch_subject_order_exists": False,
+            "send_copy_batch_do_not_send_exists": False,
             "send_copy_batch_matches_current_pack": False,
         }
     outreach = dashboard["outreach_execution"]
@@ -368,6 +371,7 @@ def _outreach_execution_summary(
         "send_copy_batch_checklist_exists": outreach["send_copy_batch_checklist_exists"],
         "send_copy_batch_copy_index_exists": outreach["send_copy_batch_copy_index_exists"],
         "send_copy_batch_subject_order_exists": outreach["send_copy_batch_subject_order_exists"],
+        "send_copy_batch_do_not_send_exists": outreach["send_copy_batch_do_not_send_exists"],
         "send_copy_batch_matches_current_pack": outreach["send_copy_batch_matches_current_pack"],
     }
 

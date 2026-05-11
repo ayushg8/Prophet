@@ -75,6 +75,7 @@ class ValidationWeeklyReviewTests(unittest.TestCase):
             self.assertEqual(review["outreach_execution"]["send_copy_batch_state"], "missing")
             self.assertFalse(review["outreach_execution"]["send_copy_batch_copy_index_exists"])
             self.assertFalse(review["outreach_execution"]["send_copy_batch_subject_order_exists"])
+            self.assertFalse(review["outreach_execution"]["send_copy_batch_do_not_send_exists"])
             self.assertEqual(review["private_artifacts"]["send_copy_warning_count"], 0)
             self.assertEqual(review["private_artifacts"]["send_copy_warnings"], [])
             self.assertEqual(review["pruning_candidates"]["overdue_follow_ups"], [])
@@ -121,8 +122,11 @@ class ValidationWeeklyReviewTests(unittest.TestCase):
             self.assertTrue(outreach["send_copy_batch_checklist_exists"])
             self.assertTrue(outreach["send_copy_batch_copy_index_exists"])
             self.assertTrue(outreach["send_copy_batch_subject_order_exists"])
+            self.assertTrue(outreach["send_copy_batch_do_not_send_exists"])
             self.assertTrue(outreach["send_copy_batch_matches_current_pack"])
             self.assertEqual(review["private_artifacts"]["send_copy_warning_count"], 0)
+            rendered = weekly_review.render_markdown(review)
+            self.assertIn("Batch DO_NOT_SEND guard exists: true", rendered)
 
     def test_flags_unsafe_or_outdated_private_send_copy_files(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
