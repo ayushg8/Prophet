@@ -14,10 +14,10 @@ It does not tag, deploy, or mark the product complete.
 - Critical open readiness items: `26`.
 - Outreach status: 8 pending send/update items, 0 attention errors.
 - Latest implementation checkpoint is
-  `87d3d5e8f1c5d44603f10c4db5e057d9ac61c8e5`
-  (`87d3d5e Sharpen validation outreach copy`); the GitHub
+  `afad74918a9a87f239569ffa9b77f0293ee20821`
+  (`afad749 Document outreach contact selection boundary`); the GitHub
   `main` CI run for that checkpoint completed successfully at
-  <https://github.com/Ayush1298567/Prophet/actions/runs/25675309129>.
+  <https://github.com/Ayush1298567/Prophet/actions/runs/25676942628>.
   Future product/workflow commits after that checkpoint must rerun GitHub
   `main` CI and the relevant local handoff gates before being treated as
   current.
@@ -700,12 +700,12 @@ Latest verification run for this inventory:
   before merge, including the same readiness preflight, console lint/build,
   control evidence smoke, 5 Playwright tests, and console dependency audit. The
   merge commit `04fb56b` has no tree diff from that verified PR head.
-- `make pilot-ready-check-full DATE=2026-05-11`: passed again at the earlier
-  console/live implementation checkpoint, including the readiness preflight,
-  console lint/build, control evidence smoke, 5 Playwright tests, and console
-  dependency audit. Latest checkpoint `87d3d5e` changed only validation
-  outreach copy and its tests, then passed GitHub `main` CI and release
-  hygiene.
+- `make pilot-ready-check-full DATE=2026-05-11`: passed again at the latest
+  checked implementation checkpoint, including the readiness preflight, console
+  lint/build, control evidence smoke, 5 Playwright tests, and console dependency
+  audit. Latest checkpoint `afad749` changed only validation/outreach boundary
+  documentation and doc guards after the prior validation-copy checkpoint, then
+  passed GitHub `main` CI and release hygiene.
 - `make worktree-smoke`: local wrapper added for repeatable dirty-worktree
   overlay smoke. It clones HEAD to `/tmp`, overlays current non-ignored dirty
   files, excludes ignored private validation files, then runs
@@ -812,13 +812,13 @@ Latest verification run for this inventory:
 - `python3 scripts/production-readiness-scorecard.py`: readiness `33.3%`,
   26 critical open items.
 - Latest implementation checkpoint:
-  `87d3d5e8f1c5d44603f10c4db5e057d9ac61c8e5`
-  (`87d3d5e Sharpen validation outreach copy`). GitHub `main`
+  `afad74918a9a87f239569ffa9b77f0293ee20821`
+  (`afad749 Document outreach contact selection boundary`). GitHub `main`
   CI completed successfully at
-  <https://github.com/Ayush1298567/Prophet/actions/runs/25675309129>. This
-  checkpoint sharpens the validation outreach copy around recent painful
-  hardening-priority decisions and does not open production platform scope
-  while validation remains `insufficient_data`.
+  <https://github.com/Ayush1298567/Prophet/actions/runs/25676942628>. This
+  checkpoint documents the external recipient/channel boundary for validation
+  outreach and does not open production platform scope while validation remains
+  `insufficient_data`.
 
 ## PR Handoff Draft
 
@@ -863,21 +863,21 @@ runtime output contents into the PR.
 
 ## Verification
 
-- `make pilot-ready-check-full DATE=2026-05-11` passed at the earlier
-  console/live implementation checkpoint. Latest implementation checkpoint
-  `87d3d5e` passed GitHub `main` CI, `python3 -m unittest discover -s
-  scripts/tests -v`, `make release-hygiene`, dated validation dashboard checks,
-  and full pre-send validation checks.
+- `make pilot-ready-check-full DATE=2026-05-11` passed at the latest checked
+  implementation checkpoint. Latest implementation checkpoint `afad749` passed
+  GitHub `main` CI, `make release-hygiene`, dated validation dashboard checks,
+  single-target and full-batch pre-send validation checks, redacted screenshot
+  capture, screenshot verification, and live console checks on alternate
+  localhost ports.
 - `make python-tests` passed.
 - `make release-hygiene` passed.
 - `make console-live-check` passed against the running local demo.
 - `make console-screenshot-check` passed against the generated screenshot
   manifest.
-- Manual local checks returned `http://127.0.0.1:5173/` HTTP 200 and
-  `http://127.0.0.1:8787/api/readiness` with `ok: true` and no blocking
-  failures.
-- Manual live console evidence and integration endpoint checks also passed
-  on the alternate local control endpoint `http://127.0.0.1:8891`.
+- Live console checks returned `http://127.0.0.1:5291/` reachable and
+  `http://127.0.0.1:8891/api/readiness` with `ok: true` and no blocking
+  failures, then verified evidence generation, integration export, and audit-log
+  validation.
 - `make worktree-smoke` passed after overlaying 0 non-ignored dirty files from
   the clean local commit set and copying no ignored private validation artifacts.
 - `git diff --check` passed.
@@ -902,9 +902,9 @@ runtime output contents into the PR.
   documentation-only commits; rerun it before release tagging if a later release
   tag moves beyond this commit.
   Linux fresh-clone smoke is covered by the Ubuntu CI pilot smoke steps.
-- Latest implementation checkpoint is `87d3d5e`, and the GitHub `main` CI run
+- Latest implementation checkpoint is `afad749`, and the GitHub `main` CI run
   for that checkpoint completed successfully:
-  <https://github.com/Ayush1298567/Prophet/actions/runs/25675309129>.
+  <https://github.com/Ayush1298567/Prophet/actions/runs/25676942628>.
   Future product/workflow commits after that checkpoint must rerun GitHub
   `main` CI and the relevant local handoff gates before being treated as
   current.
