@@ -845,7 +845,8 @@ The weekly review is read-only. It validates the private tracker and log,
 reports the current validation gate using the same target-backed build-gate rule
 as the dashboard, message-pack age, date-guarded outreach execution readiness,
 ignored private file count, stale private artifacts, and pruning candidates. It
-does not delete files, send messages, or mutate trackers/logs.
+also flags unsafe or outdated regular send-copy and contact-form copy files.
+It does not delete files, send messages, or mutate trackers/logs.
 
 After reading the weekly review, build a confirmation-gated prune plan for
 generated ignored private artifacts:
@@ -862,8 +863,9 @@ python3 scripts/validation-prune-private.py \
 
 The prune helper is dry-run by default. It only considers generated private
 validation artifacts such as outdated `send-copy-YYYY-MM-DD` batches or unsafe
-copy-only send text flagged by the weekly review. It protects validation
-trackers, logs, templates, and README files. Use `CONFIRM_PRUNE=1` or
+copy-only send text flagged by the weekly review, including outdated
+`contact-form-copy-YYYY-MM-DD` batches. It protects validation trackers, logs,
+templates, and README files. Use `CONFIRM_PRUNE=1` or
 `--confirm-prune` only after reviewing the plan.
 
 The interview log appender validates and prints the projected scorecard summary

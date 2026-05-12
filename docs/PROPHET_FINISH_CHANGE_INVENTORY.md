@@ -536,12 +536,13 @@ sanitized examples.
 
 Latest verification run for this inventory:
 
-- `python3 -m unittest discover -s scripts/tests -v`: 418 tests passed after
+- `python3 -m unittest discover -s scripts/tests -v`: 419 tests passed after
   the NIST/CMMC security packet docs guard, send-boundary dashboard, copy-only resume boundary, CLI-reference,
   validation-resume, goal-resume, validation-team-update, validation-weekly-review,
   validation-next-action handoff generation, weekly-review `review_date`,
   weekly-review target-backed build-gate coverage, outreach execution,
   contact-form copy generation/checking, contact-form confirmed-write artifact verification,
+  private contact-form copy stale-warning/prune coverage,
   buyer follow-up package required buyer-boundary phrase coverage,
   and date-mismatch coverage,
   raw apply-draft confirmed-write copy-artifact guard coverage,
@@ -938,7 +939,7 @@ runtime output contents into the PR.
   rerun GitHub `main` CI, `python3 -m unittest discover -s scripts/tests -v`,
   `make pilot-ready-check-full DATE=2026-05-11`, and
   `PROPHET_CONTROL_PORT=8891 PROPHET_CONSOLE_PORT=5291 make console-live-check`.
-- `python3 -m unittest discover -s scripts/tests -v` passed with 418 tests.
+- `python3 -m unittest discover -s scripts/tests -v` passed with 419 tests.
 - `make release-hygiene` passed.
 - `make console-live-check` passed against the running local demo.
 - `make console-screenshot-check` passed against the generated screenshot

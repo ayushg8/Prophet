@@ -83,6 +83,8 @@ class ValidationWeeklyReviewTests(unittest.TestCase):
             self.assertFalse(review["outreach_execution"]["contact_form_copy_matches_current_pack"])
             self.assertEqual(review["private_artifacts"]["send_copy_warning_count"], 0)
             self.assertEqual(review["private_artifacts"]["send_copy_warnings"], [])
+            self.assertEqual(review["private_artifacts"]["contact_form_copy_warning_count"], 0)
+            self.assertEqual(review["private_artifacts"]["contact_form_copy_warnings"], [])
             self.assertEqual(review["pruning_candidates"]["overdue_follow_ups"], [])
             self.assertTrue(
                 any("Read-only review" in note for note in review["operator_notes"])
@@ -146,6 +148,7 @@ class ValidationWeeklyReviewTests(unittest.TestCase):
             self.assertEqual(outreach["contact_form_copy_file_count"], 8)
             self.assertTrue(outreach["contact_form_copy_matches_current_pack"])
             self.assertEqual(review["private_artifacts"]["send_copy_warning_count"], 0)
+            self.assertEqual(review["private_artifacts"]["contact_form_copy_warning_count"], 0)
             rendered = weekly_review.render_markdown(review)
             self.assertIn("Batch DO_NOT_SEND guard exists: true", rendered)
             self.assertIn("Contact-form copy state: ready", rendered)
@@ -192,6 +195,63 @@ class ValidationWeeklyReviewTests(unittest.TestCase):
             self.assertEqual(Path(plan["candidates"][0]["path"]).resolve(), old_dir.resolve())
             self.assertEqual(plan["candidates"][0]["kind"], "outdated_send_copy_batch")
             self.assertIn("--confirm-prune", validation_prune.render_markdown(plan))
+            original_is_ignored = validation_prune._is_ignored
+            try:
+                validation_prune._is_ignored = lambda _path: True
+                applied = validation_prune.apply_prune_plan(plan, private_dir=private_dir)
+            finally:
+                validation_prune._is_ignored = original_is_ignored
+            self.assertFalse(old_dir.exists())
+            self.assertFalse(applied["dry_run"])
+            self.assertEqual(applied["removed_count"], 1)
+
+    def test_flags_unsafe_or_outdated_private_contact_form_copy_files(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            private_dir = Path(tmp) / "validation-private"
+            private_dir.mkdir()
+            targets_path, log_path, pack_path = _write_private_inputs(private_dir)
+            old_dir = private_dir / "contact-form-copy-2026-05-09"
+            old_dir.mkdir()
+            old_copy = old_dir / "01.txt"
+            old_copy.write_text(
+                "Subject: stale\n\nHi <first name>,\n\nOld compact body.\n",
+                encoding="utf-8",
+            )
+
+            review = weekly_review.build_weekly_review(
+                private_dir=private_dir,
+                targets_path=targets_path,
+                log_path=log_path,
+                message_pack_path=pack_path,
+                review_date="2026-05-10",
+            )
+
+            self.assertEqual(
+                review["private_artifacts"]["contact_form_copy_warning_count"],
+                1,
+            )
+            warning = review["private_artifacts"]["contact_form_copy_warnings"][0]
+            self.assertEqual(warning["path"], str(old_copy))
+            self.assertIn("date_mismatch", warning["reasons"])
+            self.assertIn("placeholder_text", warning["reasons"])
+
+            rendered = weekly_review.render_markdown(review)
+            self.assertIn("Contact-form copy warning count: 1", rendered)
+            self.assertIn("Private contact-form copy warnings:", rendered)
+            self.assertIn("placeholder_text", rendered)
+
+            plan = validation_prune.build_prune_plan(
+                review,
+                private_dir=private_dir,
+                review_date="2026-05-10",
+            )
+            self.assertTrue(plan["dry_run"])
+            self.assertEqual(plan["candidate_count"], 1)
+            self.assertEqual(Path(plan["candidates"][0]["path"]).resolve(), old_dir.resolve())
+            self.assertEqual(
+                plan["candidates"][0]["kind"],
+                "outdated_contact_form_copy_batch",
+            )
             original_is_ignored = validation_prune._is_ignored
             try:
                 validation_prune._is_ignored = lambda _path: True

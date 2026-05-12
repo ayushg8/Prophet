@@ -521,14 +521,15 @@ review before pruning or rotating ignored artifacts. It writes
 `validation/private/today-weekly-review.md`, reports outreach execution
 readiness with the matching review date, target-backed build-gate status,
 send-copy batch README/checklist/copy-index/subject-order and DO_NOT_SEND guard
-state, stale private artifacts, unsafe or outdated private send-copy warnings,
-and pruning candidates, and does not delete files or mutate trackers/logs.
+state, stale private artifacts, unsafe or outdated private send-copy and
+contact-form copy warnings, and pruning candidates, and does not delete files or
+mutate trackers/logs.
 
 After reviewing that report, use `make validation-prune-private
 DATE=YYYY-MM-DD` to dry-run pruning for generated ignored private artifacts
 only. Add `CONFIRM_PRUNE=1` only after you have reviewed the plan and confirmed
-the current dated send-copy batch is ready. The pruning helper protects private
-trackers, logs, templates, and README files.
+the current dated send-copy and contact-form copy batches are ready. The pruning
+helper protects private trackers, logs, templates, and README files.
 
 ## Decision Rule
 

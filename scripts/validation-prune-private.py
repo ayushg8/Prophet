@@ -72,6 +72,30 @@ def build_prune_plan(
                 "reasons": sorted(set(reasons)),
             }
 
+    for warning in artifacts.get("contact_form_copy_warnings") or []:
+        if not isinstance(warning, dict):
+            continue
+        raw_path = str(warning.get("path") or "")
+        reasons = [str(reason) for reason in (warning.get("reasons") or [])]
+        path = _candidate_path(raw_path, private_dir)
+        issue = _candidate_issue(path, private_dir)
+        if issue:
+            blocked.append({"path": raw_path, "reason": issue})
+            continue
+        batch_date = _contact_form_copy_batch_date(path)
+        if batch_date is not None and batch_date != run_date:
+            batch_dirs[str(path.parent)] = {
+                "path": str(path.parent),
+                "kind": "outdated_contact_form_copy_batch",
+                "reasons": sorted(set(reasons + ["date_mismatch"])),
+            }
+        else:
+            files[str(path)] = {
+                "path": str(path),
+                "kind": "unsafe_contact_form_copy_file",
+                "reasons": sorted(set(reasons)),
+            }
+
     for stale in artifacts.get("stale_files") or []:
         if not isinstance(stale, dict):
             continue
@@ -131,8 +155,13 @@ def apply_prune_plan(plan: dict[str, Any], *, private_dir: Path) -> dict[str, An
         if path.is_symlink():
             raise ValidationPruneError(f"{path}: symlink pruning is not allowed")
         if path.is_dir():
-            if not _is_outdated_send_copy_batch_dir(path, plan["review_date"]):
-                raise ValidationPruneError(f"{path}: directory is not an outdated send-copy batch")
+            if not (
+                _is_outdated_send_copy_batch_dir(path, plan["review_date"])
+                or _is_outdated_contact_form_copy_batch_dir(path, plan["review_date"])
+            ):
+                raise ValidationPruneError(
+                    f"{path}: directory is not an outdated generated copy batch"
+                )
             shutil.rmtree(path)
             removed.append(str(path))
         elif path.is_file():
@@ -250,6 +279,8 @@ def _candidate_issue(path: Path, private_dir: Path) -> str | None:
 def _is_generated_private_artifact(path: Path, private_dir: Path) -> bool:
     if path.parent.name.startswith("send-copy-"):
         return path.suffix in {".txt", ".md", ".json"}
+    if path.parent.name.startswith("contact-form-copy-"):
+        return path.suffix in {".txt", ".md", ".json"}
     if path.parent != private_dir:
         return False
     if path.name.startswith("today-") and path.suffix in {".json", ".md", ".txt"}:
@@ -265,13 +296,23 @@ def _send_copy_batch_date(path: Path) -> date | None:
     return None
 
 
+def _contact_form_copy_batch_date(path: Path) -> date | None:
+    if path.parent.name.startswith("contact-form-copy-"):
+        return _batch_dir_date(path.parent.name, prefix="contact-form-copy-")
+    return None
+
+
 def _is_outdated_send_copy_batch_dir(path: Path, review_date: str) -> bool:
     batch_date = _batch_dir_date(path.name)
     return batch_date is not None and batch_date.isoformat() != review_date
 
 
-def _batch_dir_date(name: str) -> date | None:
-    prefix = "send-copy-"
+def _is_outdated_contact_form_copy_batch_dir(path: Path, review_date: str) -> bool:
+    batch_date = _batch_dir_date(path.name, prefix="contact-form-copy-")
+    return batch_date is not None and batch_date.isoformat() != review_date
+
+
+def _batch_dir_date(name: str, *, prefix: str = "send-copy-") -> date | None:
     if not name.startswith(prefix):
         return None
     try:
