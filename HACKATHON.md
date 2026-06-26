@@ -53,7 +53,7 @@
 
 | Rule | Status |
 |---|---|
-| Public repo on submission | `github.com/Ayush1298567/Prophet` is public |
+| Public repo on submission | `github.com/ayushg8/Prophet` is public |
 | New work only | All code written Sat 11:45 PT → Sun 12:00 PT. `research/` and `world-side/data/` are pre-event artifacts, marked clearly |
 | Tooling open and accessible | Operator-in-the-loop Codex terminal workflow, deterministic fixtures, public Vulhub images, public Nuclei template metadata, public CISA/NVD/EPSS feeds |
 | Fits PS4 primary | Confirmed |
@@ -85,7 +85,7 @@
 
 ## Submission checklist (Sunday 1200)
 
-- [ ] Public repo URL: `github.com/Ayush1298567/Prophet`
+- [ ] Public repo URL: `github.com/ayushg8/Prophet`
 - [ ] 1-minute demo video URL (YouTube or Loom)
 - [ ] Problem statement: **PS4 — Digital Defense and Cybersecurity**
 - [ ] Team roster + emails

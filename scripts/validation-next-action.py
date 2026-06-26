@@ -374,7 +374,7 @@ def _github_ci_summary(commit_sha: str | None) -> str | None:
     if not commit_sha:
         return None
     fallback = (
-        "`unavailable`; run `gh run list --repo Ayush1298567/Prophet "
+        "`unavailable`; run `gh run list --repo ayushg8/Prophet "
         f"--commit {commit_sha} --limit 1` before release decisions."
     )
     try:
@@ -384,7 +384,7 @@ def _github_ci_summary(commit_sha: str | None) -> str | None:
                 "run",
                 "list",
                 "--repo",
-                "Ayush1298567/Prophet",
+                "ayushg8/Prophet",
                 "--commit",
                 commit_sha,
                 "--limit",
@@ -404,7 +404,7 @@ def _github_ci_summary(commit_sha: str | None) -> str | None:
         return fallback
     if not isinstance(runs, list) or not runs:
         return (
-            "`not_found`; run `gh run list --repo Ayush1298567/Prophet "
+            "`not_found`; run `gh run list --repo ayushg8/Prophet "
             f"--commit {commit_sha} --limit 1` before release decisions."
         )
     run = runs[0]

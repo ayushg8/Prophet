@@ -41,7 +41,7 @@ class GoalRecoveryDocsTests(unittest.TestCase):
         self.assertIn("make validation-dashboard", text)
         self.assertIn("make goal-resume", text)
         self.assertIn("No separate project `*goal*.md` file was found", text)
-        self.assertIn("https://github.com/Ayush1298567/Prophet.git", text)
+        self.assertIn("https://github.com/ayushg8/Prophet.git", text)
         self.assertIn("20260510-132727-prophet-example-seed-guard-current.md", text)
         self.assertIn("20260510-131943-prophet-goal-recovery-current.md", text)
         self.assertIn("20260510-124000-prophet-goal-resume-github-current-232-tests.md", text)

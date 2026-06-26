@@ -123,7 +123,7 @@ After the default smoke passes, the main reviewer artifacts are:
   `1929dc0211f9d4567774df8b22a674afd01df48b`
   (`1929dc0 Opt CI actions into Node 24 runtime`). The GitHub `main` CI run
   for that head completed successfully:
-  <https://github.com/Ayush1298567/Prophet/actions/runs/25663480672>.
+  <https://github.com/ayushg8/Prophet/actions/runs/25663480672>.
 - `cd prophet-console && npm run acceptance` passed locally at `1929dc0`,
   including the root pilot smoke, console lint, TypeScript/Vite build, control
   evidence smoke, and 5 Playwright console tests.
@@ -135,7 +135,7 @@ After the default smoke passes, the main reviewer artifacts are:
 - Latest validation/handoff implementation checkpoint
   `6f005aaa6c343f62558cc6ee45034327fcf39464`
   (`6f005aa Add batch guard to send-copy metadata`) passed GitHub `main` CI:
-  <https://github.com/Ayush1298567/Prophet/actions/runs/25672743585>.
+  <https://github.com/ayushg8/Prophet/actions/runs/25672743585>.
 - `make pilot-ready-check-full DATE=2026-05-11` passed again at `6f005aa`,
   including the environment check, default buyer pilot smoke, dated validation
   dashboard, production-readiness summary, release-safety scan, console

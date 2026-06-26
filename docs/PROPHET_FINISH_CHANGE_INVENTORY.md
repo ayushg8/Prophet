@@ -16,7 +16,7 @@ It does not tag, deploy, or mark the product complete.
 - Moving-head verification is intentionally not pinned in this committed
   inventory because the audit commit changes HEAD. Run `git rev-parse HEAD`,
   `git status --short --branch --untracked-files=all`, `gh run list --repo
-  Ayush1298567/Prophet --branch main --limit 1`, and refresh
+  ayushg8/Prophet --branch main --limit 1`, and refresh
   `validation/private/WORKING_PRODUCT_HANDOFF.md` for the current head. The
   implementation checkpoint
   `6e7ac8592dbcba868e9cbab6389ed2cb07c13837`
@@ -859,7 +859,7 @@ Latest verification run for this inventory:
   `6e7ac8592dbcba868e9cbab6389ed2cb07c13837`
   (`6e7ac85 Add working product handoff generator`). GitHub `main`
   CI completed successfully at
-  <https://github.com/Ayush1298567/Prophet/actions/runs/25688231405>. This
+  <https://github.com/ayushg8/Prophet/actions/runs/25688231405>. This
   checkpoint adds the ignored working-product handoff generator, records the
   current git head, validation/build gate, and configured localhost ports in
   `validation/private/WORKING_PRODUCT_HANDOFF.md`, keeps `make
